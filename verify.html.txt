@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Verify Email - Biddex</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #1a1a4e; color: white; text-align: center; padding: 60px 20px; }
+  .box { max-width: 400px; margin: 0 auto; }
+  h1 { font-size: 24px; }
+  .success { color: #4ade80; }
+  .error { color: #f87171; }
+  a { color: #ec4899; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h1 id="status">Verifying your email...</h1>
+  <p id="message"></p>
+  <p><a href="biddex10.3.html">Go to Biddex</a></p>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token');
+const API_URL = 'https://b2b-procurement-backend-production.up.railway.app';
+
+if (!token) {
+  document.getElementById('status').textContent = 'Missing token';
+  document.getElementById('status').className = 'error';
+} else {
+  fetch(API_URL + '/api/auth/verify?token=' + token)
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        document.getElementById('status').textContent = 'Email verified!';
+        document.getElementById('status').className = 'success';
+        document.getElementById('message').textContent = 'You can now log in to Biddex.';
+      } else {
+        document.getElementById('status').textContent = 'Verification failed';
+        document.getElementById('status').className = 'error';
+        document.getElementById('message').textContent = data.error || '';
+      }
+    })
+    .catch(() => {
+      document.getElementById('status').textContent = 'Something went wrong';
+      document.getElementById('status').className = 'error';
+    });
+}
+</script>
+</body>
+</html>
