@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Biddex — Bahrain B2B Procurement</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --acc:#BE123C; --acc-soft:rgba(190,18,60,0.1); --acc-soft2:rgba(190,18,60,0.06);
+    --bg:#F6F8FC; --panel:#FFFFFF; --inset:#F8FAFC;
+    --sunken:#EEF2F8; --bd:#E4E9F1; --bd2:#CBD5E1;
+    --tx:#0B1220; --tx2:#334155; --tx3:#475569; --tx4:#64748B;
+    --ok:#15803D; --ok-soft:#DCFCE7; --warn:#92400E; --warn-soft:#FEF3C7;
+    --info:#1D4ED8; --info-soft:#DBEAFE; --bad:#B91C1C; --bad-soft:#FEE2E2;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg:#0A0E17; --panel:#111826; --inset:#0D1320;
+      --sunken:#1B2434; --bd:#1E293B; --bd2:#334155;
+      --tx:#F1F5F9; --tx2:#CBD5E1; --tx3:#94A3B8; --tx4:#64748B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#0A0E17; --panel:#111826; --inset:#0D1320;
+    --sunken:#1B2434; --bd:#1E293B; --bd2:#334155;
+    --tx:#F1F5F9; --tx2:#CBD5E1; --tx3:#94A3B8; --tx4:#64748B;
+  }
+  body { margin:0; font-family:"Inter", system-ui, sans-serif; background:var(--bg); color:var(--tx2); -webkit-font-smoothing:antialiased; }
+  a { color:var(--acc); text-decoration:none; }
+  .mono { font-family:"JetBrains Mono", ui-monospace, monospace; letter-spacing:-0.01em; }
+  input, select, textarea { font-family:inherit; }
+  @keyframes bxRise { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+  .bx-rise { animation:bxRise .25s cubic-bezier(.22,1,.36,1) both; }
+  .bx-scroll::-webkit-scrollbar { width:8px; height:8px; }
+  .bx-scroll::-webkit-scrollbar-thumb { background:var(--sunken); border-radius:99px; }
+  ::-webkit-scrollbar { width:10px; }
+  .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
+  .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
+  .stage-seg > span { display:block; height:100%; background:var(--acc); }
+  .stage-seg.done > span { background:var(--ok); width:100%; }
+  .stage-seg.current > span { background:var(--acc); width:100%; }
+  table.dtable { width:100%; border-collapse:collapse; font-size:13px; }
+  table.dtable th { text-align:left; font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--tx4); padding:10px 12px; border-bottom:1px solid var(--bd); white-space:nowrap; }
+  table.dtable td { padding:12px; border-bottom:1px solid var(--bd); vertical-align:middle; }
+  table.dtable tr:last-child td { border-bottom:none; }
+  .chip { border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:600; border:1px solid var(--bd); color:var(--tx3); background:var(--panel); cursor:pointer; white-space:nowrap; }
+  .chip.active { background:var(--tx); color:var(--panel); border-color:var(--tx); }
+  .avatar2 { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px; flex-shrink:0; }
+</style>
+</head>
+<body>
+<div id="app" class="min-h-screen" style="background:var(--bg); color:var(--tx2);"></div>
+
+<script>
+const API = 'https://b2b-procurement-backend-production.up.railway.app';
+const CATEGORIES = ['Restaurant Groceries','Beauty & Salons','Construction','Generators & Machinery','Rental Cars','Office & Facilities','General'];
+const AVATAR_PALETTE = [
+  {bg:'#FDE9E1', fg:'#B45309'}, {bg:'#DFF3EC', fg:'#0F766E'}, {bg:'#E6E9FB', fg:'#4338CA'},
+  {bg:'#FCE7F3', fg:'#BE185D'}, {bg:'#E0F2FE', fg:'#0369A1'}, {bg:'#FEF3C7', fg:'#92400E'}
+];
+
+// ---------- i18n (English / Arabic — covers navigation, headers and primary actions;
+// live marketplace data such as RFQ titles is created by users and stays as entered) ----------
+const I18N = {
+  en: {
+    buyerSignIn:'Buyer sign in', supplierSignIn:'Supplier sign in', signOut:'Sign out',
+    heroEyebrow:'LIVE PROCUREMENT NETWORK · BAHRAIN',
+    heroTitle:'Every Bahrain purchase order, in one verified network.',
+    heroSubtitle:'Post a request, get quotes from Sijillat-verified suppliers, award the best bid, and track delivery through payment — without another WhatsApp thread.',
+    exploreBuyerHub:'Explore Buyer Hub', joinSupplier:'Join as Supplier',
+    statSourced:'BHD SOURCED ON PLATFORM', statVerified:'SIJILLAT VERIFIED', statSuppliers:'ACTIVE SUPPLIERS', statBid:'MEDIAN FIRST BID',
+    liveUpdates:'LIVE UPDATES', liveOppTitle:'Live procurement opportunities',
+    liveOppSubtitle:'Real requests posted by Bahrain businesses this week. Sign in as a supplier to bid.',
+    openSupplierHub:'Open supplier hub', bidOnRfq:'Bid on RFQ',
+    verifyTitle:'Verification is the product.',
+    verifySubtitle:'No self-declared profiles. Every account clears a three-stage registry check before it can transact, and re-clears annually.',
+    builtFor:'Built for Bahrain\u2019s buying categories',
+    footerRights:'© 2026 Biddex. All rights reserved.', imBuyer:'I\u2019m a Buyer', imSupplier:'I\u2019m a Supplier',
+    navBuyerHub:'Buyer Hub', navRfqs:'RFQs', navLpo:'LPO Management', navNetwork:'Network', navSettings:'Settings',
+    navSupplierHub:'Supplier Hub', navOpportunities:'Opportunities', navCatalog:'Catalog', navOrdersLpos:'Orders & LPOs',
+    back:'Back', logIn:'Log in', register:'Register', createAccount:'Create account', pleaseWait:'Please wait…',
+    companyName:'Company name', crNumber:'CR number', country:'Country (optional)', email:'Email', password:'Password',
+    createBuyerAcct:'Create your buyer account', createSupplierAcct:'Create your supplier account',
+    dashTitleBuyer:'Strategic procurement dashboard',
+    dashSubBuyer:'Manage your active RFQs, evaluate bids, and track orders across your verified supplier network.',
+    dashTitleSupplier:'Live RFQ pipeline',
+    dashSubSupplier:'Real-time feed of matched RFQs and active proposals. Submit quotes efficiently and track fulfilment.',
+    createRfq:'+ Create new RFQ',
+    statActiveRfqs:'ACTIVE RFQS', statTotalQuotes:'TOTAL QUOTES', statAwarded:'AWARDED', statOpenOrders:'OPEN ORDERS',
+    statOpenRequests:'OPEN REQUESTS', statCatalogItems:'CATALOG ITEMS', statActiveOrders:'ACTIVE ORDERS',
+    recentRfqs:'Recent RFQs', viewAll:'View all →', recentOrders:'Recent orders', ordersInProgress:'Orders in progress',
+    opportunityFeed:'Opportunity feed'
+  },
+  ar: {
+    buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
+    heroEyebrow:'شبكة مشتريات حيّة · البحرين',
+    heroTitle:'كل أمر شراء في البحرين، على شبكة موثّقة واحدة.',
+    heroSubtitle:'انشر طلبًا، واحصل على عروض من موردين موثّقين عبر سجلات، ورسّي أفضل عرض، وتابع التسليم حتى الدفع — دون مجموعة واتساب أخرى.',
+    exploreBuyerHub:'استكشف مركز المشتري', joinSupplier:'انضم كمورد',
+    statSourced:'دينار بحريني تم شراؤها عبر المنصة', statVerified:'موثّق عبر سجلات', statSuppliers:'مورد نشط', statBid:'متوسط أول عرض',
+    liveUpdates:'تحديثات حيّة', liveOppTitle:'فرص مشتريات حيّة',
+    liveOppSubtitle:'طلبات حقيقية نشرتها شركات بحرينية هذا الأسبوع. سجّل دخولك كمورد لتقديم عرض.',
+    openSupplierHub:'افتح مركز المورد', bidOnRfq:'قدّم عرضًا',
+    verifyTitle:'التوثيق هو المنتج.',
+    verifySubtitle:'لا حسابات مُعلَنة ذاتيًا. كل حساب يجتاز فحصًا للسجل من ثلاث مراحل قبل التعامل، ويُعاد التحقق سنويًا.',
+    builtFor:'مصمم لفئات الشراء في البحرين',
+    footerRights:'© 2026 بيدكس. جميع الحقوق محفوظة.', imBuyer:'أنا مشترٍ', imSupplier:'أنا مورّد',
+    navBuyerHub:'مركز المشتري', navRfqs:'طلبات التسعير', navLpo:'إدارة أوامر الشراء', navNetwork:'الشبكة', navSettings:'الإعدادات',
+    navSupplierHub:'مركز المورد', navOpportunities:'الفرص', navCatalog:'الكتالوج', navOrdersLpos:'الطلبات وأوامر الشراء',
+    back:'رجوع', logIn:'تسجيل الدخول', register:'إنشاء حساب', createAccount:'إنشاء الحساب', pleaseWait:'يرجى الانتظار…',
+    companyName:'اسم الشركة', crNumber:'رقم السجل التجاري', country:'الدولة (اختياري)', email:'البريد الإلكتروني', password:'كلمة المرور',
+    createBuyerAcct:'أنشئ حساب مشترٍ', createSupplierAcct:'أنشئ حساب مورّد',
+    dashTitleBuyer:'لوحة المشتريات الاستراتيجية',
+    dashSubBuyer:'أدر طلبات التسعير النشطة، وقيّم العروض، وتابع الطلبات عبر شبكة الموردين الموثّقين.',
+    dashTitleSupplier:'قناة طلبات التسعير الحيّة',
+    dashSubSupplier:'تدفق لحظي لطلبات التسعير المطابقة والعروض النشطة. قدّم عروضك بكفاءة وتابع التنفيذ.',
+    createRfq:'+ طلب تسعير جديد',
+    statActiveRfqs:'طلبات نشطة', statTotalQuotes:'إجمالي العروض', statAwarded:'تم الترسية', statOpenOrders:'طلبات مفتوحة',
+    statOpenRequests:'طلبات مفتوحة', statCatalogItems:'عناصر الكتالوج', statActiveOrders:'طلبات نشطة',
+    recentRfqs:'أحدث طلبات التسعير', viewAll:'عرض الكل ←', recentOrders:'أحدث الطلبات', ordersInProgress:'طلبات قيد التنفيذ',
+    opportunityFeed:'قائمة الفرص'
+  }
+};
+function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
+
+function initTheme(){
+  try {
+    const th = localStorage.getItem('biddex_theme');
+    if (th === 'dark' || th === 'light') document.documentElement.setAttribute('data-theme', th);
+  } catch(e) {}
+}
+function isDarkNow(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  return cur === 'dark' || (!cur && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+function toggleTheme(){
+  const next = isDarkNow() ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('biddex_theme', next); } catch(e) {}
+  render();
+}
+function themeToggleBtn(){
+  return '<button onclick="toggleTheme()" class="rounded-lg border px-2.5 py-1.5 text-[13px]" style="border-color:var(--bd2); color:var(--tx2);" title="Toggle dark mode">' + (isDarkNow() ? '☀️' : '🌙') + '</button>';
+}
+
+function initLang(){
+  try {
+    const l = localStorage.getItem('biddex_lang');
+    if (l === 'ar' || l === 'en') applyLangAttrs(l);
+  } catch(e) {}
+}
+function applyLangAttrs(l){
+  state.lang = l;
+  document.documentElement.setAttribute('lang', l);
+  document.documentElement.setAttribute('dir', l === 'ar' ? 'rtl' : 'ltr');
+}
+function toggleLang(){
+  applyLangAttrs(state.lang === 'ar' ? 'en' : 'ar');
+  try { localStorage.setItem('biddex_lang', state.lang); } catch(e) {}
+  render();
+}
+function langToggleBtn(){
+  return '<button onclick="toggleLang()" class="rounded-lg border px-2.5 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + (state.lang === 'ar' ? 'EN' : 'العربية') + '</button>';
+}
+
+let state = {
+  view: 'landing', // landing | auth | buyer | supplier | admin
+  authRole: 'BUYER',
+  authMode: 'login',
+  authForm: { email:'', password:'', companyName:'', country:'', registrationNumber:'' },
+  authError: '',
+  authBusy: false,
+
+  token: null, user: null, company: null, wallet: null,
+
+  rfqs: [], catalog: [], myCatalog: [],
+  loading: false,
+
+  showPostRfq: false,
+  newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' },
+  postBusy: false,
+
+  compareRfqId: null, compareQuotes: [], compareLoading: false,
+
+  submitQuoteRfqId: null, quoteForm: { price:'', days:'' }, quoteBusy: false,
+  quotedIds: new Set(),
+
+  showCatalogAdd: false, newProduct: { name:'', price:'', unit:'kg', imageUrl:'' },
+  catalogPhotoBusy: false, catalogPhotoName: '',
+
+  lpos: [], orders: [], ordersBusyId: null,
+
+  showVerifyModal: false, verifyForm: { fileUrl:'', docType:'TRADE_LICENSE' }, verifyBusy: false,
+
+  adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
+
+  section: 'main', // main | rfqs | lpos | profile | orderDetail | catalog
+  profileForm: { name:'', country:'', phone:'', registrationNumber:'' }, profileBusy: false,
+  selectedOrderId: null, orderDetail: null, orderDetailLoading: false,
+
+  notifications: [], notifUnread: 0, showNotifDropdown: false,
+
+  chatMessages: [], chatDraft: '', chatBusy: false,
+
+  changePwForm: { currentPassword:'', newPassword:'' }, changePwBusy: false, changePwMsg: '',
+
+  verifyFileName: '', verifyFileBusy: false,
+
+  showResetModal: null, resetBusy: false, resetResult: null,
+
+  showWalletModal: false, walletTopupBusy: false,
+
+  lightboxImage: null,
+
+  opportunityTab: 'ALL', opportunityCategory: null,
+
+  toast: '',
+  lang: 'en'
+};
+
+function setState(patch){ Object.assign(state, patch); render(); }
+function setIfChanged(key, data){
+  if (JSON.stringify(state[key]) !== JSON.stringify(data)) setState({ [key]: data });
+}
+function fmt(n){ return (Number(n)||0).toFixed(3) + ' BHD'; }
+function showToast(msg){ setState({ toast: msg }); setTimeout(()=>{ if(state.toast===msg) setState({toast:''}); }, 3200); }
+
+async function api(path, opts={}) {
+  const headers = { 'Content-Type':'application/json', ...(opts.headers||{}) };
+  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  const res = await fetch(API + path, { ...opts, headers });
+  let data = null;
+  try { data = await res.json(); } catch(e) {}
+  if (!res.ok) throw new Error((data && data.error) || ('Request failed (' + res.status + ')'));
+  return data;
+}
+
+function loadSession(){
+  try {
+    const raw = localStorage.getItem('biddex_session');
+    if (raw) {
+      const s = JSON.parse(raw);
+      state.token = s.token; state.user = s.user; state.company = s.company;
+      state.view = s.user && s.user.role === 'ADMIN' ? 'admin' : (s.company && s.company.type === 'SUPPLIER' ? 'supplier' : 'buyer');
+    }
+  } catch(e) {}
+}
+function saveSession(){
+  try { localStorage.setItem('biddex_session', JSON.stringify({ token: state.token, user: state.user, company: state.company })); } catch(e) {}
+}
+function clearSession(){ try { localStorage.removeItem('biddex_session'); } catch(e) {} }
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function jsAttr(s){ return "'" + String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'&lt;') + "'"; }
+
+function initials(name){
+  const s = String(name||'??').trim();
+  const parts = s.split(/\s+/).filter(Boolean);
+  const two = parts.length >= 2 ? (parts[0][0]+parts[1][0]) : s.slice(0,2);
+  return two.toUpperCase();
+}
+function avatarColor(name){
+  let h = 0; const s = String(name||'');
+  for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) % AVATAR_PALETTE.length;
+  return AVATAR_PALETTE[Math.abs(h)];
+}
+function avatarHtml(name, size){
+  const c = avatarColor(name);
+  const sz = size || 38;
+  return '<div class="avatar2" style="width:' + sz + 'px; height:' + sz + 'px; background:' + c.bg + '; color:' + c.fg + '; font-size:' + Math.round(sz*0.34) + 'px;">' + esc(initials(name)) + '</div>';
+}
+
+function timeLeft(dateStr){
+  if (!dateStr) return null;
+  const end = new Date(dateStr).getTime();
+  const diff = end - Date.now();
+  return diff;
+}
+function timeLeftLabel(dateStr){
+  const diff = timeLeft(dateStr);
+  if (diff == null) return { label:'—', urgent:false, past:false };
+  if (diff <= 0) return { label:'Closed', urgent:false, past:true };
+  const s = Math.floor(diff/1000);
+  const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  const urgent = diff < 24*3600*1000;
+  let label;
+  if (d > 0) label = d + 'd ' + h + 'h ' + m + 'm';
+  else if (urgent) label = String(h).padStart(2,'0') + 'h ' + String(m).padStart(2,'0') + 'm ' + String(sec).padStart(2,'0') + 's';
+  else label = h + 'h ' + m + 'm';
+  return { label, urgent, past:false };
+}
+
+// ---------- Actions ----------
+
+function goLanding(){ setState({ view:'landing' }); }
+function openAuth(role, mode){ setState({ view:'auth', authRole: role, authMode: mode || 'login', authError:'', authForm:{ email:'', password:'', companyName:'', country:'', registrationNumber:'' } }); }
+function setAuthMode(mode){ setState({ authMode: mode, authError:'' }); }
+function onAuthField(field, e){ state.authForm[field] = e.target.value; }
+
+async function submitAuth(){
+  const f = state.authForm;
+  if (!f.email || !f.password || (state.authMode === 'register' && (!f.companyName || !f.registrationNumber))) {
+    setState({ authError: 'Please fill in all required fields.' }); return;
+  }
+  setState({ authBusy: true, authError: '' });
+  try {
+    let data;
+    if (state.authMode === 'register') {
+      data = await api('/api/auth/register', { method:'POST', body: JSON.stringify({
+        email: f.email, password: f.password, role: state.authRole,
+        companyName: f.companyName, country: f.country || undefined,
+        registrationNumber: f.registrationNumber, consent: !!f.consent
+      })});
+    } else {
+      data = await api('/api/auth/login', { method:'POST', body: JSON.stringify({ email: f.email, password: f.password }) });
+    }
+    state.token = data.token; state.user = data.user; state.company = data.company;
+    saveSession();
+    const dest = data.user.role === 'ADMIN' ? 'admin' : (data.company && data.company.type === 'SUPPLIER' ? 'supplier' : 'buyer');
+    setState({ view: dest, authBusy:false, section:'main' });
+    if (dest === 'admin') refreshAdminCompanies(); else refreshAll();
+  } catch (e) {
+    setState({ authBusy:false, authError: e.message });
+  }
+}
+
+function logout(){
+  clearSession();
+  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], notifications:[], notifUnread:0, chatMessages:[], view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+}
+
+async function refreshAll(){
+  await Promise.all([ refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications() ]);
+}
+
+async function refreshCompanyInfo(){
+  if (!state.token || !state.company) return;
+  try { const data = await api('/api/companies/me'); setIfChanged('company', { ...state.company, ...data }); }
+  catch(e) {}
+}
+
+function openVerifyModal(){ setState({ showVerifyModal:true, verifyForm:{ fileUrl:'', docType:'TRADE_LICENSE' }, verifyFileName:'' }); }
+function closeVerifyModal(){ setState({ showVerifyModal:false }); }
+
+async function submitVerifyDoc(){
+  const f = state.verifyForm;
+  if (!f.fileUrl) return;
+  setState({ verifyBusy:true });
+  try {
+    await api('/api/companies/me/documents', { method:'POST', body: JSON.stringify({ fileUrl: f.fileUrl, docType: f.docType }) });
+    setState({ showVerifyModal:false, verifyBusy:false });
+    showToast('Document submitted for review.');
+    refreshCompanyInfo();
+  } catch(e) { setState({ verifyBusy:false }); showToast(e.message); }
+}
+
+async function refreshAdminCompanies(){
+  if (!state.token) return;
+  try { const data = await api('/api/admin/companies'); setIfChanged('adminCompanies', data); }
+  catch(e) { showToast(e.message); }
+}
+
+async function setCompanyVerification(companyId, status){
+  setState({ adminBusyId: companyId });
+  try {
+    await api('/api/admin/companies/' + companyId + '/verify', { method:'PATCH', body: JSON.stringify({ status }) });
+    showToast(status === 'VERIFIED' ? 'Company verified.' : 'Company rejected.');
+    setState({ adminBusyId:null });
+    refreshAdminCompanies();
+  } catch(e) { setState({ adminBusyId:null }); showToast(e.message); }
+}
+function setAdminFilter(f){ setState({ adminFilter: f }); }
+
+function setSection(sec){
+  if (sec === 'profile') {
+    const c = state.company || {};
+    state.profileForm = { name: c.name||'', country: c.country||'', phone: c.phone||'', registrationNumber: c.registrationNumber||'' };
+  }
+  setState({ section: sec });
+}
+
+async function saveProfile(){
+  const f = state.profileForm;
+  setState({ profileBusy:true });
+  try {
+    await api('/api/companies/me', { method:'PATCH', body: JSON.stringify({ name: f.name, country: f.country, phone: f.phone, registrationNumber: f.registrationNumber }) });
+    setState({ profileBusy:false });
+    showToast('Profile updated.');
+    refreshCompanyInfo();
+  } catch(e) { setState({ profileBusy:false }); showToast(e.message); }
+}
+
+async function openOrderDetail(orderId){
+  setState({ section:'orderDetail', selectedOrderId: orderId, orderDetail:null, orderDetailLoading:true, chatMessages:[] });
+  try {
+    const order = await api('/api/orders/' + orderId);
+    let rfq = null;
+    if (order.lpo && order.lpo.rfqId) {
+      try { rfq = await api('/api/rfqs/' + order.lpo.rfqId); } catch(e) {}
+    }
+    setState({ orderDetail: { order, rfq }, orderDetailLoading:false });
+    refreshChat(orderId);
+  } catch(e) { setState({ orderDetailLoading:false }); showToast(e.message); }
+}
+function closeOrderDetail(){ setState({ section:'lpos', selectedOrderId:null, orderDetail:null, chatMessages:[] }); }
+
+// ---------- Notifications ----------
+
+async function refreshNotifications(){
+  if (!state.token) return;
+  try {
+    const data = await api('/api/notifications');
+    if (JSON.stringify(data) !== JSON.stringify(state.notifications)) {
+      setState({ notifications: data, notifUnread: data.filter(n => !n.read).length });
+    }
+  } catch(e) {}
+}
+
+function toggleNotifDropdown(){ setState({ showNotifDropdown: !state.showNotifDropdown }); }
+
+async function markAllNotifRead(){
+  try {
+    await api('/api/notifications/read-all', { method:'PATCH' });
+    setState({ notifications: state.notifications.map(n => ({ ...n, read:true })), notifUnread: 0 });
+  } catch(e) {}
+}
+
+// ---------- Chat (scoped to an order) ----------
+
+async function refreshChat(orderId){
+  if (!state.token) return;
+  try {
+    const data = await api('/api/orders/' + orderId + '/messages');
+    setIfChanged('chatMessages', data);
+  } catch(e) {}
+}
+
+function onChatDraft(e){ state.chatDraft = e.target.value; }
+
+async function sendChatMessage(){
+  const body = state.chatDraft.trim();
+  if (!body || !state.selectedOrderId) return;
+  setState({ chatBusy:true });
+  try {
+    await api('/api/orders/' + state.selectedOrderId + '/messages', { method:'POST', body: JSON.stringify({ body }) });
+    setState({ chatDraft:'', chatBusy:false });
+    refreshChat(state.selectedOrderId);
+  } catch(e) { setState({ chatBusy:false }); showToast(e.message); }
+}
+
+// ---------- Change password ----------
+
+function onChangePwField(field, e){ state.changePwForm[field] = e.target.value; }
+
+async function submitChangePassword(){
+  const f = state.changePwForm;
+  if (!f.currentPassword || !f.newPassword) { setState({ changePwMsg:'Fill in both fields.' }); return; }
+  setState({ changePwBusy:true, changePwMsg:'' });
+  try {
+    await api('/api/auth/password', { method:'PATCH', body: JSON.stringify(f) });
+    setState({ changePwBusy:false, changePwForm:{ currentPassword:'', newPassword:'' }, changePwMsg:'Password updated.' });
+  } catch(e) { setState({ changePwBusy:false, changePwMsg: e.message }); }
+}
+
+// ---------- Admin: reset a company's password ----------
+
+function openResetModal(companyId){ setState({ showResetModal: companyId, resetResult:null }); }
+function closeResetModal(){ setState({ showResetModal:null, resetResult:null }); }
+
+async function confirmResetPassword(){
+  setState({ resetBusy:true });
+  try {
+    const data = await api('/api/admin/companies/' + state.showResetModal + '/reset-password', { method:'POST' });
+    setState({ resetBusy:false, resetResult: data.tempPassword });
+  } catch(e) { setState({ resetBusy:false }); showToast(e.message); }
+}
+
+async function refreshLpos(){
+  if (!state.token) return;
+  try { const data = await api('/api/lpos'); setIfChanged('lpos', data); }
+  catch(e) {}
+}
+async function refreshOrders(){
+  if (!state.token) return;
+  try { const data = await api('/api/orders'); setIfChanged('orders', data); }
+  catch(e) {}
+}
+
+async function acceptLpo(lpoId){
+  setState({ ordersBusyId: lpoId });
+  try {
+    await api('/api/lpos/' + lpoId + '/accept', { method:'PATCH' });
+    showToast('Order confirmed — delivery and invoice created.');
+    setState({ ordersBusyId: null });
+    refreshLpos(); refreshOrders();
+  } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
+}
+
+async function updateDelivery(orderId, status){
+  setState({ ordersBusyId: orderId });
+  try {
+    await api('/api/orders/' + orderId + '/delivery', { method:'PATCH', body: JSON.stringify({ status }) });
+    showToast(status === 'DISPATCHED' ? 'Marked as dispatched.' : 'Marked as delivered.');
+    setState({ ordersBusyId: null });
+    refreshOrders();
+    if (state.section === 'orderDetail' && state.selectedOrderId === orderId) openOrderDetail(orderId);
+  } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
+}
+
+async function payInvoice(invoiceId, amount){
+  setState({ ordersBusyId: invoiceId });
+  try {
+    await api('/api/invoices/' + invoiceId + '/payments', { method:'POST', body: JSON.stringify({ amount, method:'bank_transfer' }) });
+    showToast('Payment completed.');
+    setState({ ordersBusyId: null });
+    refreshOrders();
+    if (state.section === 'orderDetail' && state.selectedOrderId) openOrderDetail(state.selectedOrderId);
+  } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
+}
+
+async function refreshRfqs(){
+  if (!state.token) return;
+  try { const data = await api('/api/rfqs'); setIfChanged('rfqs', data); }
+  catch(e) {}
+}
+async function refreshWallet(){
+  if (!state.token || !state.company || state.company.type !== 'SUPPLIER') return;
+  try { const data = await api('/api/wallet'); setIfChanged('wallet', data); }
+  catch(e) {}
+}
+async function refreshCatalog(){
+  if (!state.token) return;
+  try { const data = await api('/api/catalog'); setIfChanged('catalog', data); }
+  catch(e) {}
+}
+async function refreshMyCatalog(){
+  if (!state.token || !state.company) return;
+  try { const data = await api('/api/catalog?supplierCompanyId=' + state.company.id); setIfChanged('myCatalog', data); }
+  catch(e) {}
+}
+
+async function deleteProduct(id){
+  try { await api('/api/catalog/' + id, { method:'DELETE' }); showToast('Item removed.'); refreshMyCatalog(); }
+  catch(e) { showToast(e.message); }
+}
+
+function openPostRfq(prefillTitle){ setState({ showPostRfq:true, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' } }); }
+function closePostRfq(){ setState({ showPostRfq:false }); }
+function onNewRfqField(field, e){ state.newRfq[field] = e.target.value; }
+
+async function submitNewRfq(){
+  const r = state.newRfq;
+  if (!r.title || !r.quantity || !r.deadline) return;
+  setState({ postBusy:true });
+  try {
+    await api('/api/rfqs', { method:'POST', body: JSON.stringify({
+      title: r.title,
+      description: r.title + ' — ' + r.quantity + ' ' + r.unit,
+      category: r.category || 'general',
+      quantity: Number(r.quantity) || undefined,
+      unit: r.unit,
+      budget: r.budget ? Number(r.budget) : undefined,
+      deadline: r.deadline,
+      publish: true
+    })});
+    setState({ showPostRfq:false, postBusy:false });
+    showToast('RFQ posted to suppliers.');
+    refreshRfqs();
+  } catch(e) { setState({ postBusy:false }); showToast(e.message); }
+}
+
+async function openCompare(rfqId){
+  setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true });
+  try {
+    const data = await api('/api/rfqs/' + rfqId + '/quotes');
+    setState({ compareQuotes: data, compareLoading:false });
+  } catch(e) { setState({ compareLoading:false }); showToast(e.message); }
+}
+function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[] }); }
+
+async function acceptQuote(quoteId){
+  try {
+    await api('/api/quotes/' + quoteId + '/award', { method:'POST', body: JSON.stringify({ terms: 'Standard terms' }) });
+    showToast('Supplier awarded — LPO created.');
+    closeCompare();
+    refreshRfqs();
+  } catch(e) { showToast(e.message); }
+}
+
+function openSubmitQuote(rfqId){ setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'' } }); }
+function closeSubmitQuote(){ setState({ submitQuoteRfqId:null }); }
+function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
+
+async function submitQuote(){
+  const f = state.quoteForm;
+  const price = parseFloat(f.price), days = parseInt(f.days, 10);
+  if (!price || !days) return;
+  setState({ quoteBusy:true });
+  try {
+    await api('/api/rfqs/' + state.submitQuoteRfqId + '/quotes', { method:'POST', body: JSON.stringify({
+      price, currency:'BHD', deliveryTimeDays: days
+    })});
+    state.quotedIds.add(state.submitQuoteRfqId);
+    setState({ submitQuoteRfqId:null, quoteBusy:false });
+    showToast('Quote submitted.');
+    refreshWallet(); refreshRfqs();
+  } catch(e) { setState({ quoteBusy:false }); showToast(e.message); }
+}
+
+async function topUpWallet(){
+  setState({ walletTopupBusy:true });
+  try { await api('/api/wallet/topup', { method:'POST', body: JSON.stringify({ amount: 20, reference:'top-up' }) }); showToast('20 credits added.'); setState({ walletTopupBusy:false }); refreshWallet(); }
+  catch(e) { setState({ walletTopupBusy:false }); showToast(e.message); }
+}
+function openWalletModal(){ setState({ showWalletModal:true }); }
+function closeWalletModal(){ setState({ showWalletModal:false }); }
+
+function openLightbox(url){ setState({ lightboxImage: url }); }
+function closeLightbox(){ setState({ lightboxImage: null }); }
+function renderLightbox(){
+  if (!state.lightboxImage) return '';
+  return '<div onclick="closeLightbox()" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/85 p-5 bx-rise" style="cursor:zoom-out;">' +
+    '<button onclick="closeLightbox()" class="absolute right-5 top-5 rounded-lg border px-3 py-2 text-[13px] font-bold text-white" style="border-color:rgba(255,255,255,.3);">Close &times;</button>' +
+    '<img src="' + state.lightboxImage + '" onclick="event.stopPropagation()" class="max-h-[88vh] max-w-[92vw] rounded-xl object-contain shadow-2xl" style="cursor:default;" />' +
+  '</div>';
+}
+
+function openCatalogAdd(){ setState({ showCatalogAdd:true, newProduct:{ name:'', price:'', unit:'kg', imageUrl:'' }, catalogPhotoName:'' }); }
+function closeCatalogAdd(){ setState({ showCatalogAdd:false }); }
+function onProductField(field, e){ state.newProduct[field] = e.target.value; }
+
+function resizeImageFile(file, maxDim, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Could not read image.'));
+      img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('Could not read file.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onCatalogPhotoChange(e){
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) { showToast('Photo must be under 8MB.'); e.target.value = ''; return; }
+  setState({ catalogPhotoBusy: true });
+  try {
+    const dataUrl = await resizeImageFile(file, 1024, 0.82);
+    state.newProduct.imageUrl = dataUrl;
+    setState({ catalogPhotoBusy: false, catalogPhotoName: file.name });
+  } catch (err) { setState({ catalogPhotoBusy: false }); showToast(err.message); }
+}
+function removeCatalogPhoto(){ state.newProduct.imageUrl = ''; setState({ catalogPhotoName: '' }); }
+
+async function addProduct(){
+  const p = state.newProduct;
+  const price = parseFloat(p.price);
+  if (!p.name || !price) return;
+  try {
+    await api('/api/catalog', { method:'POST', body: JSON.stringify({ name: p.name, price, unit: p.unit || 'pcs', category:'general', imageUrl: p.imageUrl || undefined }) });
+    setState({ showCatalogAdd:false });
+    showToast('Item added to catalog.');
+    refreshMyCatalog();
+  } catch(e) { showToast(e.message); }
+}
+
+function setOppTab(t){ setState({ opportunityTab: t }); }
+function setOppCategory(c){ setState({ opportunityCategory: state.opportunityCategory === c ? null : c }); }
+
+// ---------- Order pipeline stage helper (6-stage tracker) ----------
+
+const STAGES = ['LPO issued','Accepted','Delivery note sent','Invoice pending','Payment confirmed','Completed'];
+
+function orderStageIndex(o){
+  const delivery = o.delivery || {}, invoice = o.invoice || {};
+  if (o.status === 'COMPLETED') return 6;
+  if (invoice.status === 'PAID') return 5;
+  if (delivery.status === 'DELIVERED') return 4;
+  if (delivery.status === 'DISPATCHED') return 3;
+  return 2; // accepted, delivery pending
+}
+function stageTrackerHtml(currentIndex){
+  return '<div class="flex items-center gap-1.5">' + STAGES.map((s,i) => {
+    const n = i+1;
+    const cls = n < currentIndex ? 'done' : (n === currentIndex ? 'current' : '');
+    return '<div class="stage-seg ' + cls + '"><span></span></div>';
+  }).join('') + '</div>';
+}
+
+// ---------- Render ----------
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = state.view === 'landing' ? renderLanding()
+    : state.view === 'auth' ? renderAuth()
+    : state.view === 'admin' ? renderAdmin()
+    : state.view === 'buyer' ? renderDashboard('buyer')
+    : renderDashboard('supplier');
+  bindEvents();
+}
+
+function logo(sub){
+  return '<div class="flex items-center gap-2.5"><span class="grid h-9 w-9 place-items-center rounded-xl border font-extrabold" style="border-color:var(--bd); background:var(--inset); color:var(--acc); font-size:17px;">B<span style="font-size:11px; vertical-align:sub;">x</span></span><div class="leading-tight"><div class="font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">Biddex</div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + (sub || 'BAHRAIN B2B PROCUREMENT') + '</div></div></div>';
+}
+
+function toastHtml(){
+  if (!state.toast) return '';
+  return '<div class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] rounded-xl px-4 py-2.5 text-sm font-semibold shadow-2xl bx-rise" style="background:var(--tx); color:var(--bg);">' + esc(state.toast) + '</div>';
+}
+
+// ---------- Landing ----------
+
+function renderLanding(){
+  const publishedRfqs = (state.catalogRfqsPreview || []);
+  return '<div>' +
+  '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
+    '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-4 px-5 py-3.5">' + logo() +
+    '<div class="flex items-center gap-2">' +
+      langToggleBtn() + themeToggleBtn() +
+      '<button onclick="openAuth(\'BUYER\',\'login\')" class="rounded-lg px-3.5 py-2 text-[13px] font-semibold" style="color:var(--tx3);">' + t('buyerSignIn') + '</button>' +
+      '<button onclick="openAuth(\'SUPPLIER\',\'login\')" class="rounded-lg px-4 py-2 text-[13px] font-bold text-white" style="background:var(--acc);">' + t('supplierSignIn') + '</button>' +
+    '</div></div>' +
+  '</header>' +
+
+  '<section class="mx-auto max-w-[1220px] px-5 pt-16 pb-10">' +
+    '<div class="max-w-[720px]">' +
+      '<div class="eyebrow mb-4">' + t('heroEyebrow') + '</div>' +
+      '<h1 class="text-[38px] sm:text-[50px] font-extrabold leading-[1.06]" style="color:var(--tx); letter-spacing:-0.02em;">' + t('heroTitle') + '</h1>' +
+      '<p class="mt-5 text-[16px] leading-relaxed max-w-[560px]" style="color:var(--tx3);">' + t('heroSubtitle') + '</p>' +
+      '<div class="mt-8 flex flex-wrap items-center gap-3">' +
+        '<button onclick="openAuth(\'BUYER\',\'register\')" class="rounded-xl px-5 py-3 text-[14px] font-bold text-white" style="background:var(--acc);">' + t('exploreBuyerHub') + '</button>' +
+        '<button onclick="openAuth(\'SUPPLIER\',\'register\')" class="rounded-xl px-5 py-3 text-[14px] font-bold border" style="border-color:var(--bd2); color:var(--tx);">' + t('joinSupplier') + '</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-3">' +
+      landingStat('41.2M', t('statSourced')) +
+      landingStat('100%', t('statVerified')) +
+      landingStat('1,842', t('statSuppliers')) +
+      landingStat('6h', t('statBid')) +
+    '</div>' +
+  '</section>' +
+
+  '<section class="border-t" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mx-auto max-w-[1220px] px-5 py-14">' +
+      '<div class="flex flex-wrap items-end justify-between gap-4 mb-6">' +
+        '<div>' +
+          '<div class="flex items-center gap-2 mb-3"><span class="h-2 w-2 rounded-full" style="background:#16A34A;"></span><span class="eyebrow">' + t('liveUpdates') + '</span></div>' +
+          '<h2 class="text-[26px] sm:text-[30px] font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">' + t('liveOppTitle') + '</h2>' +
+          '<p class="mt-2 text-[14px] max-w-[520px]" style="color:var(--tx3);">' + t('liveOppSubtitle') + '</p>' +
+        '</div>' +
+        '<button onclick="openAuth(\'SUPPLIER\',\'login\')" class="rounded-lg px-4 py-2.5 text-[13px] font-bold border shrink-0" style="border-color:var(--bd2); color:var(--tx);">' + t('openSupplierHub') + '</button>' +
+      '</div>' +
+      '<div class="flex gap-2 overflow-x-auto pb-1 mb-5">' + CATEGORIES.map((c,i) => '<span class="chip' + (i===0?' active':'') + '">' + c + '</span>').join('') + '</div>' +
+      '<div class="grid gap-3 sm:grid-cols-2">' + landingRfqSamples().map(landingRfqCard).join('') + '</div>' +
+    '</div>' +
+  '</section>' +
+
+  '<section class="mx-auto max-w-[1220px] px-5 py-16 grid gap-10 sm:grid-cols-2 items-start">' +
+    '<div>' +
+      '<h2 class="text-[30px] font-extrabold leading-tight" style="color:var(--tx); letter-spacing:-0.01em;">' + t('verifyTitle') + '</h2>' +
+      '<p class="mt-4 text-[14px] leading-relaxed max-w-[420px]" style="color:var(--tx3);">' + t('verifySubtitle') + '</p>' +
+      '<div class="mt-5 flex flex-wrap gap-2">' +
+        '<span class="chip" style="cursor:default;">🛡 Sijillat CR check</span>' +
+        '<span class="chip" style="cursor:default;">🛡 VAT registry match</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="grid gap-3">' +
+      verifyStep('01','INSTANT','CR lookup','We pull your commercial registration straight from Sijillat and match the legal entity name.') +
+      verifyStep('02','< 24H','Compliance review','An analyst confirms activity codes, authorised signatory and VAT status against your documents.') +
+      verifyStep('03','ANNUAL','Continuous monitoring','Expired or suspended registrations drop out of the feed automatically.') +
+    '</div>' +
+  '</section>' +
+
+  '<section class="border-t" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mx-auto max-w-[1220px] px-5 py-16">' +
+      '<h2 class="text-[26px] font-extrabold mb-8" style="color:var(--tx); letter-spacing:-0.01em;">' + t('builtFor') + '</h2>' +
+      '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">' +
+        [{n:'Restaurants & Cafés',live:true},{n:'Hotels & Hospitality',live:false},{n:'Retail & Supermarkets',live:false},{n:'Construction & Facilities',live:false}].map(c =>
+         '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--inset); opacity:' + (c.live?'1':'0.5') + ';"><div class="text-[13px] font-bold" style="color:var(--tx);">' + c.n + (c.live?'':' <span style=\'font-weight:400;font-size:11px;\'>(Coming soon)</span>') + '</div></div>'
+        ).join('') +
+      '</div>' +
+    '</div>' +
+  '</section>' +
+
+  '<footer class="mx-auto max-w-[1220px] px-5 py-10 flex flex-wrap items-center justify-between gap-3">' +
+    '<div class="text-[12px]" style="color:var(--tx4);">' + t('footerRights') + '</div>' +
+    '<div class="flex gap-2">' +
+      '<button onclick="openAuth(\'BUYER\',\'register\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('imBuyer') + '</button>' +
+      '<button onclick="openAuth(\'SUPPLIER\',\'register\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx);">' + t('imSupplier') + '</button>' +
+    '</div>' +
+  '</footer>' +
+  toastHtml() +
+  '</div>';
+}
+
+function landingStat(val, label){
+  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mono text-[24px] font-bold" style="color:var(--tx);">' + val + '</div>' +
+    '<div class="mt-1 text-[10.5px] font-semibold uppercase tracking-[0.06em]" style="color:var(--tx4);">' + label + '</div></div>';
+}
+
+function verifyStep(num, badge, title, body){
+  return '<div class="rounded-xl border p-5" style="border-color:var(--bd); background:var(--inset);">' +
+    '<div class="flex items-center justify-between mb-3"><span class="mono text-[13px] font-bold" style="color:var(--acc);">' + num + '</span><span class="eyebrow" style="color:var(--tx4);">' + badge + '</span></div>' +
+    '<div class="text-[15px] font-bold" style="color:var(--tx);">' + title + '</div>' +
+    '<div class="mt-1.5 text-[13px] leading-relaxed" style="color:var(--tx3);">' + body + '</div>' +
+  '</div>';
+}
+
+function landingRfqSamples(){
+  // Illustrative sample RFQs shown to signed-out visitors so the network feels live before they sign in.
+  return [
+    { org:'Facilities Group', tag:'HIGH BUDGET', id:'RFQ-3120', title:'500 units — industrial LED high bay', cat:'Verified buyer · Facilities group', budget:'12,400', closes:'1d 19h', bids:3 },
+    { org:'Utilities Co', tag:'URGENT', id:'RFQ-3118', title:'Switchgear panels — 12 sets', cat:'Verified buyer · Utilities', budget:'7,200', closes:'09h 25m', bids:2 },
+    { org:'Healthcare Facility', tag:'MATCHED', id:'RFQ-3115', title:'Emergency lighting retrofit — hospital wing', cat:'Verified buyer · Healthcare', budget:'4,900', closes:'3d 23h', bids:2 },
+    { org:'Utilities Co', tag:'HIGH BUDGET', id:'RFQ-3111', title:'Substation spares framework — 12 months', cat:'Verified buyer · Utilities', budget:'26,400', closes:'19h 55m', bids:2 }
+  ];
+}
+function landingRfqCard(r){
+  const tagStyle = r.tag === 'URGENT' ? 'background:var(--bad-soft); color:var(--bad);' : r.tag === 'MATCHED' ? 'background:var(--ok-soft); color:var(--ok);' : 'background:var(--acc-soft); color:var(--acc);';
+  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="flex items-start gap-3">' + avatarHtml(r.org, 38) +
+      '<div class="flex-1 min-w-0">' +
+        '<div class="flex items-center gap-2 mb-1"><span class="rounded-full px-2 py-0.5 text-[10px] font-bold" style="' + tagStyle + '">' + r.tag + '</span><span class="mono text-[11px]" style="color:var(--tx4);">' + r.id + '</span></div>' +
+        '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
+        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">' + esc(r.cat) + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="mt-3.5 flex items-center justify-between border-t pt-3" style="border-color:var(--bd);">' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">BHD ' + r.budget + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">CLOSES IN</div><div class="mono text-[13px] font-bold" style="color:var(--acc);">' + r.closes + '</div></div>' +
+      '<button onclick="openAuth(\'SUPPLIER\',\'login\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('bidOnRfq') + '</button>' +
+    '</div>' +
+  '</div>';
+}
+
+// ---------- Auth ----------
+
+function renderAuth(){
+  const f = state.authForm;
+  const isReg = state.authMode === 'register';
+  return '<div class="min-h-screen flex items-center justify-center p-4">' +
+  '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="flex items-center justify-between mb-4">' +
+      '<button onclick="goLanding()" class="text-[12px] font-semibold" style="color:var(--tx4);">&larr; ' + t('back') + '</button>' +
+      '<div class="flex items-center gap-2">' + langToggleBtn() + themeToggleBtn() + '</div>' +
+    '</div>' +
+    logo() +
+    '<h2 class="mt-4 text-[18px] font-bold" style="color:var(--tx);">' + (isReg ? (state.authRole==='BUYER'?t('createBuyerAcct'):t('createSupplierAcct')) : t('logIn')) + '</h2>' +
+    '<div class="mt-4 flex rounded-lg p-1" style="background:var(--inset);">' +
+      tab('login',t('logIn')) + tab('register',t('register')) +
+    '</div>' +
+    (isReg ? roleTabs() : '') +
+    '<div class="mt-4 flex flex-col gap-3">' +
+      (isReg ? field('companyName',t('companyName'), f.companyName, 'e.g. Gulf Traders WLL') : '') +
+      (isReg ? field('registrationNumber',t('crNumber'), f.registrationNumber, 'e.g. 123456-1') : '') +
+      (isReg ? field('country',t('country'), f.country, 'Bahrain') : '') +
+      field('email',t('email'), f.email, 'you@company.com') +
+      field('password',t('password'), f.password, '••••••••', 'password') +
+      (isReg ? '<label class="flex items-start gap-2 mt-1"><input type="checkbox" data-field="consent" ' + (f.consent?'checked':'') + ' style="margin-top:3px;" /><span class="text-[12px]" style="color:var(--tx4);">I agree to the <a href="terms.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Privacy Policy</a></span></label>' : '') +
+    '</div>' +
+    (state.authError ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12px] font-semibold" style="background:var(--acc-soft); color:var(--acc);">' + esc(state.authError) + '</div>' : '') +
+    '<button onclick="submitAuth()" ' + (state.authBusy?'disabled':'') + ' class="mt-5 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.authBusy?'0.6':'1') + ';">' + (state.authBusy ? t('pleaseWait') : (isReg ? t('createAccount') : t('logIn'))) + '</button>' +
+  '</div></div>' + toastHtml();
+}
+
+function tab(mode, label){
+  const active = state.authMode === mode;
+  return '<button onclick="setAuthMode(\'' + mode + '\')" class="flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold" style="' + (active ? 'background:var(--panel); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.08);' : 'color:var(--tx4);') + '">' + label + '</button>';
+}
+
+function roleTabs(){
+  return '<div class="mt-3 flex rounded-lg p-1" style="background:var(--inset);">' +
+    '<button onclick="setAuthRole(\'BUYER\')" class="flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold" style="' + (state.authRole==='BUYER' ? 'background:var(--panel); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.08);' : 'color:var(--tx4);') + '">Buyer</button>' +
+    '<button onclick="setAuthRole(\'SUPPLIER\')" class="flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold" style="' + (state.authRole==='SUPPLIER' ? 'background:var(--panel); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.08);' : 'color:var(--tx4);') + '">Supplier</button>' +
+  '</div>';
+}
+function setAuthRole(role){ setState({ authRole: role }); }
+
+function field(name, label, value, placeholder, type){
+  return '<label class="flex flex-col gap-1.5">' +
+    '<span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + label + '</span>' +
+    '<input data-field="' + name + '" type="' + (type||'text') + '" value="' + esc(value) + '" placeholder="' + placeholder + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
+  '</label>';
+}
+
+// ---------- Dashboard shell ----------
+
+function renderDashboard(role){
+  const isBuyer = role === 'buyer';
+  const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
+    '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-4 px-5 py-3.5">' + logo(isBuyer ? 'BUYER ACCOUNT' : 'SUPPLIER ACCOUNT') +
+    '<div class="relative flex items-center gap-2.5">' +
+      '<div class="hidden sm:block text-[13px] font-semibold mr-1" style="color:var(--tx3);">' + esc(state.company ? state.company.name : '') + '</div>' +
+      verificationBadge() +
+      (!isBuyer ? '<button onclick="openWalletModal()" class="mono rounded-lg border px-2.5 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--acc);">' + (state.wallet ? Number(state.wallet.balance).toFixed(0) : '—') + ' credits</button>' : '') +
+      notifBell() + langToggleBtn() + themeToggleBtn() +
+      '<button onclick="logout()" class="rounded-lg px-3 py-1.5 text-[12px] font-semibold border" style="border-color:var(--bd2); color:var(--tx3);">' + t('signOut') + '</button>' +
+    '</div></div></header>' +
+    navBar(role);
+
+  const body = state.section === 'profile' ? renderSettings()
+    : state.section === 'orderDetail' ? renderOrderDetail()
+    : state.section === 'catalog' ? (isBuyer ? renderNetwork() : renderSupplierCatalogPage())
+    : state.section === 'rfqs' ? (isBuyer ? renderBuyerRfqsPage() : renderOpportunityFeedPage())
+    : state.section === 'lpos' ? renderLpoManagement(isBuyer)
+    : (isBuyer ? renderBuyerHub() : renderSupplierHub());
+
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
+    renderModals() + renderWalletModal() + renderLightbox() + toastHtml();
+}
+
+function navBar(role){
+  const isBuyer = role === 'buyer';
+  const tabs = isBuyer
+    ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['catalog',t('navNetwork')], ['profile',t('navSettings')] ]
+    : [ ['main',t('navSupplierHub')], ['rfqs',t('navOpportunities')], ['catalog',t('navCatalog')], ['lpos',t('navOrdersLpos')], ['profile',t('navSettings')] ];
+  const activeKey = state.section === 'orderDetail' ? 'lpos' : state.section;
+  return '<div class="border-b" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mx-auto flex max-w-[1220px] gap-1 px-5 overflow-x-auto">' +
+      tabs.map(([key,label]) => '<button onclick="setSection(\'' + key + '\')" class="border-b-2 px-4 py-3 text-[13px] font-semibold whitespace-nowrap" style="' + (activeKey === key ? 'border-color:var(--acc); color:var(--tx);' : 'border-color:transparent; color:var(--tx4);') + '">' + label + '</button>').join('') +
+    '</div></div>';
+}
+
+function statsBar(pairs){
+  return '<div class="mb-6 grid grid-cols-2 sm:grid-cols-' + pairs.length + ' gap-3">' + pairs.map(([label,val,sub]) =>
+    '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="eyebrow" style="color:var(--tx4);">' + label + '</div>' +
+      '<div class="mono mt-1.5 text-[22px] font-bold" style="color:var(--tx);">' + val + '</div>' +
+      (sub ? '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + sub + '</div>' : '') +
+    '</div>'
+  ).join('') + '</div>';
+}
+
+// ---------- Buyer: Hub (overview) ----------
+
+function renderBuyerHub(){
+  const rfqs = state.rfqs || [];
+  const active = rfqs.filter(r => r.status === 'PUBLISHED').length;
+  const totalQuotes = rfqs.reduce((a,r) => a + (r._count ? r._count.quotes : 0), 0);
+  const awarded = rfqs.filter(r => r.status === 'AWARDED').length;
+  const openOrders = (state.orders||[]).filter(o => o.status !== 'COMPLETED').length;
+
+  return '<div class="eyebrow mb-2">ZONE A · COMMAND HEADER</div>' +
+  '<div class="flex flex-wrap items-start justify-between gap-4 mb-6">' +
+    '<div><h1 class="text-[26px] font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">' + t('dashTitleBuyer') + '</h1>' +
+    '<p class="mt-1 text-[13.5px] max-w-[520px]" style="color:var(--tx3);">' + t('dashSubBuyer') + '</p></div>' +
+    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('createRfq') + '</button>' +
+  '</div>' +
+  statsBar([[t('statActiveRfqs'), active], [t('statTotalQuotes'), totalQuotes], [t('statAwarded'), awarded], [t('statOpenOrders'), openOrders]]) +
+  '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentRfqs') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
+  (rfqs.length === 0 ? emptyState('No RFQs yet', 'Post your first request and suppliers will start quoting.') : rfqTable(rfqs.slice(0,5))) +
+  '<div class="flex items-center justify-between mb-4 mt-8"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentOrders') + '</h2><button onclick="setSection(\'lpos\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
+  renderOrdersList(false, 3);
+}
+
+function rfqTable(rfqs){
+  return '<div class="overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
+    '<thead><tr><th>RFQ title &amp; ID</th><th>Category</th><th>Bids received</th><th>Closing in</th><th>Status</th><th></th></tr></thead><tbody>' +
+    rfqs.map(r => {
+      const tl = timeLeftLabel(r.deadline);
+      return '<tr>' +
+        '<td><div class="flex items-center gap-2.5">' + avatarHtml(r.title, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</div></div></div></td>' +
+        '<td style="color:var(--tx3);">' + esc(r.category || 'General') + '</td>' +
+        '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
+        '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' +
+        '<td>' + statusPill(r.status) + '</td>' +
+        '<td class="text-right"><button onclick="openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Compare bids</button></td>' +
+      '</tr>';
+    }).join('') +
+  '</tbody></table></div>';
+}
+
+function statusPill(status){
+  const map = {
+    PUBLISHED: ['background:var(--info-soft); color:var(--info);','Live'],
+    DRAFT: ['background:var(--sunken); color:var(--tx3);','Draft'],
+    AWARDED: ['background:var(--ok-soft); color:var(--ok);','Awarded'],
+    CLOSED: ['background:var(--sunken); color:var(--tx4);','Closed']
+  };
+  const [style,label] = map[status] || ['background:var(--sunken); color:var(--tx3);', status];
+  return '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + label + '</span>';
+}
+
+function renderBuyerRfqsPage(){
+  const rfqs = state.rfqs || [];
+  return '<div class="flex items-center justify-between mb-6">' +
+    '<div><div class="eyebrow mb-1.5">ALL REQUESTS</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Your RFQs</h1></div>' +
+    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc);">+ Create new RFQ</button>' +
+  '</div>' +
+  (rfqs.length === 0 ? emptyState('No RFQs yet', 'Post your first request and suppliers will start quoting.') : rfqTable(rfqs));
+}
+
+// ---------- LPO Management (shared buyer/supplier, 6-stage tracker) ----------
+
+function renderLpoManagement(isBuyer){
+  const pending = (state.lpos || []).filter(l => l.status === 'ISSUED' && !isBuyer);
+  const orders = state.orders || [];
+  const liveCount = orders.filter(o => o.status !== 'COMPLETED').length + pending.length;
+  return '<div class="eyebrow mb-1.5">CLOSED-LOOP TRACKER</div>' +
+  '<h1 class="text-[24px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">LPO management</h1>' +
+  '<p class="mb-5 text-[13.5px] max-w-[620px]" style="color:var(--tx3);">One pipeline shared by both sides of the deal — from digital LPO to payment confirmation, with a full message trail per order.</p>' +
+  '<div class="inline-block mb-6 rounded-lg border px-3.5 py-2 mono text-[12px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx3);">' + liveCount + ' live order(s)</div>' +
+  '<div class="mb-6 flex flex-wrap gap-2">' + STAGES.map((s,i) => '<span class="chip" style="cursor:default;">' + (i+1) + ' &nbsp;' + s + '</span>').join('') + '</div>' +
+  (!isBuyer ? renderAwaitingLpos() : '') +
+  (orders.length === 0 && pending.length === 0 ? emptyState('No orders yet', isBuyer ? 'Orders are created once you award a supplier.' : 'Accepted purchase orders will appear here.') :
+    '<div class="flex flex-col gap-3">' + orders.map(o => lpoTrackerRow(o, isBuyer)).join('') + '</div>');
+}
+
+function lpoTrackerRow(o, isBuyer){
+  const title = o.lpo && o.lpo.rfq ? o.lpo.rfq.title : 'Order';
+  const idLabel = 'LPO-' + esc(String(o.lpo ? o.lpo.id : o.id).slice(-4).toUpperCase());
+  const counterparty = isBuyer ? (o.lpo && o.lpo.supplierCompany ? o.lpo.supplierCompany.name : '') : (o.lpo && o.lpo.buyerCompany ? o.lpo.buyerCompany.name : '');
+  const idx = orderStageIndex(o);
+  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="flex flex-wrap items-center justify-between gap-3">' +
+      '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) + '</div>' +
+        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">' + idLabel + (counterparty ? ' · ' + esc(counterparty) : '') + '</div></div>' +
+      '<div class="flex-1 min-w-[180px]">' + stageTrackerHtml(idx) + '<div class="mt-1.5 text-[11.5px] font-semibold" style="color:var(--tx3);">' + STAGES[idx-1] + ' &middot; Stage ' + idx + ' / 6</div></div>' +
+      '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
+      '<button onclick="openOrderDetail(\'' + o.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Open order</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderAwaitingLpos(){
+  const pending = (state.lpos || []).filter(l => l.status === 'ISSUED');
+  if (pending.length === 0) return '';
+  return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">Awaiting your acceptance</h2>' +
+    '<div class="flex flex-col gap-3 mb-8">' + pending.map(l =>
+      '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : 'Purchase order') + '</div>' +
+        '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
+        actionBtn('Accept order', "acceptLpo('" + l.id + "')", state.ordersBusyId === l.id) +
+      '</div>').join('') + '</div>';
+}
+
+function renderOrdersList(isSupplier, limit){
+  let orders = state.orders || [];
+  if (limit) orders = orders.slice(0, limit);
+  if (orders.length === 0) return emptyState('No orders yet', isSupplier ? 'Accepted purchase orders will appear here.' : 'Orders are created once you award a supplier.');
+  return '<div class="flex flex-col gap-3">' + orders.map(o => lpoTrackerRow(o, !isSupplier)).join('') + '</div>';
+}
+
+function actionBtn(label, onclick, busy){
+  return '<button onclick="' + (busy ? '' : onclick) + '" class="rounded-lg px-3 py-1.5 font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? 'Working…' : label) + '</button>';
+}
+
+// ---------- Buyer: Network (browse suppliers / catalog) ----------
+
+function renderNetwork(){
+  const items = state.catalog || [];
+  return '<div class="eyebrow mb-1.5">SUPPLIER NETWORK</div>' +
+  '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">Browse suppliers</h1>' +
+  (items.length === 0 ? emptyState('No catalog items yet', 'Suppliers will list products here as they join.') :
+    '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">' + items.map(p =>
+      '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
+        (p.imageUrl ? '<img src="' + p.imageUrl + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : '') +
+        '<div class="flex items-center gap-2 mb-2">' + avatarHtml(p.supplierCompany ? p.supplierCompany.name : '?', 28) +
+        '<div class="min-w-0"><div class="text-[11px] font-semibold truncate" style="color:var(--tx3);">' + esc(p.supplierCompany ? p.supplierCompany.name : '') + '</div></div></div>' +
+        '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +
+        '<div class="mono mt-1.5 text-[12px] font-semibold" style="color:var(--tx2);">' + fmt(p.price) + ' / ' + esc(p.unit||'pcs') + '</div>' +
+        '<button onclick="openPostRfq(' + jsAttr(p.name) + ')" class="mt-2.5 w-full rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-white" style="background:var(--acc);">Request quote</button>' +
+      '</div>'
+    ).join('') + '</div>');
+}
+
+// ---------- Supplier: Hub (overview) ----------
+
+function renderSupplierHub(){
+  const rfqs = state.rfqs || [];
+  const myCatalog = state.myCatalog || [];
+  const activeOrders = (state.orders || []).filter(o => o.status !== 'COMPLETED').length;
+  return '<div class="eyebrow mb-2">ZONE A · COMMAND HEADER</div>' +
+  '<h1 class="text-[26px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">' + t('dashTitleSupplier') + '</h1>' +
+  '<p class="mb-6 text-[13.5px] max-w-[560px]" style="color:var(--tx3);">' + t('dashSubSupplier') + '</p>' +
+  statsBar([[t('statOpenRequests'), rfqs.length], [t('statCatalogItems'), myCatalog.length], [t('statActiveOrders'), activeOrders]]) +
+  '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('opportunityFeed') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
+  (rfqs.length === 0 ? emptyState('No open requests right now', 'Check back soon — new RFQs appear here as buyers post them.') :
+    '<div class="flex flex-col gap-3 mb-4">' + rfqs.slice(0,3).map(opportunityCard).join('') + '</div>') +
+  '<div class="flex items-center justify-between mb-4 mt-8"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('ordersInProgress') + '</h2><button onclick="setSection(\'lpos\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
+  renderOrdersList(true, 3);
+}
+
+function opportunityCard(r){
+  const tl = timeLeftLabel(r.deadline);
+  const quoted = state.quotedIds.has(r.id);
+  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="flex flex-wrap items-center gap-4">' +
+      avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40) +
+      '<div class="flex-1 min-w-[200px]">' +
+        '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
+        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; Verified buyer &middot; ' + esc(r.category || 'General') + '</div>' +
+      '</div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">QUANTITY</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + esc(r.quantity||'—') + ' ' + esc(r.unit||'') + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '—') + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">CLOSES IN</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
+      (quoted
+        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">Quoted ✓</span>'
+        : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit quote</button>') +
+    '</div>' +
+  '</div>';
+}
+
+function renderOpportunityFeedPage(){
+  const rfqs = state.rfqs || [];
+  return '<div class="eyebrow mb-1.5">ZONE B · OPPORTUNITY FEED</div>' +
+  '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Opportunities</h1>' +
+  '<div class="flex gap-2 overflow-x-auto pb-1 mb-5">' + CATEGORIES.map(c => '<span onclick="setOppCategory(' + jsAttr(c) + ')" class="chip' + (state.opportunityCategory===c?' active':'') + '">' + c + '</span>').join('') + '</div>' +
+  (rfqs.length === 0 ? emptyState('No open requests right now', 'Check back soon — new RFQs appear here as buyers post them.') :
+    '<div class="flex flex-col gap-3">' + rfqs.filter(r => !state.opportunityCategory || r.category === state.opportunityCategory).map(opportunityCard).join('') + '</div>');
+}
+
+function renderSupplierCatalogPage(){
+  const myCatalog = state.myCatalog || [];
+  return '<div class="eyebrow mb-1.5">MASTER DATA</div>' +
+  '<div class="flex items-center justify-between mb-5"><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Product catalog</h1>' +
+    '<button onclick="openCatalogAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">+ Add item</button></div>' +
+  (myCatalog.length === 0 ? emptyState('No catalog items yet', 'Add products so buyers can request quotes directly.') :
+    '<div class="overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
+    '<thead><tr><th>Item</th><th>Unit</th><th>List price</th><th></th></tr></thead><tbody>' +
+    myCatalog.map(p => '<tr><td><div class="flex items-center gap-2.5">' +
+      (p.imageUrl ? '<img src="' + p.imageUrl + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : avatarHtml(p.name, 36)) +
+      '<span class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</span></div></td>' +
+      '<td style="color:var(--tx3);">' + esc(p.unit || 'pcs') + '</td>' +
+      '<td class="mono" style="color:var(--tx2);">' + fmt(p.price) + '</td>' +
+      '<td class="text-right"><button onclick="deleteProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">Remove</button></td></tr>').join('') +
+    '</tbody></table></div>');
+}
+
+// ---------- Wallet modal ----------
+
+function renderWalletModal(){
+  if (!state.showWalletModal) return '';
+  const bal = state.wallet ? Number(state.wallet.balance) : 0;
+  return '<div class="fixed inset-0 z-50 flex items-center justify-end bg-black/50">' +
+    '<div class="bx-rise h-full w-full max-w-sm overflow-y-auto bx-scroll p-6" style="background:var(--panel);">' +
+      '<div class="flex items-center justify-between mb-1"><span class="eyebrow">WALLET</span><button onclick="closeWalletModal()" class="text-[16px]" style="color:var(--tx4);">&times;</button></div>' +
+      '<h2 class="text-[20px] font-extrabold mb-5" style="color:var(--tx);">Bid credits</h2>' +
+      '<div class="rounded-xl p-5 mb-5" style="background:var(--acc-soft);">' +
+        '<div class="eyebrow" style="color:var(--acc);">AVAILABLE BALANCE</div>' +
+        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(0) + ' credits</div>' +
+        '<div class="mt-1 text-[12px]" style="color:var(--tx3);">Used to unlock RFQ bidding and full inquiry details.</div>' +
+      '</div>' +
+      '<button onclick="topUpWallet()" ' + (state.walletTopupBusy?'disabled':'') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.walletTopupBusy?'0.6':'1') + ';">' + (state.walletTopupBusy ? 'Adding…' : 'Add 20 credits (demo top-up)') + '</button>' +
+    '</div></div>';
+}
+
+// ---------- Settings (profile) ----------
+
+function renderSettings(){
+  const c = state.company || {};
+  const f = state.profileForm;
+  const docs = c.documents || [];
+  return '<div class="eyebrow mb-1.5">ACCOUNT</div>' +
+  '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Settings</h1>' +
+  '<div class="max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-4 flex items-center gap-2">' + verificationBadge() + '</div>' +
+    '<div class="flex flex-col gap-4">' +
+      profileField('name','Company name', f.name) +
+      profileField('country','Country', f.country) +
+      profileField('phone','Phone', f.phone) +
+      profileField('registrationNumber','Registration number (CR)', f.registrationNumber) +
+    '</div>' +
+    '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + (state.profileBusy ? 'Saving…' : 'Save changes') + '</button>' +
+  '</div>' +
+  '<div class="mt-6 max-w-lg">' +
+    '<div class="mb-3 flex items-center justify-between"><h2 class="text-[15px] font-bold" style="color:var(--tx);">Verification documents</h2>' +
+    (c.verificationStatus !== 'VERIFIED' ? '<button onclick="openVerifyModal()" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">+ Submit document</button>' : '') +
+    '</div>' +
+    (docs.length === 0 ? emptyState('No documents submitted', 'Submit a trade license or CR certificate for review.') :
+      '<div class="flex flex-col gap-2">' + docs.map(d =>
+        '<div class="flex items-center justify-between rounded-lg border p-3 text-[13px]" style="border-color:var(--bd); background:var(--panel);"><span style="color:var(--tx);">' + esc(d.docType) + '</span><span class="mono" style="color:var(--tx4);">' + new Date(d.uploadedAt).toLocaleDateString() + '</span></div>'
+      ).join('') + '</div>') +
+  '</div>' +
+  renderChangePassword();
+}
+
+function renderChangePassword(){
+  const f = state.changePwForm;
+  return '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">Change password</div>' +
+    '<div class="flex flex-col gap-4">' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Current password</span>' +
+      '<input data-changepw="currentPassword" type="password" value="' + esc(f.currentPassword) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">New password</span>' +
+      '<input data-changepw="newPassword" type="password" value="' + esc(f.newPassword) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
+    '</div>' +
+    (state.changePwMsg ? '<div class="mt-3 text-[12px] font-semibold" style="color:' + (state.changePwMsg==='Password updated.'?'var(--ok)':'var(--acc)') + ';">' + esc(state.changePwMsg) + '</div>' : '') +
+    '<button onclick="submitChangePassword()" ' + (state.changePwBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.changePwBusy?'0.6':'1') + ';">' + (state.changePwBusy ? 'Updating…' : 'Update password') + '</button>' +
+  '</div>';
+}
+
+function profileField(name, label, value){
+  return '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + label + '</span>' +
+    '<input data-profile="' + name + '" type="text" value="' + esc(value) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>';
+}
+
+// ---------- Order detail ----------
+
+function renderOrderDetail(){
+  if (state.orderDetailLoading) return '<div class="py-16 text-center text-[13px]" style="color:var(--tx4);">Loading…</div>';
+  const d = state.orderDetail;
+  if (!d || !d.order) return emptyState('Order not found', 'Go back and try again.');
+  const order = d.order, rfq = d.rfq;
+  const lpo = order.lpo || {};
+  const delivery = order.delivery || {};
+  const invoice = order.invoice || {};
+  const isSupplier = state.company && state.company.type === 'SUPPLIER';
+  const idx = orderStageIndex(order);
+
+  let deliveryAction = '';
+  if (isSupplier) {
+    if (delivery.status === 'PENDING') deliveryAction = actionBtn('Mark dispatched', "updateDelivery('" + order.id + "','DISPATCHED')", state.ordersBusyId === order.id);
+    else if (delivery.status === 'DISPATCHED') deliveryAction = actionBtn('Mark delivered', "updateDelivery('" + order.id + "','DELIVERED')", state.ordersBusyId === order.id);
+  }
+  let payAction = '';
+  if (!isSupplier && invoice.id && (invoice.status === 'ISSUED' || invoice.status === 'PARTIALLY_PAID')) {
+    payAction = actionBtn('Pay ' + fmt(invoice.amount), "payInvoice('" + invoice.id + "'," + Number(invoice.amount) + ")", state.ordersBusyId === invoice.id);
+  }
+
+  return '<button onclick="closeOrderDetail()" class="mb-4 text-[12px] font-semibold" style="color:var(--tx4);">&larr; Back to LPO management</button>' +
+  '<div class="eyebrow mb-1.5">ORDER · ' + esc(order.status) + '</div>' +
+  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfq.title : 'Order') + '</h1>' +
+  '<div class="rounded-xl border p-4 mb-6" style="border-color:var(--bd); background:var(--panel);">' +
+    stageTrackerHtml(idx) +
+    '<div class="mt-2 flex items-center justify-between">' +
+      '<div class="text-[12.5px] font-semibold" style="color:var(--tx3);">' + STAGES[idx-1] + ' &middot; Stage ' + idx + ' / 6</div>' +
+      '<div class="flex gap-2">' + deliveryAction + payAction + '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="grid gap-4 sm:grid-cols-2">' +
+    detailCard('Request', [
+      ['Quantity', rfq ? (rfq.quantity || '—') + ' ' + (rfq.unit || '') : '—'],
+      ['Needed by', rfq && rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : '—'],
+      ['Description', rfq ? rfq.description : '—']
+    ]) +
+    detailCard('Purchase order', [
+      ['Amount', fmt(lpo.totalAmount)],
+      ['Terms', lpo.terms || '—'],
+      ['Status', lpo.status || '—']
+    ]) +
+    detailCard('Delivery', [
+      ['Status', delivery.status || '—'],
+      ['Tracking', delivery.trackingInfo || '—'],
+      ['Dispatched', delivery.dispatchedAt ? new Date(delivery.dispatchedAt).toLocaleString() : '—'],
+      ['Delivered', delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleString() : '—']
+    ]) +
+    detailCard('Invoice', [
+      ['Amount', invoice.amount ? fmt(invoice.amount) : '—'],
+      ['Status', invoice.status || '—'],
+      ['Payments', (invoice.payments||[]).length ? invoice.payments.map(p => fmt(p.amount) + ' · ' + p.status).join(', ') : '—']
+    ]) +
+  '</div>' +
+  renderChatPanel();
+}
+
+function renderChatPanel(){
+  const msgs = state.chatMessages || [];
+  const myCompanyId = state.company ? state.company.id : null;
+  return '<div class="mt-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">Messages</div>' +
+    '<div class="mb-3 flex max-h-[280px] flex-col gap-2 overflow-y-auto bx-scroll pr-1">' +
+    (msgs.length === 0 ? '<div class="py-6 text-center text-[12px]" style="color:var(--tx4);">No messages yet — say hello.</div>' :
+      msgs.map(m => {
+        const mine = m.senderCompanyId === myCompanyId;
+        return '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '">' +
+          '<div class="max-w-[75%] rounded-xl px-3 py-2 text-[13px]" style="' + (mine ? 'background:var(--acc); color:white;' : 'background:var(--inset); color:var(--tx2);') + '">' +
+            (!mine ? '<div class="mb-0.5 text-[10px] font-semibold opacity-70">' + esc(m.senderCompany ? m.senderCompany.name : '') + '</div>' : '') +
+            esc(m.body) +
+          '</div></div>';
+      }).join('')) +
+    '</div>' +
+    '<div class="flex gap-2">' +
+      '<input data-chat="draft" type="text" value="' + esc(state.chatDraft) + '" placeholder="Type a message…" class="flex-1 rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
+      '<button onclick="sendChatMessage()" ' + (state.chatBusy?'disabled':'') + ' class="rounded-lg px-4 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (state.chatBusy?'0.6':'1') + ';">Send</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function detailCard(title, rows){
+  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">' + title + '</div>' +
+    '<div class="flex flex-col gap-2">' + rows.map(([k,v]) => '<div class="flex items-center justify-between gap-3 text-[12px]"><span style="color:var(--tx4);">' + k + '</span><span class="mono text-right" style="color:var(--tx2); max-width:65%;">' + esc(v) + '</span></div>').join('') + '</div>' +
+  '</div>';
+}
+
+// ---------- Notifications, verification ----------
+
+function notifBell(){
+  const list = state.notifications || [];
+  return '<div class="relative">' +
+    '<button onclick="toggleNotifDropdown()" class="relative rounded-lg border px-2.5 py-1.5 text-[13px]" style="border-color:var(--bd2); color:var(--tx2);">🔔' +
+      (state.notifUnread > 0 ? '<span class="absolute -right-1.5 -top-1.5 grid h-4 min-w-[16px] place-items-center rounded-full px-1 text-[10px] font-bold text-white" style="background:var(--acc);">' + state.notifUnread + '</span>' : '') +
+    '</button>' +
+    (state.showNotifDropdown ?
+      '<div class="absolute right-0 top-11 z-40 w-80 max-h-96 overflow-y-auto rounded-xl border shadow-xl bx-scroll" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex items-center justify-between border-b px-3.5 py-2.5" style="border-color:var(--bd);"><span class="text-[13px] font-bold" style="color:var(--tx);">Notifications</span>' +
+        (state.notifUnread > 0 ? '<button onclick="markAllNotifRead()" class="text-[11px] font-semibold" style="color:var(--acc);">Mark all read</button>' : '') +
+        '</div>' +
+        (list.length === 0 ? '<div class="px-3.5 py-8 text-center text-[12px]" style="color:var(--tx4);">Nothing yet.</div>' :
+          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + '">' +
+            '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
+            (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
+            '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + new Date(n.createdAt).toLocaleString() + '</div>' +
+          '</div>').join('')) +
+      '</div>' : '') +
+  '</div>';
+}
+
+function verificationBadge(){
+  const st = state.company ? state.company.verificationStatus : null;
+  if (!st) return '';
+  const styles = {
+    PENDING: 'background:var(--warn-soft); color:var(--warn);',
+    IN_REVIEW: 'background:var(--info-soft); color:var(--info);',
+    VERIFIED: 'background:var(--ok-soft); color:var(--ok);',
+    REJECTED: 'background:var(--bad-soft); color:var(--bad);'
+  };
+  const labels = { PENDING:'Not verified', IN_REVIEW:'In review', VERIFIED:'Verified', REJECTED:'Rejected' };
+  return '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + (styles[st]||'') + '">' + (labels[st]||st) + '</span>';
+}
+
+function verificationBanner(){
+  const st = state.company ? state.company.verificationStatus : null;
+  if (!st || st === 'VERIFIED' || st === 'IN_REVIEW') return '';
+  return '<div class="mb-6 flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
+    '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + (st === 'REJECTED' ? 'Your verification was rejected — submit a new document.' : 'Verify your company via Sijillat to build trust with counterparties.') + '</div>' +
+    '<button onclick="openVerifyModal()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit document</button>' +
+  '</div>';
+}
+
+// ---------- Admin ----------
+
+function renderAdmin(){
+  const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
+    '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-4 px-5 py-3.5">' + logo('ADMIN CONSOLE') +
+    '<div class="flex items-center gap-3">' +
+      '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Admin</span>' +
+      langToggleBtn() + themeToggleBtn() +
+      '<button onclick="logout()" class="rounded-lg px-3 py-1.5 text-[12px] font-semibold border" style="border-color:var(--bd2); color:var(--tx3);">' + t('signOut') + '</button>' +
+    '</div></div></header>';
+
+  const filters = ['ALL','PENDING','IN_REVIEW','VERIFIED','REJECTED'];
+  const list = (state.adminCompanies || []).filter(c => state.adminFilter === 'ALL' || c.verificationStatus === state.adminFilter);
+
+  const body = '<div class="eyebrow mb-1.5">SIJILLAT REGISTRY QUEUE</div>' +
+  '<div class="flex items-center justify-between mb-5">' +
+    '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +
+  '</div>' +
+  '<div class="flex flex-wrap gap-2 mb-5">' + filters.map(f =>
+    '<button onclick="setAdminFilter(\'' + f + '\')" class="chip' + (state.adminFilter===f?' active':'') + '">' + f + '</button>'
+  ).join('') + '</div>' +
+  (list.length === 0 ? emptyState('No companies here', 'Nothing matches this filter yet.') :
+    '<div class="flex flex-col gap-3">' + list.map(c =>
+      '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex items-center gap-3">' + avatarHtml(c.name, 36) +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) + '</div>' +
+        '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') + '</div></div></div>' +
+        '<div class="flex items-center gap-2 shrink-0">' +
+          '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + ({PENDING:'background:var(--warn-soft); color:var(--warn);', IN_REVIEW:'background:var(--info-soft); color:var(--info);', VERIFIED:'background:var(--ok-soft); color:var(--ok);', REJECTED:'background:var(--bad-soft); color:var(--bad);'}[c.verificationStatus]||'') + '">' + c.verificationStatus + '</span>' +
+          (c.verificationStatus !== 'VERIFIED' ? actionBtn('Verify', "setCompanyVerification('" + c.id + "','VERIFIED')", state.adminBusyId===c.id) : '') +
+          (c.verificationStatus !== 'REJECTED' ? '<button onclick="setCompanyVerification(\'' + c.id + '\',\'REJECTED\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reject</button>' : '') +
+          '<button onclick="openResetModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reset password</button>' +
+        '</div>' +
+      '</div>').join('') + '</div>');
+
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + body + '</div></div>' + renderResetModal() + toastHtml();
+}
+
+function renderResetModal(){
+  if (!state.showResetModal) return '';
+  const c = (state.adminCompanies || []).find(x => x.id === state.showResetModal);
+  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Reset password</h3>' +
+      '<button onclick="closeResetModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      (!state.resetResult ?
+        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">This generates a new temporary password for <b style="color:var(--tx);">' + esc(c ? c.name : '') + '</b>. Their old password will stop working immediately.</p>' +
+        '<button onclick="confirmResetPassword()" ' + (state.resetBusy?'disabled':'') + ' class="mt-5 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.resetBusy?'0.6':'1') + ';">' + (state.resetBusy ? 'Generating…' : 'Generate new password') + '</button>'
+        :
+        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Share this temporary password with the company directly (phone, WhatsApp). It will not be shown again.</p>' +
+        '<div class="mono mt-3 rounded-lg border p-3 text-center text-[16px] font-bold" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(state.resetResult) + '</div>'
+      ) +
+    '</div></div>';
+}
+
+function emptyState(title, body){
+  return '<div class="rounded-xl border border-dashed p-10 text-center" style="border-color:var(--bd2);">' +
+    '<div class="font-semibold" style="color:var(--tx);">' + title + '</div>' +
+    '<div class="mt-1 text-[13px]" style="color:var(--tx4);">' + body + '</div></div>';
+}
+
+// ---------- Modals (post RFQ, compare, submit quote, catalog add, verify doc) ----------
+
+function renderModals(){
+  let html = '';
+  if (state.showPostRfq) {
+    const r = state.newRfq;
+    html += modalWrap('Post an RFQ', 'closePostRfq()',
+      field('title','What do you need', r.title, 'e.g. 200 office chairs') +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Category</span>' +
+      '<select data-select="category" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
+        CATEGORIES.map(c => '<option value="' + esc(c) + '"' + (r.category===c?' selected':'') + '>' + c + '</option>').join('') +
+      '</select></label>' +
+      field('quantity','Quantity', r.quantity, 'e.g. 200') +
+      field('unit','Unit', r.unit, 'pcs') +
+      field('budget','Budget (BHD) — suppliers pay 5% of this to bid', r.budget, 'e.g. 500') +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Needed by</span>' +
+      '<input data-field="deadline" type="date" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
+      'submitNewRfq()', state.postBusy ? 'Posting…' : 'Post RFQ to suppliers', state.postBusy);
+  }
+  if (state.compareRfqId) {
+    const q = state.compareQuotes;
+    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quotes</h3>' +
+        '<button onclick="closeCompare()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+        '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
+        (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">Loading…</div>' :
+          q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">No quotes yet.</div>' :
+          q.map(x => '<div class="flex items-center justify-between gap-3 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);">' +
+            '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
+            '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') + '</div>' +
+            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(x.price) + ' &middot; ' + x.deliveryTimeDays + 'd</div></div></div>' +
+            (x.status === 'AWARDED'
+              ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--ok-soft); color:var(--ok);">Awarded</span>'
+              : x.status === 'REJECTED'
+                ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Rejected</span>'
+                : '<button onclick="acceptQuote(\'' + x.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Award</button>')
+          + '</div>').join('')
+        ) +
+        '</div></div></div>';
+  }
+  if (state.submitQuoteRfqId) {
+    const f = state.quoteForm;
+    const rfqForQuote = (state.rfqs || []).find(r => r.id === state.submitQuoteRfqId);
+    const hasBudget = rfqForQuote && rfqForQuote.budget;
+    const fee = hasBudget ? Number(rfqForQuote.budget) * 0.05 : null;
+    html += modalWrap('Submit quote', 'closeSubmitQuote()',
+      (hasBudget
+        ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">Submitting a quote costs <b class="mono">' + fee.toFixed(3) + ' BHD</b> (5% of this RFQ\'s ' + fmt(rfqForQuote.budget) + ' budget), deducted from your wallet.</div>'
+        : '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--bad-soft); color:var(--bad);">This RFQ has no budget set by the buyer, so a bid fee can\'t be calculated — you won\'t be able to submit a quote on it.</div>') +
+      field('price','Unit price (BHD)', f.price, '5.800') +
+      field('days','Delivery (days)', f.days, '2'),
+      'submitQuote()', state.quoteBusy ? 'Submitting…' : 'Submit quote', state.quoteBusy || !hasBudget);
+  }
+  if (state.showCatalogAdd) {
+    const p = state.newProduct;
+    html += modalWrap('Add catalog item', 'closeCatalogAdd()',
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Product photo (optional)</span>' +
+      (p.imageUrl
+        ? '<div class="flex items-center gap-3"><img src="' + p.imageUrl + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-16 w-16 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" /><div class="flex-1 min-w-0"><div class="text-[12px] font-semibold truncate" style="color:var(--tx);">' + esc(state.catalogPhotoName) + '</div><button onclick="removeCatalogPhoto()" class="text-[11px] font-semibold" style="color:var(--tx4);">Remove photo</button></div></div>'
+        : '<input data-catalog-photo type="file" accept="image/*" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />') +
+      (state.catalogPhotoBusy ? '<span class="text-[12px]" style="color:var(--tx4);">Reading photo…</span>' : '') +
+      '</label>' +
+      field('name','Item name', p.name, 'e.g. A4 Paper Box') +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Unit</span>' +
+      '<select data-select="unit" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
+        ['kg','pcs','box','carton','litre','ton'].map(u => '<option value="' + u + '"' + (p.unit===u?' selected':'') + '>' + u + '</option>').join('') +
+      '</select></label>' +
+      field('price','Price per unit (BHD)', p.price, '3.500'),
+      'addProduct()', 'Add item', false);
+  }
+  if (state.showVerifyModal) {
+    const v = state.verifyForm;
+    html += modalWrap('Submit verification document', 'closeVerifyModal()',
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Document type</span>' +
+      '<select data-select="docType" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
+        '<option value="TRADE_LICENSE"' + (v.docType==='TRADE_LICENSE'?' selected':'') + '>Trade license</option>' +
+        '<option value="CR_CERTIFICATE"' + (v.docType==='CR_CERTIFICATE'?' selected':'') + '>Commercial registration</option>' +
+        '<option value="OTHER"' + (v.docType==='OTHER'?' selected':'') + '>Other</option>' +
+      '</select></label>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">File (PDF or image, max 2MB)</span>' +
+      '<input data-verify-file type="file" accept="application/pdf,image/*" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
+      (state.verifyFileBusy ? '<span class="text-[12px]" style="color:var(--tx4);">Reading file…</span>' : '') +
+      (v.fileUrl && state.verifyFileName ? '<span class="text-[12px] font-semibold" style="color:var(--acc);">✓ ' + esc(state.verifyFileName) + ' ready to submit</span>' : '') +
+      '</label>',
+      'submitVerifyDoc()', state.verifyBusy ? 'Submitting…' : 'Submit for review', state.verifyBusy || state.verifyFileBusy || !v.fileUrl);
+  }
+  return html;
+}
+
+function modalWrap(title, onClose, fieldsHtml, onSubmit, submitLabel, busy){
+  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + title + '</h3>' +
+      '<button onclick="' + onClose + '" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<div class="mt-4 flex flex-col gap-4">' + fieldsHtml + '</div>' +
+      '<button onclick="' + onSubmit + '" ' + (busy?'disabled':'') + ' class="mt-6 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + submitLabel + '</button>' +
+    '</div></div>';
+}
+
+function bindEvents(){
+  document.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('input', (e) => {
+      const f = el.getAttribute('data-field');
+      if (state.view === 'auth') { if (f === 'consent') state.authForm.consent = e.target.checked; else state.authForm[f] = e.target.value; }
+      else if (state.showPostRfq && ['title','quantity','unit','deadline','budget'].includes(f)) state.newRfq[f] = e.target.value;
+      else if (state.submitQuoteRfqId && ['price','days'].includes(f)) state.quoteForm[f] = e.target.value;
+      else if (state.showCatalogAdd && ['name','price'].includes(f)) state.newProduct[f] = e.target.value;
+      else if (state.showVerifyModal && f === 'fileUrl') state.verifyForm.fileUrl = e.target.value;
+    });
+  });
+  document.querySelectorAll('[data-profile]').forEach(el => {
+    el.addEventListener('input', (e) => { state.profileForm[el.getAttribute('data-profile')] = e.target.value; });
+  });
+  document.querySelectorAll('[data-select]').forEach(el => {
+    el.addEventListener('change', (e) => {
+      const f = el.getAttribute('data-select');
+      if (state.showVerifyModal && f === 'docType') state.verifyForm.docType = e.target.value;
+      else if (state.showPostRfq && f === 'category') state.newRfq.category = e.target.value;
+      else if (state.showCatalogAdd && f === 'unit') state.newProduct.unit = e.target.value;
+    });
+  });
+  const catalogPhotoInput = document.querySelector('[data-catalog-photo]');
+  if (catalogPhotoInput) catalogPhotoInput.addEventListener('change', onCatalogPhotoChange);
+  document.querySelectorAll('[data-chat]').forEach(el => {
+    el.addEventListener('input', (e) => { state.chatDraft = e.target.value; });
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !state.chatBusy) sendChatMessage(); });
+  });
+  document.querySelectorAll('[data-changepw]').forEach(el => {
+    el.addEventListener('input', (e) => { state.changePwForm[el.getAttribute('data-changepw')] = e.target.value; });
+  });
+  const fileInput = document.querySelector('[data-verify-file]');
+  if (fileInput) fileInput.addEventListener('change', onVerifyFileChange);
+}
+
+async function onVerifyFileChange(e){
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('File must be under 2MB.'); e.target.value = ''; return; }
+  setState({ verifyFileBusy: true });
+  const reader = new FileReader();
+  reader.onload = () => {
+    state.verifyForm.fileUrl = reader.result;
+    setState({ verifyFileName: file.name, verifyFileBusy: false });
+  };
+  reader.onerror = () => { setState({ verifyFileBusy: false }); showToast('Could not read file.'); };
+  reader.readAsDataURL(file);
+}
+
+// ---------- Init ----------
+initTheme();
+initLang();
+loadSession();
+render();
+if (state.token) { if (state.view === 'admin') refreshAdminCompanies(); else refreshAll(); }
+
+// Tick countdown timers every second WITHOUT re-rendering the whole page (avoids flicker):
+// only the text/color of elements carrying a deadline is updated in place.
+function tickCountdowns(){
+  document.querySelectorAll('[data-deadline]').forEach(el => {
+    const tl = timeLeftLabel(el.getAttribute('data-deadline'));
+    el.textContent = tl.label;
+    el.style.color = tl.urgent ? 'var(--acc)' : (el.getAttribute('data-basecolor') || '');
+  });
+}
+setInterval(tickCountdowns, 1000);
+
+// Keep RFQs / orders / notifications / chat fresh without requiring a relogin
+setInterval(() => {
+  if (!state.token) return;
+  if (state.view === 'buyer' || state.view === 'supplier') {
+    refreshRfqs();
+    refreshOrders();
+    refreshLpos();
+    refreshNotifications();
+    if (state.section === 'orderDetail' && state.selectedOrderId) refreshChat(state.selectedOrderId);
+  } else if (state.view === 'admin') {
+    refreshAdminCompanies();
+  }
+}, 8000);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !state.token) return;
+  if (state.view === 'buyer' || state.view === 'supplier') refreshAll();
+  else if (state.view === 'admin') refreshAdminCompanies();
+});
+</script>
+</body>
+</html>
