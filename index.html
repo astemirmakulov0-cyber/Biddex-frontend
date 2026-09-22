@@ -305,10 +305,16 @@ async function submitAuth(){
   if (!f.email || !f.password || (state.authMode === 'register' && (!f.companyName || !f.registrationNumber))) {
     setState({ authError: 'Please fill in all required fields.' }); return;
   }
+  // Capture the mode now — if the user switches the Login/Register tab while
+  // this request is in flight, state.authMode could change before the
+  // response arrives. Reading state.authMode again after the await would then
+  // misinterpret a register response as a login response (and vice versa),
+  // crashing on data.user.role since a register response has no `user` field.
+  const mode = state.authMode;
   setState({ authBusy: true, authError: '' });
   try {
     let data;
-    if (state.authMode === 'register') {
+    if (mode === 'register') {
       data = await api('/api/auth/register', { method:'POST', body: JSON.stringify({
         email: f.email, password: f.password, role: state.authRole,
         companyName: f.companyName, country: f.country || undefined,
@@ -317,6 +323,13 @@ async function submitAuth(){
     } else {
       data = await api('/api/auth/login', { method:'POST', body: JSON.stringify({ email: f.email, password: f.password }) });
     }
+    if (mode === 'register') {
+  setState({ authBusy: false, authError: '' });
+  alert(data.message || 'Registration successful. Please check your email to verify your account.');
+  state.authMode = 'login';
+  render();
+  return;
+}
     state.token = data.token; state.user = data.user; state.company = data.company;
     saveSession();
     const dest = data.user.role === 'ADMIN' ? 'admin' : (data.company && data.company.type === 'SUPPLIER' ? 'supplier' : 'buyer');
