@@ -211,6 +211,8 @@ let state = {
 
   showResetModal: null, resetBusy: false, resetResult: null,
 
+  showDeleteModal: null, deleteCompanyName: '', deleteBusy: false,
+
   showWalletModal: false, walletTopupBusy: false,
 
   lightboxImage: null,
@@ -489,6 +491,19 @@ async function confirmResetPassword(){
     const data = await api('/api/admin/companies/' + state.showResetModal + '/reset-password', { method:'POST' });
     setState({ resetBusy:false, resetResult: data.tempPassword });
   } catch(e) { setState({ resetBusy:false }); showToast(e.message); }
+}
+
+function openDeleteModal(companyId, companyName){ setState({ showDeleteModal: companyId, deleteCompanyName: companyName }); }
+function closeDeleteModal(){ setState({ showDeleteModal: null, deleteCompanyName: '' }); }
+
+async function confirmDeleteCompany(){
+  setState({ deleteBusy:true });
+  try {
+    await api('/api/admin/companies/' + state.showDeleteModal, { method:'DELETE' });
+    setState({ deleteBusy:false, showDeleteModal:null, deleteCompanyName:'' });
+    showToast('Company deleted.');
+    refreshAdminCompanies();
+  } catch(e) { setState({ deleteBusy:false }); showToast(e.message); }
 }
 
 async function refreshLpos(){
@@ -1392,10 +1407,11 @@ function renderAdmin(){
           (c.verificationStatus !== 'VERIFIED' ? actionBtn('Verify', "setCompanyVerification('" + c.id + "','VERIFIED')", state.adminBusyId===c.id) : '') +
           (c.verificationStatus !== 'REJECTED' ? '<button onclick="setCompanyVerification(\'' + c.id + '\',\'REJECTED\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reject</button>' : '') +
           '<button onclick="openResetModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reset password</button>' +
+          '<button onclick="openDeleteModal(\'' + c.id + '\',' + jsAttr(c.name) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bad); color:var(--bad);">Delete</button>' +
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + body + '</div></div>' + renderResetModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + body + '</div></div>' + renderResetModal() + renderDeleteModal() + toastHtml();
 }
 
 function renderResetModal(){
@@ -1412,6 +1428,20 @@ function renderResetModal(){
         '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Share this temporary password with the company directly (phone, WhatsApp). It will not be shown again.</p>' +
         '<div class="mono mt-3 rounded-lg border p-3 text-center text-[16px] font-bold" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(state.resetResult) + '</div>'
       ) +
+    '</div></div>';
+}
+
+function renderDeleteModal(){
+  if (!state.showDeleteModal) return '';
+  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Delete company</h3>' +
+      '<button onclick="closeDeleteModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Are you sure you want to permanently delete <b style="color:var(--tx);">' + esc(state.deleteCompanyName) + '</b>? This will remove the company, its user, RFQs, quotes, orders, and all related data. This cannot be undone.</p>' +
+      '<div class="mt-5 flex gap-2">' +
+        '<button onclick="closeDeleteModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
+        '<button onclick="confirmDeleteCompany()" ' + (state.deleteBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deleteBusy?'0.6':'1') + ';">' + (state.deleteBusy ? 'Deleting…' : 'Yes, delete') + '</button>' +
+      '</div>' +
     '</div></div>';
 }
 
