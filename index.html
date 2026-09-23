@@ -1693,7 +1693,7 @@ setInterval(() => {
   } else if (state.view === 'admin') {
     refreshAdminCompanies();
   }
-}, 8000);
+}, 30000);
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !state.token) return;
