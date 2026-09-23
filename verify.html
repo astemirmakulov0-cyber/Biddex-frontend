@@ -10,40 +10,77 @@
   .success { color: #4ade80; }
   .error { color: #f87171; }
   a { color: #ec4899; }
+  .lang { position: absolute; top: 16px; inset-inline-end: 16px; background: none; border: 1px solid #ffffff55; border-radius: 6px; color: white; padding: 6px 10px; font-size: 13px; cursor: pointer; }
 </style>
 </head>
 <body>
+<button id="langBtn" class="lang" type="button"></button>
 <div class="box">
-  <h1 id="status">Verifying your email...</h1>
+  <h1 id="status"></h1>
   <p id="message"></p>
-  <p><a href="index.html">Go to Biddex</a></p>
+  <p><a id="homeLink" href="index.html"></a></p>
 </div>
 
 <script>
+const T = {
+  en: {
+    title: 'Verify Email - Biddex', verifying: 'Verifying your email...', missingToken: 'Missing token',
+    verified: 'Email verified!', canLogIn: 'You can now log in to Biddex.',
+    failed: 'Verification failed', wentWrong: 'Something went wrong', home: 'Go to Biddex'
+  },
+  ar: {
+    title: 'تأكيد البريد الإلكتروني - بيدكس', verifying: 'جارٍ تأكيد بريدك الإلكتروني...', missingToken: 'الرمز مفقود',
+    verified: 'تم تأكيد البريد الإلكتروني!', canLogIn: 'يمكنك الآن تسجيل الدخول إلى بيدكس.',
+    failed: 'فشل التأكيد', wentWrong: 'حدث خطأ ما', home: 'الانتقال إلى بيدكس'
+  }
+};
+
+// Same key as index.html; fall back to the browser language for people opening the email link elsewhere.
+let lang;
+try { lang = localStorage.getItem('biddex_lang'); } catch(e) {}
+if (lang !== 'ar' && lang !== 'en') lang = (navigator.language || '').toLowerCase().startsWith('ar') ? 'ar' : 'en';
+
+// status/message hold translation keys; `raw` is a backend error shown as-is.
+const view = { status: 'verifying', cls: '', message: null, raw: '' };
+
+function render() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.title = t.title;
+  document.getElementById('langBtn').textContent = lang === 'ar' ? 'EN' : 'العربية';
+  document.getElementById('homeLink').textContent = t.home;
+  document.getElementById('status').textContent = t[view.status];
+  document.getElementById('status').className = view.cls;
+  document.getElementById('message').textContent = view.message ? t[view.message] : view.raw;
+}
+function show(patch) { Object.assign(view, patch); render(); }
+
+document.getElementById('langBtn').addEventListener('click', () => {
+  lang = lang === 'ar' ? 'en' : 'ar';
+  try { localStorage.setItem('biddex_lang', lang); } catch(e) {}
+  render();
+});
+
 const params = new URLSearchParams(window.location.search);
 const token = params.get('token');
 const API_URL = 'https://b2b-procurement-backend-production.up.railway.app';
 
+render();
 if (!token) {
-  document.getElementById('status').textContent = 'Missing token';
-  document.getElementById('status').className = 'error';
+  show({ status: 'missingToken', cls: 'error' });
 } else {
   fetch(API_URL + '/api/auth/verify?token=' + token)
     .then(res => res.json())
     .then(data => {
       if (data.ok) {
-        document.getElementById('status').textContent = 'Email verified!';
-        document.getElementById('status').className = 'success';
-        document.getElementById('message').textContent = 'You can now log in to Biddex.';
+        show({ status: 'verified', cls: 'success', message: 'canLogIn' });
       } else {
-        document.getElementById('status').textContent = 'Verification failed';
-        document.getElementById('status').className = 'error';
-        document.getElementById('message').textContent = data.error || '';
+        show({ status: 'failed', cls: 'error', message: null, raw: data.error || '' });
       }
     })
     .catch(() => {
-      document.getElementById('status').textContent = 'Something went wrong';
-      document.getElementById('status').className = 'error';
+      show({ status: 'wentWrong', cls: 'error' });
     });
 }
 </script>
