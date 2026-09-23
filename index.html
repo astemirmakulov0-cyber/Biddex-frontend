@@ -274,7 +274,9 @@ function saveSession(){
 function clearSession(){ try { localStorage.removeItem('biddex_session'); } catch(e) {} }
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function jsAttr(s){ return "'" + String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'&lt;') + "'"; }
+// JS string literal for use inside a double-quoted HTML attribute (onclick="fn(' + jsAttr(x) + ')"):
+// escape for JS first, then HTML-escape so a '"' in the value can't close the attribute.
+function jsAttr(s){ return esc("'" + String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'\\r') + "'"); }
 
 function initials(name){
   const s = String(name||'??').trim();
@@ -695,7 +697,7 @@ function renderLightbox(){
   if (!state.lightboxImage) return '';
   return '<div onclick="closeLightbox()" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/85 p-5 bx-rise" style="cursor:zoom-out;">' +
     '<button onclick="closeLightbox()" class="absolute right-5 top-5 rounded-lg border px-3 py-2 text-[13px] font-bold text-white" style="border-color:rgba(255,255,255,.3);">Close &times;</button>' +
-    '<img src="' + state.lightboxImage + '" onclick="event.stopPropagation()" class="max-h-[88vh] max-w-[92vw] rounded-xl object-contain shadow-2xl" style="cursor:default;" />' +
+    '<img src="' + esc(state.lightboxImage) + '" onclick="event.stopPropagation()" class="max-h-[88vh] max-w-[92vw] rounded-xl object-contain shadow-2xl" style="cursor:default;" />' +
   '</div>';
 }
 
@@ -1156,7 +1158,7 @@ function renderNetwork(){
   (items.length === 0 ? emptyState('No catalog items yet', 'Suppliers will list products here as they join.') :
     '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">' + items.map(p =>
       '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
-        (p.imageUrl ? '<img src="' + p.imageUrl + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : '') +
+        (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : '') +
         '<div class="flex items-center gap-2 mb-2">' + avatarHtml(p.supplierCompany ? p.supplierCompany.name : '?', 28) +
         '<div class="min-w-0"><div class="text-[11px] font-semibold truncate" style="color:var(--tx3);">' + esc(p.supplierCompany ? p.supplierCompany.name : '') + '</div></div></div>' +
         '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +
@@ -1221,7 +1223,7 @@ function renderSupplierCatalogPage(){
     '<div class="overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>Item</th><th>Unit</th><th>List price</th><th></th></tr></thead><tbody>' +
     myCatalog.map(p => '<tr><td><div class="flex items-center gap-2.5">' +
-      (p.imageUrl ? '<img src="' + p.imageUrl + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : avatarHtml(p.name, 36)) +
+      (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : avatarHtml(p.name, 36)) +
       '<span class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</span></div></td>' +
       '<td style="color:var(--tx3);">' + esc(p.unit || 'pcs') + '</td>' +
       '<td class="mono" style="color:var(--tx2);">' + fmt(p.price) + '</td>' +
@@ -1566,7 +1568,7 @@ function renderModals(){
     html += modalWrap('Add catalog item', 'closeCatalogAdd()',
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Product photo (optional)</span>' +
       (p.imageUrl
-        ? '<div class="flex items-center gap-3"><img src="' + p.imageUrl + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-16 w-16 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" /><div class="flex-1 min-w-0"><div class="text-[12px] font-semibold truncate" style="color:var(--tx);">' + esc(state.catalogPhotoName) + '</div><button onclick="removeCatalogPhoto()" class="text-[11px] font-semibold" style="color:var(--tx4);">Remove photo</button></div></div>'
+        ? '<div class="flex items-center gap-3"><img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-16 w-16 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" /><div class="flex-1 min-w-0"><div class="text-[12px] font-semibold truncate" style="color:var(--tx);">' + esc(state.catalogPhotoName) + '</div><button onclick="removeCatalogPhoto()" class="text-[11px] font-semibold" style="color:var(--tx4);">Remove photo</button></div></div>'
         : '<input data-catalog-photo type="file" accept="image/*" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />') +
       (state.catalogPhotoBusy ? '<span class="text-[12px]" style="color:var(--tx4);">Reading photo…</span>' : '') +
       '</label>' +
