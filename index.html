@@ -590,6 +590,17 @@ async function acceptLpo(lpoId){
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
 }
 
+async function declineLpo(lpoId){
+  if (!confirm('Decline this purchase order? The buyer will be notified and can award the RFQ to another supplier. Your bid fee is not refunded.')) return;
+  setState({ ordersBusyId: lpoId });
+  try {
+    await api('/api/lpos/' + lpoId + '/decline', { method:'PATCH', body: JSON.stringify({}) });
+    showToast('Purchase order declined.');
+    setState({ ordersBusyId: null });
+    refreshLpos();
+  } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); refreshLpos(); }
+}
+
 async function updateDelivery(orderId, status){
   setState({ ordersBusyId: orderId });
   try {
@@ -1227,7 +1238,10 @@ function renderAwaitingLpos(){
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
         '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : 'Purchase order') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
-        actionBtn('Accept order', "acceptLpo('" + l.id + "')", state.ordersBusyId === l.id) +
+        '<div class="flex items-center gap-2 shrink-0">' +
+          '<button onclick="' + (state.ordersBusyId === l.id ? '' : "declineLpo('" + l.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Decline</button>' +
+          actionBtn('Accept order', "acceptLpo('" + l.id + "')", state.ordersBusyId === l.id) +
+        '</div>' +
       '</div>').join('') + '</div>';
 }
 
@@ -1709,6 +1723,8 @@ function renderModals(){
               ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--ok-soft); color:var(--ok);">Awarded</span>'
               : x.status === 'REJECTED'
                 ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Rejected</span>'
+              : x.status === 'WITHDRAWN'
+                ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx4);">Withdrawn</span>'
                 : '<button onclick="acceptQuote(\'' + x.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Award</button>')
           + '</div>').join('')
         ) +
