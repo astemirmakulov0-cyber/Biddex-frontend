@@ -197,7 +197,8 @@ let state = {
   rfqs: [], catalog: [], myCatalog: [],
   loading: false,
 
-  showPostRfq: false,
+  showPostRfq: false, editRfqId: null, // editRfqId set -> the post modal edits that RFQ instead of creating one
+  cancelRfqId: null, cancelBusy: false,
   newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' },
   postBusy: false,
 
@@ -626,29 +627,68 @@ async function deleteProduct(id){
   catch(e) { showToast(e.message); }
 }
 
-function openPostRfq(prefillTitle){ setState({ showPostRfq:true, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' } }); }
-function closePostRfq(){ setState({ showPostRfq:false }); }
+// A date picked as the RFQ deadline means "open until the end of that day in Bahrain" (UTC+3, no DST);
+// a bare "YYYY-MM-DD" would otherwise be parsed as midnight UTC and close the RFQ that morning.
+function bahrainEndOfDay(dateStr){ return dateStr ? dateStr + 'T23:59:59+03:00' : dateStr; }
+function bahrainToday(){ return new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10); }
+
+function bahrainDateOf(iso){ return iso ? new Date(new Date(iso).getTime() + 3 * 3600e3).toISOString().slice(0, 10) : ''; }
+
+// Buyer may edit an RFQ only while it is DRAFT/PUBLISHED and nobody has quoted (the server enforces this too)
+function canEditRfq(r){ return (r.status === 'DRAFT' || r.status === 'PUBLISHED') && !(r._count && r._count.quotes > 0); }
+function canCancelRfq(r){ return ['DRAFT','PUBLISHED','QUOTING_CLOSED'].includes(r.status); }
+
+function openPostRfq(prefillTitle){ setState({ showPostRfq:true, editRfqId:null, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' } }); }
+function openEditRfq(rfqId){
+  const r = (state.rfqs || []).find(x => x.id === rfqId);
+  if (!r) return;
+  setState({ showPostRfq:true, editRfqId: rfqId, newRfq:{
+    title: r.title || '', quantity: r.quantity != null ? String(r.quantity) : '', unit: r.unit || 'pcs',
+    deadline: bahrainDateOf(r.deadline), category: r.category || CATEGORIES[0], budget: r.budget != null ? String(Number(r.budget)) : ''
+  } });
+}
+function closePostRfq(){ setState({ showPostRfq:false, editRfqId:null }); }
 function onNewRfqField(field, e){ state.newRfq[field] = e.target.value; }
 
 async function submitNewRfq(){
   const r = state.newRfq;
   if (!r.title || !r.quantity || !r.deadline) return;
+  const editId = state.editRfqId;
+  const fields = {
+    title: r.title,
+    description: r.title + ' — ' + r.quantity + ' ' + r.unit,
+    category: r.category || 'general',
+    quantity: Number(r.quantity) || undefined,
+    unit: r.unit,
+    budget: r.budget ? Number(r.budget) : undefined,
+    deadline: bahrainEndOfDay(r.deadline)
+  };
   setState({ postBusy:true });
   try {
-    await api('/api/rfqs', { method:'POST', body: JSON.stringify({
-      title: r.title,
-      description: r.title + ' — ' + r.quantity + ' ' + r.unit,
-      category: r.category || 'general',
-      quantity: Number(r.quantity) || undefined,
-      unit: r.unit,
-      budget: r.budget ? Number(r.budget) : undefined,
-      deadline: r.deadline,
-      publish: true
-    })});
-    setState({ showPostRfq:false, postBusy:false });
-    showToast('RFQ posted to suppliers.');
+    if (editId) await api('/api/rfqs/' + editId, { method:'PATCH', body: JSON.stringify(fields) });
+    else await api('/api/rfqs', { method:'POST', body: JSON.stringify({ ...fields, publish: true }) });
+    setState({ showPostRfq:false, editRfqId:null, postBusy:false });
+    showToast(editId ? 'RFQ updated.' : 'RFQ posted to suppliers.');
     refreshRfqs();
-  } catch(e) { setState({ postBusy:false }); showToast(e.message); }
+  } catch(e) {
+    setState({ postBusy:false });
+    if (editId && e.status === 409) { setState({ showPostRfq:false, editRfqId:null }); showToast('A supplier has already quoted on this RFQ, so it can no longer be edited.'); refreshRfqs(); }
+    else showToast(e.message);
+  }
+}
+
+function openCancelRfq(rfqId){ setState({ cancelRfqId: rfqId }); }
+function closeCancelRfq(){ setState({ cancelRfqId: null }); }
+async function confirmCancelRfq(){
+  const rfqId = state.cancelRfqId;
+  setState({ cancelBusy:true });
+  try {
+    const data = await api('/api/rfqs/' + rfqId + '/cancel', { method:'POST' });
+    const n = (data.refunds || []).length;
+    setState({ cancelBusy:false, cancelRfqId:null });
+    showToast('RFQ cancelled.' + (n ? ' Bid fees refunded to ' + n + ' supplier(s).' : ''));
+    refreshRfqs();
+  } catch(e) { setState({ cancelBusy:false }); showToast(e.message); refreshRfqs(); }
 }
 
 async function openCompare(rfqId){
@@ -1054,6 +1094,14 @@ function navBar(role){
     '</div></div>';
 }
 
+// Orders still in flight: LPOs awaiting the supplier's acceptance (no Order row exists yet)
+// plus orders that aren't finished. Shared by both hubs and the LPO page so the numbers agree.
+function activeOrderCount(){
+  const pendingLpos = (state.lpos || []).filter(l => l.status === 'ISSUED').length;
+  const openOrders = (state.orders || []).filter(o => o.status !== 'COMPLETED' && o.status !== 'CANCELLED').length;
+  return pendingLpos + openOrders;
+}
+
 function statsBar(pairs){
   return '<div class="mb-6 grid grid-cols-2 sm:grid-cols-' + pairs.length + ' gap-3">' + pairs.map(([label,val,sub]) =>
     '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
@@ -1071,7 +1119,7 @@ function renderBuyerHub(){
   const active = rfqs.filter(r => r.status === 'PUBLISHED').length;
   const totalQuotes = rfqs.reduce((a,r) => a + (r._count ? r._count.quotes : 0), 0);
   const awarded = rfqs.filter(r => r.status === 'AWARDED').length;
-  const openOrders = (state.orders||[]).filter(o => o.status !== 'COMPLETED').length;
+  const openOrders = activeOrderCount();
 
   return '<div class="eyebrow mb-2">ZONE A · COMMAND HEADER</div>' +
   '<div class="flex flex-wrap items-start justify-between gap-4 mb-6">' +
@@ -1097,7 +1145,11 @@ function rfqTable(rfqs){
         '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
         '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' +
         '<td>' + statusPill(r.status) + '</td>' +
-        '<td class="text-right"><button onclick="openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Compare bids</button></td>' +
+        '<td class="text-right"><div class="flex items-center justify-end gap-2">' +
+          (canEditRfq(r) ? '<button onclick="openEditRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Edit</button>' : '') +
+          (canCancelRfq(r) ? '<button onclick="openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">Cancel</button>' : '') +
+          '<button onclick="openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Compare bids</button>' +
+        '</div></td>' +
       '</tr>';
     }).join('') +
   '</tbody></table></div>';
@@ -1108,7 +1160,8 @@ function statusPill(status){
     PUBLISHED: ['background:var(--info-soft); color:var(--info);','Live'],
     DRAFT: ['background:var(--sunken); color:var(--tx3);','Draft'],
     AWARDED: ['background:var(--ok-soft); color:var(--ok);','Awarded'],
-    CLOSED: ['background:var(--sunken); color:var(--tx4);','Closed']
+    QUOTING_CLOSED: ['background:var(--sunken); color:var(--tx4);','Closed'],
+    CANCELLED: ['background:var(--bad-soft); color:var(--bad);','Cancelled']
   };
   const [style,label] = map[status] || ['background:var(--sunken); color:var(--tx3);', status];
   return '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + label + '</span>';
@@ -1128,7 +1181,7 @@ function renderBuyerRfqsPage(){
 function renderLpoManagement(isBuyer){
   const pending = (state.lpos || []).filter(l => l.status === 'ISSUED' && !isBuyer);
   const orders = state.orders || [];
-  const liveCount = orders.filter(o => o.status !== 'COMPLETED').length + pending.length;
+  const liveCount = activeOrderCount();
   return '<div class="eyebrow mb-1.5">CLOSED-LOOP TRACKER</div>' +
   '<h1 class="text-[24px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">LPO management</h1>' +
   '<p class="mb-5 text-[13.5px] max-w-[620px]" style="color:var(--tx3);">One pipeline shared by both sides of the deal — from digital LPO to payment confirmation, with a full message trail per order.</p>' +
@@ -1202,7 +1255,7 @@ function renderNetwork(){
 function renderSupplierHub(){
   const rfqs = state.rfqs || [];
   const myCatalog = state.myCatalog || [];
-  const activeOrders = (state.orders || []).filter(o => o.status !== 'COMPLETED').length;
+  const activeOrders = activeOrderCount();
   return '<div class="eyebrow mb-2">ZONE A · COMMAND HEADER</div>' +
   '<h1 class="text-[26px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">' + t('dashTitleSupplier') + '</h1>' +
   '<p class="mb-6 text-[13.5px] max-w-[560px]" style="color:var(--tx3);">' + t('dashSubSupplier') + '</p>' +
@@ -1230,6 +1283,8 @@ function opportunityCard(r){
       '<div><div class="eyebrow" style="color:var(--tx4);">CLOSES IN</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
       (quoted
         ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">Quoted ✓</span>'
+        : tl.past
+        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">Closed</span>'
         : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit quote</button>') +
     '</div>' +
   '</div>';
@@ -1282,7 +1337,7 @@ function renderWalletModal(){
         '<div class="flex flex-col gap-1.5">' + txs.map(tx => {
           const amt = Number(tx.amount);
           return '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[12px]" style="border-color:var(--bd);">' +
-            '<div class="min-w-0"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(tx.type === 'TOPUP' ? (tx.reference || 'Top-up') : tx.type === 'BID_DEBIT' ? 'Bid fee' : tx.type) + '</div>' +
+            '<div class="min-w-0"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(tx.type === 'BID_DEBIT' ? 'Bid fee' : (tx.reference || (tx.type === 'TOPUP' ? 'Top-up' : tx.type))) + '</div>' +
             '<div class="mono text-[10.5px]" style="color:var(--tx4);">' + new Date(tx.createdAt).toLocaleString() + '</div></div>' +
             '<span class="mono font-bold shrink-0" style="color:' + (amt >= 0 ? 'var(--ok)' : 'var(--tx2)') + ';">' + (amt >= 0 ? '+' : '') + amt.toFixed(2) + '</span></div>';
         }).join('') + '</div>') +
@@ -1596,7 +1651,8 @@ function renderModals(){
   let html = '';
   if (state.showPostRfq) {
     const r = state.newRfq;
-    html += modalWrap('Post an RFQ', 'closePostRfq()',
+    const editing = !!state.editRfqId;
+    html += modalWrap(editing ? 'Edit RFQ' : 'Post an RFQ', 'closePostRfq()',
       field('title','What do you need', r.title, 'e.g. 200 office chairs') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Category</span>' +
       '<select data-select="category" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
@@ -1606,8 +1662,23 @@ function renderModals(){
       field('unit','Unit', r.unit, 'pcs') +
       field('budget','Budget (BHD) — suppliers pay 5% of this to bid', r.budget, 'e.g. 500') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Needed by</span>' +
-      '<input data-field="deadline" type="date" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
-      'submitNewRfq()', state.postBusy ? 'Posting…' : 'Post RFQ to suppliers', state.postBusy);
+      '<input data-field="deadline" type="date" min="' + bahrainToday() + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
+      'submitNewRfq()', state.postBusy ? (editing ? 'Saving…' : 'Posting…') : (editing ? 'Save changes' : 'Post RFQ to suppliers'), state.postBusy);
+  }
+  if (state.cancelRfqId) {
+    const r = (state.rfqs || []).find(x => x.id === state.cancelRfqId) || {};
+    const bids = r._count ? r._count.quotes : 0;
+    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Cancel RFQ</h3>' +
+        '<button onclick="closeCancelRfq()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Cancel <b style="color:var(--tx);">' + esc(r.title || '') + '</b>? Suppliers will no longer be able to quote, and it can\'t be reopened or awarded.</p>' +
+        (bids > 0 ? '<p class="mt-2 text-[13px]" style="color:var(--tx3);">' + bids + ' supplier(s) have quoted — their bid fees will be refunded and they will be notified.</p>' : '') +
+        '<div class="mt-5 flex gap-2">' +
+          '<button onclick="closeCancelRfq()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Keep RFQ</button>' +
+          '<button onclick="' + (state.cancelBusy ? '' : 'confirmCancelRfq()') + '" ' + (state.cancelBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.cancelBusy?'0.6':'1') + ';">' + (state.cancelBusy ? 'Cancelling…' : 'Yes, cancel RFQ') + '</button>' +
+        '</div>' +
+      '</div></div>';
   }
   if (state.compareRfqId) {
     const q = state.compareQuotes;
