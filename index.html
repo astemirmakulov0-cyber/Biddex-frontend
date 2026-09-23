@@ -233,6 +233,9 @@ let state = {
 
   showWalletModal: false,
 
+  // buyer: report a payment against an invoice (showPayModal = invoice id)
+  showPayModal: null, payOutstanding: 0, payForm: { amount:'', method:'bank_transfer', reference:'' }, payBusy: false,
+
   // admin: credit a company's wallet (step 'form' -> 'confirm')
   showCreditModal: false, creditForm: { companyId:'', amount:'' }, creditStep: 'form', creditBusy: false,
 
@@ -562,9 +565,9 @@ function closeDeleteModal(){ setState({ showDeleteModal: null, deleteCompanyName
 async function confirmDeleteCompany(){
   setState({ deleteBusy:true });
   try {
-    await api('/api/admin/companies/' + state.showDeleteModal, { method:'DELETE' });
+    const data = await api('/api/admin/companies/' + state.showDeleteModal, { method:'DELETE' });
     setState({ deleteBusy:false, showDeleteModal:null, deleteCompanyName:'' });
-    showToast('Company deleted.');
+    showToast(data && data.mode === 'anonymized' ? 'Company deactivated and anonymized; shared orders and invoices were kept.' : 'Company deleted.');
     refreshAdminCompanies();
   } catch(e) { setState({ deleteBusy:false }); showToast(e.message); }
 }
@@ -612,12 +615,48 @@ async function updateDelivery(orderId, status){
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
 }
 
-async function payInvoice(invoiceId, amount){
-  setState({ ordersBusyId: invoiceId });
+// Confirmed / pending / still-open amounts of an invoice, summed in hundredths (the DB stores 2 decimals)
+// to avoid float drift
+function invoiceTotals(invoice){
+  const cents = v => Math.round(Number(v || 0) * 100);
+  const sum = st => (invoice.payments || []).filter(p => p.status === st).reduce((a, p) => a + cents(p.amount), 0);
+  const paid = sum('COMPLETED'), pending = sum('PENDING');
+  return { paid: paid / 100, pending: pending / 100, outstanding: Math.max(0, cents(invoice.amount) - paid - pending) / 100 };
+}
+
+const PAYMENT_METHOD_LABELS = { bank_transfer:'Bank transfer', cheque:'Cheque', cash:'Cash', card:'Card', other:'Other' };
+
+function openPayModal(invoiceId, outstanding){
+  setState({ showPayModal: invoiceId, payOutstanding: outstanding, payForm: { amount: outstanding.toFixed(2), method:'bank_transfer', reference:'' } });
+}
+function closePayModal(){ setState({ showPayModal: null }); }
+
+async function submitPayment(){
+  const f = state.payForm, amount = Number(f.amount);
+  if (!Number.isFinite(amount) || amount <= 0) { showToast('Enter a positive amount.'); return; }
+  if (amount > state.payOutstanding + 1e-9) { showToast('Amount is more than the outstanding ' + fmt(state.payOutstanding) + '.'); return; }
+  setState({ payBusy:true });
   try {
-    await api('/api/invoices/' + invoiceId + '/payments', { method:'POST', body: JSON.stringify({ amount, method:'bank_transfer' }) });
-    showToast('Payment completed.');
+    await api('/api/invoices/' + state.showPayModal + '/payments', { method:'POST', body: JSON.stringify({ amount: Math.round(amount * 100) / 100, method: f.method, reference: f.reference.trim() || undefined }) });
+    setState({ payBusy:false, showPayModal:null });
+    showToast('Payment reported — waiting for the supplier to confirm it.');
+    refreshOrders();
+    if (state.section === 'orderDetail' && state.selectedOrderId) openOrderDetail(state.selectedOrderId);
+  } catch(e) { setState({ payBusy:false }); showToast(e.message); }
+}
+
+async function decidePayment(paymentId, decision){
+  let body = {};
+  if (decision === 'reject') {
+    const reason = prompt('Reject this payment? Optionally say why (e.g. "not received"):', '');
+    if (reason === null) return;
+    body = { reason };
+  }
+  setState({ ordersBusyId: paymentId });
+  try {
+    await api('/api/payments/' + paymentId + '/' + decision, { method:'PATCH', body: JSON.stringify(body) });
     setState({ ordersBusyId: null });
+    showToast(decision === 'confirm' ? 'Payment confirmed.' : 'Payment rejected.');
     refreshOrders();
     if (state.section === 'orderDetail' && state.selectedOrderId) openOrderDetail(state.selectedOrderId);
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
@@ -1437,9 +1476,12 @@ function renderOrderDetail(){
     if (delivery.status === 'PENDING') deliveryAction = actionBtn('Mark dispatched', "updateDelivery('" + order.id + "','DISPATCHED')", state.ordersBusyId === order.id);
     else if (delivery.status === 'DISPATCHED') deliveryAction = actionBtn('Mark delivered', "updateDelivery('" + order.id + "','DELIVERED')", state.ordersBusyId === order.id);
   }
+  const totals = invoiceTotals(invoice);
   let payAction = '';
-  if (!isSupplier && invoice.id && (invoice.status === 'ISSUED' || invoice.status === 'PARTIALLY_PAID')) {
-    payAction = actionBtn('Pay ' + fmt(invoice.amount), "payInvoice('" + invoice.id + "'," + Number(invoice.amount) + ")", state.ordersBusyId === invoice.id);
+  if (!isSupplier && invoice.id && (invoice.status === 'ISSUED' || invoice.status === 'PARTIALLY_PAID') && order.status !== 'CANCELLED') {
+    payAction = totals.outstanding > 0
+      ? actionBtn('Pay ' + fmt(totals.outstanding), 'openPayModal(\'' + invoice.id + '\',' + totals.outstanding + ')', false)
+      : '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Awaiting supplier confirmation</span>';
   }
 
   return '<button onclick="closeOrderDetail()" class="mb-4 text-[12px] font-semibold" style="color:var(--tx4);">&larr; Back to LPO management</button>' +
@@ -1472,10 +1514,39 @@ function renderOrderDetail(){
     detailCard('Invoice', [
       ['Amount', invoice.amount ? fmt(invoice.amount) : '—'],
       ['Status', invoice.status || '—'],
-      ['Payments', (invoice.payments||[]).length ? invoice.payments.map(p => fmt(p.amount) + ' · ' + p.status).join(', ') : '—']
+      ['Confirmed', fmt(totals.paid)],
+      ['Awaiting confirmation', fmt(totals.pending)],
+      ['Outstanding', fmt(totals.outstanding)]
     ]) +
   '</div>' +
+  renderPaymentsPanel(invoice, isSupplier) +
   renderChatPanel();
+}
+
+function renderPaymentsPanel(invoice, isSupplier){
+  const list = (invoice.payments || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  if (!invoice.id) return '';
+  const label = { PENDING: ['Awaiting confirmation','background:var(--warn-soft); color:var(--warn);'], COMPLETED: ['Confirmed','background:var(--ok-soft); color:var(--ok);'], FAILED: ['Rejected','background:var(--bad-soft); color:var(--bad);'], REFUNDED: ['Refunded','background:var(--sunken); color:var(--tx3);'] };
+  return '<div class="mt-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">Payments</div>' +
+    (list.length === 0 ? '<div class="text-[12px]" style="color:var(--tx4);">No payments reported yet.</div>' :
+      '<div class="flex flex-col gap-2">' + list.map(p => {
+        const [txt, style] = label[p.status] || [p.status, ''];
+        const actions = isSupplier && p.status === 'PENDING'
+          ? '<div class="flex gap-2 shrink-0">' +
+              '<button onclick="' + (state.ordersBusyId === p.id ? '' : "decidePayment('" + p.id + "','reject')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">Reject</button>' +
+              actionBtn('Confirm received', "decidePayment('" + p.id + "','confirm')", state.ordersBusyId === p.id) +
+            '</div>'
+          : '';
+        return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd);">' +
+          '<div class="min-w-0">' +
+            '<div class="font-semibold mono" style="color:var(--tx);">' + fmt(p.amount) + ' <span class="font-normal" style="color:var(--tx3);">&middot; ' + esc(PAYMENT_METHOD_LABELS[p.method] || p.method || '—') + (p.reference ? ' &middot; ref ' + esc(p.reference) : '') + '</span></div>' +
+            '<div class="text-[11px] mt-0.5" style="color:var(--tx4);">Reported ' + new Date(p.createdAt).toLocaleString() + (p.status === 'FAILED' && p.rejectReason ? ' &middot; ' + esc(p.rejectReason) : '') + '</div>' +
+          '</div>' +
+          '<div class="flex items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + txt + '</span>' + actions + '</div>' +
+        '</div>';
+      }).join('') + '</div>') +
+  '</div>';
 }
 
 function renderChatPanel(){
@@ -1657,7 +1728,7 @@ function renderDeleteModal(){
     '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Delete company</h3>' +
       '<button onclick="closeDeleteModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
-      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Are you sure you want to permanently delete <b style="color:var(--tx);">' + esc(state.deleteCompanyName) + '</b>? This will remove the company, its user, RFQs, quotes, orders, and all related data. This cannot be undone.</p>' +
+      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Are you sure you want to permanently delete <b style="color:var(--tx);">' + esc(state.deleteCompanyName) + '</b>? Its open RFQs are cancelled (bid fees refunded to suppliers) and its data is removed. If it has purchase orders with other companies, those orders, invoices and payments are kept for the counterparties and the company is anonymized instead. This cannot be undone.</p>' +
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="closeDeleteModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
         '<button onclick="confirmDeleteCompany()" ' + (state.deleteBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deleteBusy?'0.6':'1') + ';">' + (state.deleteBusy ? 'Deleting…' : 'Yes, delete') + '</button>' +
@@ -1690,6 +1761,21 @@ function renderModals(){
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Needed by</span>' +
       '<input data-field="deadline" type="date" min="' + bahrainToday() + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
       'submitNewRfq()', state.postBusy ? (editing ? 'Saving…' : 'Posting…') : (editing ? 'Save changes' : 'Post RFQ to suppliers'), state.postBusy);
+  }
+  if (state.showPayModal) {
+    const f = state.payForm;
+    const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+    html += modalWrap('Report a payment', 'closePayModal()',
+      '<p class="text-[12.5px]" style="color:var(--tx3);">Outstanding: <b class="mono" style="color:var(--tx);">' + fmt(state.payOutstanding) + '</b>. The supplier confirms the payment once the money arrives; until then it shows as awaiting confirmation.</p>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Amount (BHD)</span>' +
+        '<input data-pay="amount" type="number" min="0.01" step="0.01" max="' + state.payOutstanding + '" value="' + esc(f.amount) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Method</span>' +
+        '<select data-pay="method" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '">' +
+          Object.keys(PAYMENT_METHOD_LABELS).map(m => '<option value="' + m + '"' + (f.method === m ? ' selected' : '') + '>' + PAYMENT_METHOD_LABELS[m] + '</option>').join('') +
+        '</select></label>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reference / transfer no. (optional)</span>' +
+        '<input data-pay="reference" type="text" maxlength="100" value="' + esc(f.reference) + '" placeholder="e.g. BBK-2026-004512" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>',
+      'submitPayment()', state.payBusy ? 'Sending…' : 'Report payment', state.payBusy);
   }
   if (state.cancelRfqId) {
     const r = (state.rfqs || []).find(x => x.id === state.cancelRfqId) || {};
@@ -1816,6 +1902,9 @@ function bindEvents(){
   document.querySelectorAll('[data-chat]').forEach(el => {
     el.addEventListener('input', (e) => { state.chatDraft = e.target.value; });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !state.chatBusy) sendChatMessage(); });
+  });
+  document.querySelectorAll('[data-pay]').forEach(el => {
+    el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', (e) => { state.payForm[el.getAttribute('data-pay')] = e.target.value; });
   });
   document.querySelectorAll('[data-credit]').forEach(el => {
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', (e) => { state.creditForm[el.getAttribute('data-credit')] = e.target.value; });
