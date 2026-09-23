@@ -100,7 +100,8 @@ const I18N = {
     resetPassword:'Reset password', resetPasswordIntro:'Enter your account email and we will send you a link to reset your password.',
     sendResetLink:'Send reset link',
     walletContactAdmin:'To top up your credits, contact the administrator.', walletHistory:'History', walletNoHistory:'No transactions yet.',
-    quoteAlreadySubmitted:'You have already submitted a quote for this RFQ.'
+    quoteAlreadySubmitted:'You have already submitted a quote for this RFQ.',
+    paymentDisclaimer:'Biddex does not process payments. Use this only to record a payment you made directly to the supplier.'
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -137,7 +138,8 @@ const I18N = {
     resetPassword:'إعادة تعيين كلمة المرور', resetPasswordIntro:'أدخل البريد الإلكتروني لحسابك وسنرسل إليك رابطًا لإعادة تعيين كلمة المرور.',
     sendResetLink:'إرسال رابط إعادة التعيين',
     walletContactAdmin:'لشحن رصيدك، تواصل مع المسؤول.', walletHistory:'السجل', walletNoHistory:'لا توجد معاملات بعد.',
-    quoteAlreadySubmitted:'لقد قدّمت عرضًا على طلب التسعير هذا مسبقًا.'
+    quoteAlreadySubmitted:'لقد قدّمت عرضًا على طلب التسعير هذا مسبقًا.',
+    paymentDisclaimer:'بيدكس لا تعالج المدفوعات. استخدم هذا فقط لتسجيل دفعة قمت بها مباشرةً إلى المورد.'
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -1766,6 +1768,7 @@ function renderModals(){
     const f = state.payForm;
     const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
     html += modalWrap('Report a payment', 'closePayModal()',
+      '<div class="rounded-lg border px-3 py-2.5 text-[12.5px] font-semibold" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' + esc(t('paymentDisclaimer')) + '</div>' +
       '<p class="text-[12.5px]" style="color:var(--tx3);">Outstanding: <b class="mono" style="color:var(--tx);">' + fmt(state.payOutstanding) + '</b>. The supplier confirms the payment once the money arrives; until then it shows as awaiting confirmation.</p>' +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Amount (BHD)</span>' +
         '<input data-pay="amount" type="number" min="0.001" step="0.001" max="' + state.payOutstanding + '" value="' + esc(f.amount) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>' +
