@@ -101,7 +101,10 @@ const I18N = {
     sendResetLink:'Send reset link',
     walletContactAdmin:'To top up your credits, contact the administrator.', walletHistory:'History', walletNoHistory:'No transactions yet.',
     quoteAlreadySubmitted:'You have already submitted a quote for this RFQ.',
-    paymentDisclaimer:'Biddex does not process payments. Use this only to record a payment you made directly to the supplier.'
+    paymentDisclaimer:'Biddex does not process payments. Use this only to record a payment you made directly to the supplier.',
+    passwordMin:'At least 8 characters',
+    reverifyConfirm:'Your company is verified. Changing its name or CR number removes the verification until an admin checks it again; meanwhile you cannot post RFQs or submit quotes. Continue?',
+    reverifyToast:'Saved. Your company is back in review until an admin re-verifies it.'
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -139,7 +142,10 @@ const I18N = {
     sendResetLink:'إرسال رابط إعادة التعيين',
     walletContactAdmin:'لشحن رصيدك، تواصل مع المسؤول.', walletHistory:'السجل', walletNoHistory:'لا توجد معاملات بعد.',
     quoteAlreadySubmitted:'لقد قدّمت عرضًا على طلب التسعير هذا مسبقًا.',
-    paymentDisclaimer:'بيدكس لا تعالج المدفوعات. استخدم هذا فقط لتسجيل دفعة قمت بها مباشرةً إلى المورد.'
+    paymentDisclaimer:'بيدكس لا تعالج المدفوعات. استخدم هذا فقط لتسجيل دفعة قمت بها مباشرةً إلى المورد.',
+    passwordMin:'8 أحرف على الأقل',
+    reverifyConfirm:'شركتك موثّقة. تغيير اسمها أو رقم سجلها التجاري يلغي التوثيق حتى يراجعه المسؤول مجددًا، ولن تتمكن خلال ذلك من نشر طلبات التسعير أو تقديم العروض. هل تريد المتابعة؟',
+    reverifyToast:'تم الحفظ. شركتك قيد المراجعة مجددًا حتى يعيد المسؤول توثيقها.'
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -347,6 +353,12 @@ async function submitAuth(){
   if (!f.email || !f.password || (state.authMode === 'register' && (!f.companyName || !f.registrationNumber))) {
     setState({ authError: 'Please fill in all required fields.' }); return;
   }
+  if (state.authMode === 'register' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) {
+    setState({ authError: 'Please enter a valid email address.' }); return;
+  }
+  if (state.authMode === 'register' && f.password.length < 8) {
+    setState({ authError: 'Password must be at least 8 characters.' }); return;
+  }
   if (state.authMode === 'register' && !f.consent) {
     setState({ authError: 'Please accept the Terms of Service and Privacy Policy.' }); return;
   }
@@ -467,11 +479,14 @@ function setSection(sec){
 
 async function saveProfile(){
   const f = state.profileForm;
+  const c = state.company || {};
+  const identityChanged = f.name.trim() !== (c.name || '') || f.registrationNumber.trim() !== (c.registrationNumber || '');
+  if (c.verificationStatus === 'VERIFIED' && identityChanged && !confirm(t('reverifyConfirm'))) return;
   setState({ profileBusy:true });
   try {
-    await api('/api/companies/me', { method:'PATCH', body: JSON.stringify({ name: f.name, country: f.country, phone: f.phone, registrationNumber: f.registrationNumber }) });
+    const data = await api('/api/companies/me', { method:'PATCH', body: JSON.stringify({ name: f.name, country: f.country, phone: f.phone, registrationNumber: f.registrationNumber }) });
     setState({ profileBusy:false });
-    showToast('Profile updated.');
+    showToast(data && data.reverificationRequired ? t('reverifyToast') : 'Profile updated.');
     refreshCompanyInfo();
   } catch(e) { setState({ profileBusy:false }); showToast(e.message); }
 }
@@ -543,8 +558,10 @@ async function submitChangePassword(){
   if (!f.currentPassword || !f.newPassword) { setState({ changePwMsg:'Fill in both fields.' }); return; }
   setState({ changePwBusy:true, changePwMsg:'' });
   try {
-    await api('/api/auth/password', { method:'PATCH', body: JSON.stringify(f) });
-    setState({ changePwBusy:false, changePwForm:{ currentPassword:'', newPassword:'' }, changePwMsg:'Password updated.' });
+    const data = await api('/api/auth/password', { method:'PATCH', body: JSON.stringify(f) });
+    // the old token is now invalid everywhere; keep this session going with the fresh one
+    if (data && data.token) { state.token = data.token; saveSession(); }
+    setState({ changePwBusy:false, changePwForm:{ currentPassword:'', newPassword:'' }, changePwMsg:'Password updated. Other sessions have been signed out.' });
   } catch(e) { setState({ changePwBusy:false, changePwMsg: e.message }); }
 }
 
@@ -1078,7 +1095,7 @@ function renderAuth(){
       (isReg ? field('registrationNumber',t('crNumber'), f.registrationNumber, 'e.g. 123456-1') : '') +
       (isReg ? field('country',t('country'), f.country, 'Bahrain') : '') +
       field('email',t('email'), f.email, 'you@company.com') +
-      field('password',t('password'), f.password, '••••••••', 'password') +
+      field('password',t('password'), f.password, isReg ? t('passwordMin') : '••••••••', 'password') +
       (!isReg ? '<button onclick="openForgotModal()" class="self-end -mt-1 text-[12px] font-semibold" style="color:var(--acc);">' + t('forgotPassword') + '</button>' : '') +
       (isReg ? '<label class="flex items-start gap-2 mt-1"><input type="checkbox" data-field="consent" ' + (f.consent?'checked':'') + ' style="margin-top:3px;" /><span class="text-[12px]" style="color:var(--tx4);">I agree to the <a href="terms.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Privacy Policy</a></span></label>' : '') +
     '</div>' +
