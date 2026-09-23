@@ -615,19 +615,19 @@ async function updateDelivery(orderId, status){
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
 }
 
-// Confirmed / pending / still-open amounts of an invoice, summed in hundredths (the DB stores 2 decimals)
+// Confirmed / pending / still-open amounts of an invoice, summed in fils (1 BHD = 1000 fils, as stored)
 // to avoid float drift
 function invoiceTotals(invoice){
-  const cents = v => Math.round(Number(v || 0) * 100);
-  const sum = st => (invoice.payments || []).filter(p => p.status === st).reduce((a, p) => a + cents(p.amount), 0);
+  const fils = v => Math.round(Number(v || 0) * 1000);
+  const sum = st => (invoice.payments || []).filter(p => p.status === st).reduce((a, p) => a + fils(p.amount), 0);
   const paid = sum('COMPLETED'), pending = sum('PENDING');
-  return { paid: paid / 100, pending: pending / 100, outstanding: Math.max(0, cents(invoice.amount) - paid - pending) / 100 };
+  return { paid: paid / 1000, pending: pending / 1000, outstanding: Math.max(0, fils(invoice.amount) - paid - pending) / 1000 };
 }
 
-const PAYMENT_METHOD_LABELS = { bank_transfer:'Bank transfer', cheque:'Cheque', cash:'Cash', card:'Card', other:'Other' };
+const PAYMENT_METHOD_LABELS = { bank_transfer:'Bank transfer', benefit_pay:'BenefitPay', cheque:'Cheque', cash:'Cash', card:'Card', other:'Other' };
 
 function openPayModal(invoiceId, outstanding){
-  setState({ showPayModal: invoiceId, payOutstanding: outstanding, payForm: { amount: outstanding.toFixed(2), method:'bank_transfer', reference:'' } });
+  setState({ showPayModal: invoiceId, payOutstanding: outstanding, payForm: { amount: outstanding.toFixed(3), method:'bank_transfer', reference:'' } });
 }
 function closePayModal(){ setState({ showPayModal: null }); }
 
@@ -637,7 +637,7 @@ async function submitPayment(){
   if (amount > state.payOutstanding + 1e-9) { showToast('Amount is more than the outstanding ' + fmt(state.payOutstanding) + '.'); return; }
   setState({ payBusy:true });
   try {
-    await api('/api/invoices/' + state.showPayModal + '/payments', { method:'POST', body: JSON.stringify({ amount: Math.round(amount * 100) / 100, method: f.method, reference: f.reference.trim() || undefined }) });
+    await api('/api/invoices/' + state.showPayModal + '/payments', { method:'POST', body: JSON.stringify({ amount: Math.round(amount * 1000) / 1000, method: f.method, reference: f.reference.trim() || undefined }) });
     setState({ payBusy:false, showPayModal:null });
     showToast('Payment reported — waiting for the supplier to confirm it.');
     refreshOrders();
@@ -1126,7 +1126,7 @@ function renderDashboard(role){
     '<div class="relative flex items-center gap-2.5">' +
       '<div class="hidden sm:block text-[13px] font-semibold mr-1" style="color:var(--tx3);">' + esc(state.company ? state.company.name : '') + '</div>' +
       verificationBadge() +
-      (!isBuyer ? '<button onclick="openWalletModal()" class="mono rounded-lg border px-2.5 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--acc);">' + (state.wallet ? Number(state.wallet.balance).toFixed(2) : '—') + ' credits</button>' : '') +
+      (!isBuyer ? '<button onclick="openWalletModal()" class="mono rounded-lg border px-2.5 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--acc);">' + (state.wallet ? Number(state.wallet.balance).toFixed(3) : '—') + ' credits</button>' : '') +
       notifBell() + langToggleBtn() + themeToggleBtn() +
       '<button onclick="logout()" class="rounded-lg px-3 py-1.5 text-[12px] font-semibold border" style="border-color:var(--bd2); color:var(--tx3);">' + t('signOut') + '</button>' +
     '</div></div></header>' +
@@ -1392,7 +1392,7 @@ function renderWalletModal(){
       '<h2 class="text-[20px] font-extrabold mb-5" style="color:var(--tx);">Bid credits</h2>' +
       '<div class="rounded-xl p-5 mb-5" style="background:var(--acc-soft);">' +
         '<div class="eyebrow" style="color:var(--acc);">AVAILABLE BALANCE</div>' +
-        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(2) + ' credits</div>' +
+        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(3) + ' credits</div>' +
         '<div class="mt-1 text-[12px]" style="color:var(--tx3);">Used to unlock RFQ bidding and full inquiry details.</div>' +
       '</div>' +
       '<div class="rounded-xl border px-4 py-3 text-[13px] font-semibold" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + t('walletContactAdmin') + '</div>' +
@@ -1403,7 +1403,7 @@ function renderWalletModal(){
           return '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[12px]" style="border-color:var(--bd);">' +
             '<div class="min-w-0"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(tx.type === 'BID_DEBIT' ? 'Bid fee' : (tx.reference || (tx.type === 'TOPUP' ? 'Top-up' : tx.type))) + '</div>' +
             '<div class="mono text-[10.5px]" style="color:var(--tx4);">' + new Date(tx.createdAt).toLocaleString() + '</div></div>' +
-            '<span class="mono font-bold shrink-0" style="color:' + (amt >= 0 ? 'var(--ok)' : 'var(--tx2)') + ';">' + (amt >= 0 ? '+' : '') + amt.toFixed(2) + '</span></div>';
+            '<span class="mono font-bold shrink-0" style="color:' + (amt >= 0 ? 'var(--ok)' : 'var(--tx2)') + ';">' + (amt >= 0 ? '+' : '') + amt.toFixed(3) + '</span></div>';
         }).join('') + '</div>') +
     '</div></div>';
 }
@@ -1653,7 +1653,7 @@ function renderAdmin(){
         '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
           (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
-          (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(2) + ' credits' : '') + '</div></div></div>' +
+          (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(3) + ' credits' : '') + '</div></div></div>' +
         '<div class="flex items-center gap-2 shrink-0">' +
           '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + ({PENDING:'background:var(--warn-soft); color:var(--warn);', IN_REVIEW:'background:var(--info-soft); color:var(--info);', VERIFIED:'background:var(--ok-soft); color:var(--ok);', REJECTED:'background:var(--bad-soft); color:var(--bad);'}[c.verificationStatus]||'') + '">' + c.verificationStatus + '</span>' +
           (c.verificationStatus !== 'VERIFIED' ? actionBtn('Verify', "setCompanyVerification('" + c.id + "','VERIFIED')", state.adminBusyId===c.id) : '') +
@@ -1683,8 +1683,8 @@ function renderCreditModal(){
 
   if (state.creditStep === 'confirm' && c) {
     return box(
-      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Add <b class="mono" style="color:var(--tx);">' + amount.toFixed(2) + '</b> credits to <b style="color:var(--tx);">' + esc(c.name) + '</b>?</p>' +
-      '<div class="mono mt-3 rounded-lg border p-3 text-center text-[14px] font-bold" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + bal.toFixed(2) + ' &rarr; ' + (bal + amount).toFixed(2) + '</div>' +
+      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Add <b class="mono" style="color:var(--tx);">' + amount.toFixed(3) + '</b> credits to <b style="color:var(--tx);">' + esc(c.name) + '</b>?</p>' +
+      '<div class="mono mt-3 rounded-lg border p-3 text-center text-[14px] font-bold" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + bal.toFixed(3) + ' &rarr; ' + (bal + amount).toFixed(3) + '</div>' +
       '<p class="mt-2 text-[11.5px]" style="color:var(--tx4);">Recorded in the company\'s wallet history as "Admin credit".</p>' +
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="setState({ creditStep:\'form\' })" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Back</button>' +
@@ -1697,10 +1697,10 @@ function renderCreditModal(){
       '<label class="flex flex-col gap-1.5 text-[12px] font-semibold" style="color:var(--tx3);">Company' +
         '<select data-credit="companyId" class="rounded-lg border px-3 py-2 text-sm outline-none" style="' + inputStyle + '">' +
           '<option value="">Choose a supplier…</option>' +
-          suppliers.map(s => '<option value="' + esc(s.id) + '"' + (s.id === f.companyId ? ' selected' : '') + '>' + esc(s.name) + ' (' + (s.wallet ? Number(s.wallet.balance).toFixed(2) : '0.00') + ')</option>').join('') +
+          suppliers.map(s => '<option value="' + esc(s.id) + '"' + (s.id === f.companyId ? ' selected' : '') + '>' + esc(s.name) + ' (' + (s.wallet ? Number(s.wallet.balance).toFixed(3) : '0.000') + ')</option>').join('') +
         '</select></label>' +
       '<label class="flex flex-col gap-1.5 text-[12px] font-semibold" style="color:var(--tx3);">Amount (credits)' +
-        '<input data-credit="amount" type="number" min="0.01" step="0.01" value="' + esc(f.amount) + '" placeholder="e.g. 50" class="rounded-lg border px-3 py-2 text-sm outline-none" style="' + inputStyle + '" /></label>' +
+        '<input data-credit="amount" type="number" min="0.001" step="0.001" value="' + esc(f.amount) + '" placeholder="e.g. 50" class="rounded-lg border px-3 py-2 text-sm outline-none" style="' + inputStyle + '" /></label>' +
     '</div>' +
     '<button onclick="reviewCredit()" class="mt-6 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc);">Review</button>');
 }
@@ -1768,7 +1768,7 @@ function renderModals(){
     html += modalWrap('Report a payment', 'closePayModal()',
       '<p class="text-[12.5px]" style="color:var(--tx3);">Outstanding: <b class="mono" style="color:var(--tx);">' + fmt(state.payOutstanding) + '</b>. The supplier confirms the payment once the money arrives; until then it shows as awaiting confirmation.</p>' +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Amount (BHD)</span>' +
-        '<input data-pay="amount" type="number" min="0.01" step="0.01" max="' + state.payOutstanding + '" value="' + esc(f.amount) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>' +
+        '<input data-pay="amount" type="number" min="0.001" step="0.001" max="' + state.payOutstanding + '" value="' + esc(f.amount) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>' +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Method</span>' +
         '<select data-pay="method" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '">' +
           Object.keys(PAYMENT_METHOD_LABELS).map(m => '<option value="' + m + '"' + (f.method === m ? ' selected' : '') + '>' + PAYMENT_METHOD_LABELS[m] + '</option>').join('') +
