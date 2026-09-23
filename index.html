@@ -260,6 +260,14 @@ async function api(path, opts={}) {
   if (!res.ok) {
     const err = new Error((data && data.error) || ('Request failed (' + res.status + ')'));
     err.status = res.status;
+    // A 401 from the auth middleware mid-session means the token expired or the account was deactivated:
+    // end the session instead of leaving every panel silently empty. (Other 401s, e.g. a wrong current
+    // password on the change-password form, must not log the user out.)
+    const SESSION_ERRORS = ['Invalid or expired token', 'Account deactivated', 'Missing or invalid Authorization header'];
+    if (res.status === 401 && state.token && SESSION_ERRORS.includes(err.message)) {
+      logout();
+      showToast(err.message === 'Account deactivated' ? 'This account has been deactivated.' : 'Your session has expired. Please log in again.');
+    }
     throw err;
   }
   return data;
@@ -333,6 +341,9 @@ async function submitAuth(){
   const f = state.authForm;
   if (!f.email || !f.password || (state.authMode === 'register' && (!f.companyName || !f.registrationNumber))) {
     setState({ authError: 'Please fill in all required fields.' }); return;
+  }
+  if (state.authMode === 'register' && !f.consent) {
+    setState({ authError: 'Please accept the Terms of Service and Privacy Policy.' }); return;
   }
   // Capture the mode now — if the user switches the Login/Register tab while
   // this request is in flight, state.authMode could change before the
@@ -1554,7 +1565,8 @@ function renderAdmin(){
     '<div class="flex flex-col gap-3">' + list.map(c =>
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center gap-3">' + avatarHtml(c.name, 36) +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) + '</div>' +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
+          (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
           (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(2) + ' credits' : '') + '</div></div></div>' +
         '<div class="flex items-center gap-2 shrink-0">' +
