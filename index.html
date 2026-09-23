@@ -92,7 +92,13 @@ const I18N = {
     statActiveRfqs:'ACTIVE RFQS', statTotalQuotes:'TOTAL QUOTES', statAwarded:'AWARDED', statOpenOrders:'OPEN ORDERS',
     statOpenRequests:'OPEN REQUESTS', statCatalogItems:'CATALOG ITEMS', statActiveOrders:'ACTIVE ORDERS',
     recentRfqs:'Recent RFQs', viewAll:'View all →', recentOrders:'Recent orders', ordersInProgress:'Orders in progress',
-    opportunityFeed:'Opportunity feed'
+    opportunityFeed:'Opportunity feed',
+    toastResendVerification:'If your account needs verification, a new email has been sent.',
+    toastEnterEmail:'Please enter your email.',
+    toastResetLinkSent:'If that email exists, a reset link has been sent.',
+    forgotPassword:'Forgot password?', resendVerification:'Resend verification email',
+    resetPassword:'Reset password', resetPasswordIntro:'Enter your account email and we will send you a link to reset your password.',
+    sendResetLink:'Send reset link'
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -121,7 +127,13 @@ const I18N = {
     statActiveRfqs:'طلبات نشطة', statTotalQuotes:'إجمالي العروض', statAwarded:'تم الترسية', statOpenOrders:'طلبات مفتوحة',
     statOpenRequests:'طلبات مفتوحة', statCatalogItems:'عناصر الكتالوج', statActiveOrders:'طلبات نشطة',
     recentRfqs:'أحدث طلبات التسعير', viewAll:'عرض الكل ←', recentOrders:'أحدث الطلبات', ordersInProgress:'طلبات قيد التنفيذ',
-    opportunityFeed:'قائمة الفرص'
+    opportunityFeed:'قائمة الفرص',
+    toastResendVerification:'إذا كان حسابك بحاجة إلى التحقق، فقد تم إرسال بريد إلكتروني جديد.',
+    toastEnterEmail:'يرجى إدخال بريدك الإلكتروني.',
+    toastResetLinkSent:'إذا كان هذا البريد الإلكتروني مسجّلًا، فقد تم إرسال رابط إعادة تعيين كلمة المرور.',
+    forgotPassword:'نسيت كلمة المرور؟', resendVerification:'إعادة إرسال بريد التحقق',
+    resetPassword:'إعادة تعيين كلمة المرور', resetPasswordIntro:'أدخل البريد الإلكتروني لحسابك وسنرسل إليك رابطًا لإعادة تعيين كلمة المرور.',
+    sendResetLink:'إرسال رابط إعادة التعيين'
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -356,7 +368,7 @@ async function resendVerification(){
   try {
     await api('/api/auth/resend-verification', { method:'POST', body: JSON.stringify({ email: state.unverifiedEmail }) });
     setState({ resendBusy: false });
-    showToast('If your account needs verification, a new email has been sent.');
+    showToast(t('toastResendVerification'));
   } catch(e) { setState({ resendBusy: false }); showToast(e.message); }
 }
 
@@ -364,12 +376,12 @@ function openForgotModal(){ setState({ showForgotModal: true, forgotEmail: state
 function closeForgotModal(){ setState({ showForgotModal: false }); }
 async function submitForgotPassword(){
   const email = state.forgotEmail.trim();
-  if (!email) { showToast('Please enter your email.'); return; }
+  if (!email) { showToast(t('toastEnterEmail')); return; }
   setState({ forgotBusy: true });
   try {
     await api('/api/auth/forgot-password', { method:'POST', body: JSON.stringify({ email }) });
     setState({ forgotBusy: false, showForgotModal: false });
-    showToast('If that email exists, a reset link has been sent.');
+    showToast(t('toastResetLinkSent'));
   } catch(e) { setState({ forgotBusy: false }); showToast(e.message); }
 }
 
@@ -933,24 +945,24 @@ function renderAuth(){
       (isReg ? field('country',t('country'), f.country, 'Bahrain') : '') +
       field('email',t('email'), f.email, 'you@company.com') +
       field('password',t('password'), f.password, '••••••••', 'password') +
-      (!isReg ? '<button onclick="openForgotModal()" class="self-end -mt-1 text-[12px] font-semibold" style="color:var(--acc);">Forgot password?</button>' : '') +
+      (!isReg ? '<button onclick="openForgotModal()" class="self-end -mt-1 text-[12px] font-semibold" style="color:var(--acc);">' + t('forgotPassword') + '</button>' : '') +
       (isReg ? '<label class="flex items-start gap-2 mt-1"><input type="checkbox" data-field="consent" ' + (f.consent?'checked':'') + ' style="margin-top:3px;" /><span class="text-[12px]" style="color:var(--tx4);">I agree to the <a href="terms.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Privacy Policy</a></span></label>' : '') +
     '</div>' +
     (state.authError ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12px] font-semibold" style="background:var(--acc-soft); color:var(--acc);">' + esc(state.authError) + '</div>' : '') +
-    (!isReg && state.unverifiedEmail ? '<button onclick="resendVerification()" ' + (state.resendBusy?'disabled':'') + ' class="mt-2 w-full rounded-xl border px-4 py-2.5 text-[13px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (state.resendBusy?'0.6':'1') + ';">' + (state.resendBusy ? t('pleaseWait') : 'Resend verification email') + '</button>' : '') +
+    (!isReg && state.unverifiedEmail ? '<button onclick="resendVerification()" ' + (state.resendBusy?'disabled':'') + ' class="mt-2 w-full rounded-xl border px-4 py-2.5 text-[13px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (state.resendBusy?'0.6':'1') + ';">' + (state.resendBusy ? t('pleaseWait') : t('resendVerification')) + '</button>' : '') +
     '<button onclick="submitAuth()" ' + (state.authBusy?'disabled':'') + ' class="mt-5 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.authBusy?'0.6':'1') + ';">' + (state.authBusy ? t('pleaseWait') : (isReg ? t('createAccount') : t('logIn'))) + '</button>' +
   '</div></div>' + renderForgotModal() + toastHtml();
 }
 
 function renderForgotModal(){
   if (!state.showForgotModal) return '';
-  return modalWrap('Reset password', 'closeForgotModal()',
-    '<p class="text-[13px]" style="color:var(--tx3);">Enter your account email and we will send you a link to reset your password.</p>' +
+  return modalWrap(t('resetPassword'), 'closeForgotModal()',
+    '<p class="text-[13px]" style="color:var(--tx3);">' + t('resetPasswordIntro') + '</p>' +
     '<label class="flex flex-col gap-1.5">' +
       '<span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('email') + '</span>' +
       '<input data-forgot type="email" value="' + esc(state.forgotEmail) + '" placeholder="you@company.com" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
     '</label>',
-    'submitForgotPassword()', state.forgotBusy ? t('pleaseWait') : 'Send reset link', state.forgotBusy);
+    'submitForgotPassword()', state.forgotBusy ? t('pleaseWait') : t('sendResetLink'), state.forgotBusy);
 }
 
 function tab(mode, label){
