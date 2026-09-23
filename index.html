@@ -98,7 +98,9 @@ const I18N = {
     toastResetLinkSent:'If that email exists, a reset link has been sent.',
     forgotPassword:'Forgot password?', resendVerification:'Resend verification email',
     resetPassword:'Reset password', resetPasswordIntro:'Enter your account email and we will send you a link to reset your password.',
-    sendResetLink:'Send reset link'
+    sendResetLink:'Send reset link',
+    walletContactAdmin:'To top up your credits, contact the administrator.', walletHistory:'History', walletNoHistory:'No transactions yet.',
+    quoteAlreadySubmitted:'You have already submitted a quote for this RFQ.'
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -133,7 +135,9 @@ const I18N = {
     toastResetLinkSent:'إذا كان هذا البريد الإلكتروني مسجّلًا، فقد تم إرسال رابط إعادة تعيين كلمة المرور.',
     forgotPassword:'نسيت كلمة المرور؟', resendVerification:'إعادة إرسال بريد التحقق',
     resetPassword:'إعادة تعيين كلمة المرور', resetPasswordIntro:'أدخل البريد الإلكتروني لحسابك وسنرسل إليك رابطًا لإعادة تعيين كلمة المرور.',
-    sendResetLink:'إرسال رابط إعادة التعيين'
+    sendResetLink:'إرسال رابط إعادة التعيين',
+    walletContactAdmin:'لشحن رصيدك، تواصل مع المسؤول.', walletHistory:'السجل', walletNoHistory:'لا توجد معاملات بعد.',
+    quoteAlreadySubmitted:'لقد قدّمت عرضًا على طلب التسعير هذا مسبقًا.'
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -200,7 +204,6 @@ let state = {
   compareRfqId: null, compareQuotes: [], compareLoading: false,
 
   submitQuoteRfqId: null, quoteForm: { price:'', days:'' }, quoteBusy: false,
-  quotedIds: new Set(),
 
   showCatalogAdd: false, newProduct: { name:'', price:'', unit:'kg', imageUrl:'' },
   catalogPhotoBusy: false, catalogPhotoName: '',
@@ -227,7 +230,10 @@ let state = {
 
   showDeleteModal: null, deleteCompanyName: '', deleteBusy: false,
 
-  showWalletModal: false, walletTopupBusy: false,
+  showWalletModal: false,
+
+  // admin: credit a company's wallet (step 'form' -> 'confirm')
+  showCreditModal: false, creditForm: { companyId:'', amount:'' }, creditStep: 'form', creditBusy: false,
 
   lightboxImage: null,
 
@@ -671,24 +677,47 @@ async function submitQuote(){
   const f = state.quoteForm;
   const price = parseFloat(f.price), days = parseInt(f.days, 10);
   if (!price || !days) return;
+  const rfqId = state.submitQuoteRfqId;
   setState({ quoteBusy:true });
   try {
-    await api('/api/rfqs/' + state.submitQuoteRfqId + '/quotes', { method:'POST', body: JSON.stringify({
+    const quote = await api('/api/rfqs/' + rfqId + '/quotes', { method:'POST', body: JSON.stringify({
       price, currency:'BHD', deliveryTimeDays: days
     })});
-    state.quotedIds.add(state.submitQuoteRfqId);
-    setState({ submitQuoteRfqId:null, quoteBusy:false });
+    // show "Quoted" right away; the server copy arrives with the next refreshRfqs()
+    setState({ submitQuoteRfqId:null, quoteBusy:false, rfqs: (state.rfqs || []).map(r => r.id === rfqId ? { ...r, quotes: [quote] } : r) });
     showToast('Quote submitted.');
     refreshWallet(); refreshRfqs();
-  } catch(e) { setState({ quoteBusy:false }); showToast(e.message); }
+  } catch(e) {
+    if (e.status === 409) {
+      // already quoted (e.g. from another tab) — nothing was charged; resync so the card shows "Quoted"
+      setState({ submitQuoteRfqId:null, quoteBusy:false });
+      showToast(t('quoteAlreadySubmitted'));
+      refreshRfqs();
+    } else { setState({ quoteBusy:false }); showToast(e.message); }
+  }
 }
 
-async function topUpWallet(){
-  setState({ walletTopupBusy:true });
-  try { await api('/api/wallet/topup', { method:'POST', body: JSON.stringify({ amount: 20, reference:'top-up' }) }); showToast('20 credits added.'); setState({ walletTopupBusy:false }); refreshWallet(); }
-  catch(e) { setState({ walletTopupBusy:false }); showToast(e.message); }
+// ---------- Admin: credit a company's wallet ----------
+
+function openCreditModal(companyId){ setState({ showCreditModal:true, creditStep:'form', creditForm:{ companyId: companyId || '', amount:'' } }); }
+function closeCreditModal(){ setState({ showCreditModal:false }); }
+function reviewCredit(){
+  const f = state.creditForm, amount = Number(f.amount);
+  if (!f.companyId) { showToast('Choose a company.'); return; }
+  if (!Number.isFinite(amount) || amount <= 0) { showToast('Enter a positive amount.'); return; }
+  setState({ creditStep:'confirm' });
 }
-function openWalletModal(){ setState({ showWalletModal:true }); }
+async function confirmCredit(){
+  const f = state.creditForm;
+  setState({ creditBusy:true });
+  try {
+    await api('/api/wallet/topup', { method:'POST', body: JSON.stringify({ companyId: f.companyId, amount: Number(f.amount), reference: 'Admin credit' }) });
+    setState({ creditBusy:false, showCreditModal:false });
+    showToast(Number(f.amount) + ' credits added.');
+    refreshAdminCompanies();
+  } catch(e) { setState({ creditBusy:false }); showToast(e.message); }
+}
+function openWalletModal(){ setState({ showWalletModal:true }); refreshWallet(); }
 function closeWalletModal(){ setState({ showWalletModal:false }); }
 
 function openLightbox(url){ setState({ lightboxImage: url }); }
@@ -996,7 +1025,7 @@ function renderDashboard(role){
     '<div class="relative flex items-center gap-2.5">' +
       '<div class="hidden sm:block text-[13px] font-semibold mr-1" style="color:var(--tx3);">' + esc(state.company ? state.company.name : '') + '</div>' +
       verificationBadge() +
-      (!isBuyer ? '<button onclick="openWalletModal()" class="mono rounded-lg border px-2.5 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--acc);">' + (state.wallet ? Number(state.wallet.balance).toFixed(0) : '—') + ' credits</button>' : '') +
+      (!isBuyer ? '<button onclick="openWalletModal()" class="mono rounded-lg border px-2.5 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--acc);">' + (state.wallet ? Number(state.wallet.balance).toFixed(2) : '—') + ' credits</button>' : '') +
       notifBell() + langToggleBtn() + themeToggleBtn() +
       '<button onclick="logout()" class="rounded-lg px-3 py-1.5 text-[12px] font-semibold border" style="border-color:var(--bd2); color:var(--tx3);">' + t('signOut') + '</button>' +
     '</div></div></header>' +
@@ -1187,7 +1216,8 @@ function renderSupplierHub(){
 
 function opportunityCard(r){
   const tl = timeLeftLabel(r.deadline);
-  const quoted = state.quotedIds.has(r.id);
+  // for suppliers the server returns only their own quote(s) in r.quotes
+  const quoted = (r.quotes || []).some(q => q.status !== 'WITHDRAWN');
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-center gap-4">' +
       avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40) +
@@ -1236,16 +1266,26 @@ function renderSupplierCatalogPage(){
 function renderWalletModal(){
   if (!state.showWalletModal) return '';
   const bal = state.wallet ? Number(state.wallet.balance) : 0;
+  const txs = (state.wallet && state.wallet.transactions) || [];
   return '<div class="fixed inset-0 z-50 flex items-center justify-end bg-black/50">' +
     '<div class="bx-rise h-full w-full max-w-sm overflow-y-auto bx-scroll p-6" style="background:var(--panel);">' +
       '<div class="flex items-center justify-between mb-1"><span class="eyebrow">WALLET</span><button onclick="closeWalletModal()" class="text-[16px]" style="color:var(--tx4);">&times;</button></div>' +
       '<h2 class="text-[20px] font-extrabold mb-5" style="color:var(--tx);">Bid credits</h2>' +
       '<div class="rounded-xl p-5 mb-5" style="background:var(--acc-soft);">' +
         '<div class="eyebrow" style="color:var(--acc);">AVAILABLE BALANCE</div>' +
-        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(0) + ' credits</div>' +
+        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(2) + ' credits</div>' +
         '<div class="mt-1 text-[12px]" style="color:var(--tx3);">Used to unlock RFQ bidding and full inquiry details.</div>' +
       '</div>' +
-      '<button onclick="topUpWallet()" ' + (state.walletTopupBusy?'disabled':'') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.walletTopupBusy?'0.6':'1') + ';">' + (state.walletTopupBusy ? 'Adding…' : 'Add 20 credits (demo top-up)') + '</button>' +
+      '<div class="rounded-xl border px-4 py-3 text-[13px] font-semibold" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + t('walletContactAdmin') + '</div>' +
+      '<h3 class="mt-6 mb-2 text-[13px] font-bold" style="color:var(--tx);">' + t('walletHistory') + '</h3>' +
+      (txs.length === 0 ? '<div class="text-[12px]" style="color:var(--tx4);">' + t('walletNoHistory') + '</div>' :
+        '<div class="flex flex-col gap-1.5">' + txs.map(tx => {
+          const amt = Number(tx.amount);
+          return '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[12px]" style="border-color:var(--bd);">' +
+            '<div class="min-w-0"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(tx.type === 'TOPUP' ? (tx.reference || 'Top-up') : tx.type === 'BID_DEBIT' ? 'Bid fee' : tx.type) + '</div>' +
+            '<div class="mono text-[10.5px]" style="color:var(--tx4);">' + new Date(tx.createdAt).toLocaleString() + '</div></div>' +
+            '<span class="mono font-bold shrink-0" style="color:' + (amt >= 0 ? 'var(--ok)' : 'var(--tx2)') + ';">' + (amt >= 0 ? '+' : '') + amt.toFixed(2) + '</span></div>';
+        }).join('') + '</div>') +
     '</div></div>';
 }
 
@@ -1450,6 +1490,7 @@ function renderAdmin(){
   const body = '<div class="eyebrow mb-1.5">SIJILLAT REGISTRY QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
     '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +
+    actionBtn('+ Add credits', 'openCreditModal()', false) +
   '</div>' +
   '<div class="flex flex-wrap gap-2 mb-5">' + filters.map(f =>
     '<button onclick="setAdminFilter(\'' + f + '\')" class="chip' + (state.adminFilter===f?' active':'') + '">' + f + '</button>'
@@ -1459,17 +1500,57 @@ function renderAdmin(){
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center gap-3">' + avatarHtml(c.name, 36) +
         '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) + '</div>' +
-        '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') + '</div></div></div>' +
+        '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
+          (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(2) + ' credits' : '') + '</div></div></div>' +
         '<div class="flex items-center gap-2 shrink-0">' +
           '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + ({PENDING:'background:var(--warn-soft); color:var(--warn);', IN_REVIEW:'background:var(--info-soft); color:var(--info);', VERIFIED:'background:var(--ok-soft); color:var(--ok);', REJECTED:'background:var(--bad-soft); color:var(--bad);'}[c.verificationStatus]||'') + '">' + c.verificationStatus + '</span>' +
           (c.verificationStatus !== 'VERIFIED' ? actionBtn('Verify', "setCompanyVerification('" + c.id + "','VERIFIED')", state.adminBusyId===c.id) : '') +
           (c.verificationStatus !== 'REJECTED' ? '<button onclick="setCompanyVerification(\'' + c.id + '\',\'REJECTED\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reject</button>' : '') +
+          (c.type === 'SUPPLIER' ? '<button onclick="openCreditModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Add credits</button>' : '') +
           '<button onclick="openResetModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reset password</button>' +
           '<button onclick="openDeleteModal(\'' + c.id + '\',' + jsAttr(c.name) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bad); color:var(--bad);">Delete</button>' +
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + body + '</div></div>' + renderResetModal() + renderDeleteModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + toastHtml();
+}
+
+function renderCreditModal(){
+  if (!state.showCreditModal) return '';
+  const f = state.creditForm;
+  const suppliers = (state.adminCompanies || []).filter(c => c.type === 'SUPPLIER');
+  const c = suppliers.find(x => x.id === f.companyId);
+  const bal = c && c.wallet ? Number(c.wallet.balance) : 0;
+  const amount = Number(f.amount);
+  const box = (inner) => '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Add credits</h3>' +
+      '<button onclick="closeCreditModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' + inner +
+    '</div></div>';
+  const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+
+  if (state.creditStep === 'confirm' && c) {
+    return box(
+      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Add <b class="mono" style="color:var(--tx);">' + amount.toFixed(2) + '</b> credits to <b style="color:var(--tx);">' + esc(c.name) + '</b>?</p>' +
+      '<div class="mono mt-3 rounded-lg border p-3 text-center text-[14px] font-bold" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + bal.toFixed(2) + ' &rarr; ' + (bal + amount).toFixed(2) + '</div>' +
+      '<p class="mt-2 text-[11.5px]" style="color:var(--tx4);">Recorded in the company\'s wallet history as "Admin credit".</p>' +
+      '<div class="mt-5 flex gap-2">' +
+        '<button onclick="setState({ creditStep:\'form\' })" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Back</button>' +
+        '<button onclick="' + (state.creditBusy ? '' : 'confirmCredit()') + '" ' + (state.creditBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.creditBusy?'0.6':'1') + ';">' + (state.creditBusy ? 'Adding…' : 'Confirm') + '</button>' +
+      '</div>');
+  }
+
+  return box(
+    '<div class="mt-4 flex flex-col gap-4">' +
+      '<label class="flex flex-col gap-1.5 text-[12px] font-semibold" style="color:var(--tx3);">Company' +
+        '<select data-credit="companyId" class="rounded-lg border px-3 py-2 text-sm outline-none" style="' + inputStyle + '">' +
+          '<option value="">Choose a supplier…</option>' +
+          suppliers.map(s => '<option value="' + esc(s.id) + '"' + (s.id === f.companyId ? ' selected' : '') + '>' + esc(s.name) + ' (' + (s.wallet ? Number(s.wallet.balance).toFixed(2) : '0.00') + ')</option>').join('') +
+        '</select></label>' +
+      '<label class="flex flex-col gap-1.5 text-[12px] font-semibold" style="color:var(--tx3);">Amount (credits)' +
+        '<input data-credit="amount" type="number" min="0.01" step="0.01" value="' + esc(f.amount) + '" placeholder="e.g. 50" class="rounded-lg border px-3 py-2 text-sm outline-none" style="' + inputStyle + '" /></label>' +
+    '</div>' +
+    '<button onclick="reviewCredit()" class="mt-6 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc);">Review</button>');
 }
 
 function renderResetModal(){
@@ -1636,6 +1717,9 @@ function bindEvents(){
   document.querySelectorAll('[data-chat]').forEach(el => {
     el.addEventListener('input', (e) => { state.chatDraft = e.target.value; });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !state.chatBusy) sendChatMessage(); });
+  });
+  document.querySelectorAll('[data-credit]').forEach(el => {
+    el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', (e) => { state.creditForm[el.getAttribute('data-credit')] = e.target.value; });
   });
   document.querySelectorAll('[data-changepw]').forEach(el => {
     el.addEventListener('input', (e) => { state.changePwForm[el.getAttribute('data-changepw')] = e.target.value; });
