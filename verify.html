@@ -70,7 +70,7 @@ render();
 if (!token) {
   show({ status: 'missingToken', cls: 'error' });
 } else {
-  fetch(API_URL + '/api/auth/verify?token=' + token)
+  fetch(API_URL + '/api/auth/verify?token=' + encodeURIComponent(token))
     .then(res => res.json())
     .then(data => {
       if (data.ok) {
