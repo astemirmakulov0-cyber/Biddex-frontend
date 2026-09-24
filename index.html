@@ -104,7 +104,8 @@ const I18N = {
     paymentDisclaimer:'Biddex does not process payments. Use this only to record a payment you made directly to the supplier.',
     passwordMin:'At least 8 characters',
     reverifyConfirm:'Your company is verified. Changing its name or CR number removes the verification until an admin checks it again; meanwhile you cannot post RFQs or submit quotes. Continue?',
-    reverifyToast:'Saved. Your company is back in review until an admin re-verifies it.'
+    reverifyToast:'Saved. Your company is back in review until an admin re-verifies it.',
+    networkError:'Network error — check your connection.', syncFailed:'Couldn’t refresh data.', syncRetrying:'Retrying automatically.', retryNow:'Retry now'
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -145,7 +146,8 @@ const I18N = {
     paymentDisclaimer:'بيدكس لا تعالج المدفوعات. استخدم هذا فقط لتسجيل دفعة قمت بها مباشرةً إلى المورد.',
     passwordMin:'8 أحرف على الأقل',
     reverifyConfirm:'شركتك موثّقة. تغيير اسمها أو رقم سجلها التجاري يلغي التوثيق حتى يراجعه المسؤول مجددًا، ولن تتمكن خلال ذلك من نشر طلبات التسعير أو تقديم العروض. هل تريد المتابعة؟',
-    reverifyToast:'تم الحفظ. شركتك قيد المراجعة مجددًا حتى يعيد المسؤول توثيقها.'
+    reverifyToast:'تم الحفظ. شركتك قيد المراجعة مجددًا حتى يعيد المسؤول توثيقها.',
+    networkError:'خطأ في الشبكة — تحقّق من اتصالك.', syncFailed:'تعذّر تحديث البيانات.', syncRetrying:'ستتم إعادة المحاولة تلقائيًا.', retryNow:'أعد المحاولة الآن'
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -235,6 +237,8 @@ let state = {
 
   showClosedOrders: false, // LPO management: "Completed & cancelled" section expanded
 
+  syncErrors: {}, // background refresh failures by source (see syncFailed)
+
   verifyFileName: '', verifyFileBusy: false,
 
   showResetModal: null, resetBusy: false, resetResult: null,
@@ -267,7 +271,12 @@ function showToast(msg){ setState({ toast: msg }); setTimeout(()=>{ if(state.toa
 async function api(path, opts={}) {
   const headers = { 'Content-Type':'application/json', ...(opts.headers||{}) };
   if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
-  const res = await fetch(API + path, { ...opts, headers });
+  let res;
+  try { res = await fetch(API + path, { ...opts, headers }); }
+  catch (netErr) {
+    // offline, DNS, CORS or the server not answering: fetch rejects without a status
+    const err = new Error(t('networkError')); err.status = 0; throw err;
+  }
   let data = null;
   try { data = await res.json(); } catch(e) {}
   if (!res.ok) {
@@ -426,17 +435,42 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], notifications:[], notifUnread:0, chatMessages:[], view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 async function refreshAll(){
   await Promise.all([ refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications() ]);
 }
 
+// ---------- Background refresh errors ----------
+// Polling refreshes used to swallow errors, so panels silently froze. Now each failing source is recorded
+// and one quiet banner is shown (no toast every 30s); a source's next successful refresh clears it.
+// 401s are handled in api() (session ends), so they're not shown here.
+function syncOk(source){
+  if (state.syncErrors[source]) { const next = { ...state.syncErrors }; delete next[source]; setState({ syncErrors: next }); }
+}
+function syncFailed(source, e){
+  if (e && e.status === 401) return;
+  const msg = (e && e.message) || 'Unknown error';
+  if (state.syncErrors[source] !== msg) setState({ syncErrors: { ...state.syncErrors, [source]: msg } });
+}
+function retrySync(){
+  setState({ syncErrors: {} });
+  if (state.view === 'admin') refreshAdminCompanies(); else refreshAll();
+}
+function syncBanner(){
+  const msgs = [...new Set(Object.values(state.syncErrors || {}))];
+  if (msgs.length === 0) return '';
+  return '<div role="status" class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-[12.5px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' +
+    '<span><b>' + t('syncFailed') + '</b> ' + esc(msgs[0]) + (msgs.length > 1 ? ' (+' + (msgs.length - 1) + ')' : '') + ' ' + t('syncRetrying') + '</span>' +
+    '<button onclick="retrySync()" class="shrink-0 rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--warn); color:var(--warn);">' + t('retryNow') + '</button>' +
+  '</div>';
+}
+
 async function refreshCompanyInfo(){
   if (!state.token || !state.company) return;
-  try { const data = await api('/api/companies/me'); setIfChanged('company', { ...state.company, ...data }); }
-  catch(e) {}
+  try { const data = await api('/api/companies/me'); setIfChanged('company', { ...state.company, ...data }); syncOk('company'); }
+  catch(e) { syncFailed('company', e); }
 }
 
 function openVerifyModal(){ setState({ showVerifyModal:true, verifyForm:{ fileUrl:'', docType:'TRADE_LICENSE' }, verifyFileName:'' }); }
@@ -456,8 +490,8 @@ async function submitVerifyDoc(){
 
 async function refreshAdminCompanies(){
   if (!state.token) return;
-  try { const data = await api('/api/admin/companies'); setIfChanged('adminCompanies', data); }
-  catch(e) { showToast(e.message); }
+  try { const data = await api('/api/admin/companies'); setIfChanged('adminCompanies', data); syncOk('admin'); }
+  catch(e) { syncFailed('admin', e); }
 }
 
 async function setCompanyVerification(companyId, status){
@@ -499,6 +533,7 @@ async function openOrderDetail(orderId){
     const order = await api('/api/orders/' + orderId);
     let rfq = null;
     if (order.lpo && order.lpo.rfqId) {
+      // optional: the order renders without the RFQ's request details
       try { rfq = await api('/api/rfqs/' + order.lpo.rfqId); } catch(e) {}
     }
     setState({ orderDetail: { order, rfq }, orderDetailLoading:false });
@@ -516,7 +551,8 @@ async function refreshNotifications(){
     if (JSON.stringify(data) !== JSON.stringify(state.notifications)) {
       setState({ notifications: data, notifUnread: data.filter(n => !n.read).length });
     }
-  } catch(e) {}
+    syncOk('notifications');
+  } catch(e) { syncFailed('notifications', e); }
 }
 
 function toggleNotifDropdown(){ setState({ showNotifDropdown: !state.showNotifDropdown }); }
@@ -525,7 +561,7 @@ async function markAllNotifRead(){
   try {
     await api('/api/notifications/read-all', { method:'PATCH' });
     setState({ notifications: state.notifications.map(n => ({ ...n, read:true })), notifUnread: 0 });
-  } catch(e) {}
+  } catch(e) { showToast(e.message); } // a user action: say it didn't work
 }
 
 // ---------- Chat (scoped to an order) ----------
@@ -535,7 +571,8 @@ async function refreshChat(orderId){
   try {
     const data = await api('/api/orders/' + orderId + '/messages');
     setIfChanged('chatMessages', data);
-  } catch(e) {}
+    syncOk('chat');
+  } catch(e) { syncFailed('chat', e); }
 }
 
 function onChatDraft(e){ state.chatDraft = e.target.value; }
@@ -595,13 +632,13 @@ async function confirmDeleteCompany(){
 
 async function refreshLpos(){
   if (!state.token) return;
-  try { const data = await api('/api/lpos'); setIfChanged('lpos', data); }
-  catch(e) {}
+  try { const data = await api('/api/lpos'); setIfChanged('lpos', data); syncOk('lpos'); }
+  catch(e) { syncFailed('lpos', e); }
 }
 async function refreshOrders(){
   if (!state.token) return;
-  try { const data = await api('/api/orders'); setIfChanged('orders', data); }
-  catch(e) {}
+  try { const data = await api('/api/orders'); setIfChanged('orders', data); syncOk('orders'); }
+  catch(e) { syncFailed('orders', e); }
 }
 
 async function acceptLpo(lpoId){
@@ -685,23 +722,23 @@ async function decidePayment(paymentId, decision){
 
 async function refreshRfqs(){
   if (!state.token) return;
-  try { const data = await api('/api/rfqs'); setIfChanged('rfqs', data); }
-  catch(e) {}
+  try { const data = await api('/api/rfqs'); setIfChanged('rfqs', data); syncOk('rfqs'); }
+  catch(e) { syncFailed('rfqs', e); }
 }
 async function refreshWallet(){
   if (!state.token || !state.company || state.company.type !== 'SUPPLIER') return;
-  try { const data = await api('/api/wallet'); setIfChanged('wallet', data); }
-  catch(e) {}
+  try { const data = await api('/api/wallet'); setIfChanged('wallet', data); syncOk('wallet'); }
+  catch(e) { syncFailed('wallet', e); }
 }
 async function refreshCatalog(){
   if (!state.token) return;
-  try { const data = await api('/api/catalog'); setIfChanged('catalog', data); }
-  catch(e) {}
+  try { const data = await api('/api/catalog'); setIfChanged('catalog', data); syncOk('catalog'); }
+  catch(e) { syncFailed('catalog', e); }
 }
 async function refreshMyCatalog(){
   if (!state.token || !state.company) return;
-  try { const data = await api('/api/catalog?supplierCompanyId=' + state.company.id); setIfChanged('myCatalog', data); }
-  catch(e) {}
+  try { const data = await api('/api/catalog?supplierCompanyId=' + state.company.id); setIfChanged('myCatalog', data); syncOk('myCatalog'); }
+  catch(e) { syncFailed('myCatalog', e); }
 }
 
 async function deleteProduct(id){
@@ -1180,7 +1217,7 @@ function renderDashboard(role){
     : state.section === 'lpos' ? renderLpoManagement(isBuyer)
     : (isBuyer ? renderBuyerHub() : renderSupplierHub());
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
     renderModals() + renderWalletModal() + renderLightbox() + toastHtml();
 }
 
@@ -1742,7 +1779,7 @@ function renderAdmin(){
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + toastHtml();
 }
 
 function renderCreditModal(){
