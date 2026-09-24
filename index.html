@@ -237,6 +237,9 @@ let state = {
 
   showClosedOrders: false, // LPO management: "Completed & cancelled" section expanded
 
+  // admin: review a company's verification documents (file fetched only when viewed)
+  showDocsModal: null, docViewer: null, docBusyId: null,
+
   syncErrors: {}, // background refresh failures by source (see syncFailed)
 
   verifyFileName: '', verifyFileBusy: false,
@@ -1763,23 +1766,24 @@ function renderAdmin(){
   ).join('') + '</div>' +
   (list.length === 0 ? emptyState('No companies here', 'Nothing matches this filter yet.') :
     '<div class="flex flex-col gap-3">' + list.map(c =>
-      '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center gap-3">' + avatarHtml(c.name, 36) +
+      '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex min-w-[220px] flex-1 items-center gap-3">' + avatarHtml(c.name, 36) +
         '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
           (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
           (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(3) + ' credits' : '') + '</div></div></div>' +
-        '<div class="flex items-center gap-2 shrink-0">' +
+        '<div class="flex flex-wrap items-center justify-end gap-2">' +
           '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + ({PENDING:'background:var(--warn-soft); color:var(--warn);', IN_REVIEW:'background:var(--info-soft); color:var(--info);', VERIFIED:'background:var(--ok-soft); color:var(--ok);', REJECTED:'background:var(--bad-soft); color:var(--bad);'}[c.verificationStatus]||'') + '">' + c.verificationStatus + '</span>' +
           (c.verificationStatus !== 'VERIFIED' ? actionBtn('Verify', "setCompanyVerification('" + c.id + "','VERIFIED')", state.adminBusyId===c.id) : '') +
           (c.verificationStatus !== 'REJECTED' ? '<button onclick="setCompanyVerification(\'' + c.id + '\',\'REJECTED\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reject</button>' : '') +
+          ((c.documents || []).length ? '<button onclick="openDocsModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx);">Documents (' + c.documents.length + ')</button>' : '') +
           (c.type === 'SUPPLIER' ? '<button onclick="openCreditModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Add credits</button>' : '') +
           '<button onclick="openResetModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reset password</button>' +
           '<button onclick="openDeleteModal(\'' + c.id + '\',' + jsAttr(c.name) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bad); color:var(--bad);">Delete</button>' +
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + renderDocsModal() + toastHtml();
 }
 
 function renderCreditModal(){
@@ -2037,10 +2041,71 @@ function bindEvents(){
   if (fileInput) fileInput.addEventListener('change', onVerifyFileChange);
 }
 
+// ---------- Admin: review verification documents ----------
+
+// Same whitelist as the API: PDF and raster images only (no SVG, which can carry script)
+const DOC_DATA_URL_RE = /^data:(application\/pdf|image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/;
+const DOC_TYPE_LABELS = { TRADE_LICENSE:'Trade license', CR_CERTIFICATE:'Commercial registration', OTHER:'Other' };
+
+function openDocsModal(companyId){ closeDocViewer(); setState({ showDocsModal: companyId }); }
+function closeDocsModal(){ closeDocViewer(); setState({ showDocsModal: null }); }
+function closeDocViewer(){
+  if (state.docViewer) { try { URL.revokeObjectURL(state.docViewer.url); } catch(e) {} }
+  state.docViewer = null;
+}
+
+async function viewDocument(companyId, docId){
+  setState({ docBusyId: docId });
+  try {
+    const doc = await api('/api/admin/companies/' + companyId + '/documents/' + docId);
+    const m = DOC_DATA_URL_RE.exec(doc.fileUrl || '');
+    if (!m) throw new Error('This file type can’t be shown safely.');
+    // decode to a Blob: blob: URLs render PDFs in the browser viewer, which data: URLs often don't
+    const bin = atob(m[2]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    closeDocViewer();
+    setState({ docBusyId: null, docViewer: { id: docId, mime: m[1], url: URL.createObjectURL(new Blob([bytes], { type: m[1] })) } });
+  } catch(e) { setState({ docBusyId: null }); showToast(e.message); }
+}
+
+function renderDocsModal(){
+  if (!state.showDocsModal) return '';
+  const c = (state.adminCompanies || []).find(x => x.id === state.showDocsModal);
+  if (!c) return '';
+  const docs = c.documents || [];
+  const v = state.docViewer;
+  const viewer = !v ? '<div class="rounded-lg border border-dashed p-8 text-center text-[12.5px]" style="border-color:var(--bd2); color:var(--tx4);">Choose a document to view it here.</div>'
+    : (v.mime === 'application/pdf'
+        ? '<iframe src="' + esc(v.url) + '" title="Document" class="w-full rounded-lg border" style="height:60vh; border-color:var(--bd); background:white;"></iframe>'
+        : '<img src="' + esc(v.url) + '" alt="Document" class="mx-auto max-h-[60vh] rounded-lg border object-contain" style="border-color:var(--bd);" />') +
+      '<div class="mt-2 text-right"><a href="' + esc(v.url) + '" target="_blank" rel="noopener" class="text-[12px] font-semibold" style="color:var(--acc);">Open in new tab</a></div>';
+  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise w-full max-w-3xl max-h-[92vh] overflow-y-auto bx-scroll rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Documents · ' + esc(c.name) + '</h3>' +
+      '<button onclick="closeDocsModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + esc(c.verificationStatus) + '</div>' +
+      '<div class="mt-4 flex flex-col gap-2">' + docs.map(d =>
+        '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[12.5px]" style="border-color:' + (v && v.id === d.id ? 'var(--acc)' : 'var(--bd)') + ';">' +
+          '<div><span class="font-semibold" style="color:var(--tx);">' + esc(DOC_TYPE_LABELS[d.docType] || d.docType) + '</span>' +
+          ' <span class="mono" style="color:var(--tx4);">&middot; ' + new Date(d.uploadedAt).toLocaleString() + '</span></div>' +
+          actionBtn('View', "viewDocument('" + c.id + "','" + d.id + "')", state.docBusyId === d.id) +
+        '</div>').join('') + '</div>' +
+      '<div class="mt-4">' + viewer + '</div>' +
+      '<div class="mt-5 flex justify-end gap-2">' +
+        (c.verificationStatus !== 'REJECTED' ? '<button onclick="setCompanyVerification(\'' + c.id + '\',\'REJECTED\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reject</button>' : '') +
+        (c.verificationStatus !== 'VERIFIED' ? actionBtn('Verify', "setCompanyVerification('" + c.id + "','VERIFIED')", state.adminBusyId === c.id) : '') +
+      '</div>' +
+    '</div></div>';
+}
+
 async function onVerifyFileChange(e){
   const file = e.target.files && e.target.files[0];
   if (!file) return;
   if (file.size > 2 * 1024 * 1024) { showToast('File must be under 2MB.'); e.target.value = ''; return; }
+  if (!['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type)) {
+    showToast('Please choose a PDF, PNG, JPEG, WebP or GIF file.'); e.target.value = ''; return;
+  }
   setState({ verifyFileBusy: true });
   const reader = new FileReader();
   reader.onload = () => {
