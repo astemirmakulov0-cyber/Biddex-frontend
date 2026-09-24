@@ -734,7 +734,10 @@ function onNewRfqField(field, e){ state.newRfq[field] = e.target.value; }
 
 async function submitNewRfq(){
   const r = state.newRfq;
-  if (!r.title || !r.quantity || !r.deadline) return;
+  if (!r.title || !r.quantity || !r.deadline || !r.budget) { showToast('Please fill in what you need, quantity, budget and the date.'); return; }
+  // suppliers pay 5% of the budget to quote, so an RFQ without one could never receive a quote
+  const budget = Number(r.budget);
+  if (!Number.isFinite(budget) || budget <= 0) { showToast('Budget must be a positive amount in BHD.'); return; }
   const editId = state.editRfqId;
   const fields = {
     title: r.title,
@@ -742,7 +745,7 @@ async function submitNewRfq(){
     category: r.category || 'general',
     quantity: Number(r.quantity) || undefined,
     unit: r.unit,
-    budget: r.budget ? Number(r.budget) : undefined,
+    budget,
     deadline: bahrainEndOfDay(r.deadline)
   };
   setState({ postBusy:true });
@@ -1573,6 +1576,8 @@ function renderOrderDetail(){
       ['Description', rfq ? rfq.description : '—']
     ]) +
     detailCard('Purchase order', [
+      ['LPO', 'LPO-' + String(lpo.id || '').slice(-4).toUpperCase()],
+      [isSupplier ? 'Buyer' : 'Supplier', (isSupplier ? lpo.buyerCompany : lpo.supplierCompany)?.name || '—'],
       ['Amount', fmt(lpo.totalAmount)],
       ['Terms', lpo.terms || '—'],
       // the LPO document stays ACCEPTED once taken; how the deal went is the order's status
@@ -1830,7 +1835,7 @@ function renderModals(){
       '</select></label>' +
       field('quantity','Quantity', r.quantity, 'e.g. 200') +
       field('unit','Unit', r.unit, 'pcs') +
-      field('budget','Budget (BHD) — suppliers pay 5% of this to bid', r.budget, 'e.g. 500') +
+      field('budget','Budget (BHD, required) — suppliers pay 5% of this to bid', r.budget, 'e.g. 500') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Needed by</span>' +
       '<input data-field="deadline" type="date" min="' + bahrainToday() + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
       'submitNewRfq()', state.postBusy ? (editing ? 'Saving…' : 'Posting…') : (editing ? 'Save changes' : 'Post RFQ to suppliers'), state.postBusy);
