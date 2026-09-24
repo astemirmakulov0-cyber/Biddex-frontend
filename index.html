@@ -212,7 +212,7 @@ let state = {
   newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' },
   postBusy: false,
 
-  compareRfqId: null, compareQuotes: [], compareLoading: false,
+  compareRfqId: null, compareQuotes: [], compareLoading: false, compareBusyId: null,
 
   submitQuoteRfqId: null, quoteForm: { price:'', days:'' }, quoteBusy: false,
 
@@ -224,6 +224,11 @@ let state = {
   showVerifyModal: false, verifyForm: { fileUrl:'', docType:'TRADE_LICENSE' }, verifyBusy: false,
 
   adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
+  // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
+  adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
+  resolveComment: '', resolveBusy: false,
+  // buyer: open a dispute on an order (disputeOrderId = order id)
+  disputeOrderId: null, disputeReason: '', disputeBusy: false,
 
   section: 'main', // main | rfqs | lpos | profile | orderDetail | catalog
   profileForm: { name:'', country:'', phone:'', registrationNumber:'' }, profileBusy: false,
@@ -405,7 +410,7 @@ async function submitAuth(){
     saveSession();
     const dest = data.user.role === 'ADMIN' ? 'admin' : (data.company && data.company.type === 'SUPPLIER' ? 'supplier' : 'buyer');
     setState({ view: dest, authBusy:false, section:'main' });
-    if (dest === 'admin') refreshAdminCompanies(); else refreshAll();
+    if (dest === 'admin') refreshAdmin(); else refreshAll();
   } catch (e) {
     // Remember the email that was actually submitted so "Resend" targets it even if the field is edited afterwards.
     const unverified = mode === 'login' && e.status === 403 && e.message === 'Please verify your email before logging in';
@@ -438,7 +443,7 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 async function refreshAll(){
@@ -459,7 +464,7 @@ function syncFailed(source, e){
 }
 function retrySync(){
   setState({ syncErrors: {} });
-  if (state.view === 'admin') refreshAdminCompanies(); else refreshAll();
+  if (state.view === 'admin') refreshAdmin(); else refreshAll();
 }
 function syncBanner(){
   const msgs = [...new Set(Object.values(state.syncErrors || {}))];
@@ -508,6 +513,52 @@ async function setCompanyVerification(companyId, status){
 }
 function setAdminFilter(f){ setState({ adminFilter: f }); }
 
+// ---------- Admin: disputes ----------
+
+function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); }
+
+async function refreshAdminDisputes(){
+  if (!state.token) return;
+  try {
+    const data = await api('/api/admin/orders?status=DISPUTED');
+    setIfChanged('adminDisputes', data);
+    syncOk('adminDisputes');
+    if (state.adminDisputeId) {
+      // the dispute under review was resolved elsewhere: close it
+      if (!data.some(o => o.id === state.adminDisputeId)) setState({ adminDisputeId:null, adminDisputeChat:[] });
+      else refreshAdminDisputeChat();
+    }
+  } catch(e) { syncFailed('adminDisputes', e); }
+}
+function setAdminTab(tab){ setState({ adminTab: tab }); if (tab === 'disputes') refreshAdminDisputes(); }
+
+async function openAdminDispute(orderId){
+  setState({ adminDisputeId: orderId, adminDisputeChat: [], resolveComment: '', resolveBusy: false });
+  refreshAdminDisputeChat();
+}
+function closeAdminDispute(){ setState({ adminDisputeId:null, adminDisputeChat:[] }); }
+async function refreshAdminDisputeChat(){
+  const id = state.adminDisputeId;
+  if (!id) return;
+  try {
+    const data = await api('/api/orders/' + id + '/messages');
+    if (state.adminDisputeId === id) setIfChanged('adminDisputeChat', data);
+  } catch(e) { showToast(e.message); }
+}
+
+async function resolveDispute(action){
+  const comment = state.resolveComment.trim();
+  if (!comment) { showToast('Add a comment for both parties.'); return; }
+  if (action === 'CANCEL' && !confirm('Cancel this order? Pending payments will be rejected. Both parties will be notified.')) return;
+  setState({ resolveBusy:true });
+  try {
+    await api('/api/admin/orders/' + state.adminDisputeId + '/resolve-dispute', { method:'POST', body: JSON.stringify({ action, comment }) });
+    showToast(action === 'CANCEL' ? 'Order cancelled.' : 'Order resumed.');
+    setState({ resolveBusy:false, adminDisputeId:null, adminDisputeChat:[], resolveComment:'' });
+    refreshAdminDisputes();
+  } catch(e) { setState({ resolveBusy:false }); showToast(e.message); refreshAdminDisputes(); }
+}
+
 function setSection(sec){
   if (sec === 'profile') {
     const c = state.company || {};
@@ -542,6 +593,21 @@ async function openOrderDetail(orderId){
     setState({ orderDetail: { order, rfq }, orderDetailLoading:false });
     refreshChat(orderId);
   } catch(e) { setState({ orderDetailLoading:false }); showToast(e.message); }
+}
+function openDisputeModal(orderId){ setState({ disputeOrderId: orderId, disputeReason: '', disputeBusy: false }); }
+function closeDisputeModal(){ setState({ disputeOrderId: null }); }
+async function submitDispute(){
+  const orderId = state.disputeOrderId;
+  const reason = state.disputeReason.trim();
+  if (!reason) { showToast('Describe the problem for the admin and the supplier.'); return; }
+  setState({ disputeBusy:true });
+  try {
+    await api('/api/orders/' + orderId + '/status', { method:'PATCH', body: JSON.stringify({ status:'DISPUTED', reason }) });
+    setState({ disputeBusy:false, disputeOrderId:null, disputeReason:'' });
+    showToast('Dispute opened — a Biddex admin will review it.');
+    refreshOrders();
+    if (state.section === 'orderDetail' && state.selectedOrderId === orderId) openOrderDetail(orderId);
+  } catch(e) { setState({ disputeBusy:false }); showToast(e.message); }
 }
 function closeOrderDetail(){ setState({ section:'lpos', selectedOrderId:null, orderDetail:null, chatMessages:[] }); }
 
@@ -823,7 +889,27 @@ async function openCompare(rfqId){
     setState({ compareQuotes: data, compareLoading:false });
   } catch(e) { setState({ compareLoading:false }); showToast(e.message); }
 }
-function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[] }); }
+function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[], compareBusyId:null }); }
+async function refreshCompareQuotes(){
+  const rfqId = state.compareRfqId;
+  if (!rfqId) return;
+  try {
+    const data = await api('/api/rfqs/' + rfqId + '/quotes');
+    if (state.compareRfqId === rfqId) setState({ compareQuotes: data });
+  } catch(e) { showToast(e.message); }
+}
+
+// action: 'shortlist' | 'reject'
+async function changeQuoteStatus(quoteId, action){
+  if (action === 'reject' && !confirm('Reject this quote? The supplier will be notified. This cannot be undone.')) return;
+  setState({ compareBusyId: quoteId });
+  try {
+    await api('/api/quotes/' + quoteId + '/' + action, { method:'PATCH' });
+    showToast(action === 'shortlist' ? 'Quote shortlisted.' : 'Quote rejected.');
+  } catch(e) { showToast(e.message); }
+  setState({ compareBusyId: null });
+  refreshCompareQuotes();
+}
 
 async function acceptQuote(quoteId){
   try {
@@ -1451,7 +1537,13 @@ function renderSupplierHub(){
 function opportunityCard(r){
   const tl = timeLeftLabel(r.deadline);
   // for suppliers the server returns only their own quote(s) in r.quotes
-  const quoted = (r.quotes || []).some(q => q.status !== 'WITHDRAWN');
+  const ownQuote = (r.quotes || []).find(q => q.status !== 'WITHDRAWN');
+  const quoted = !!ownQuote;
+  const quotedLabel = !ownQuote ? '' : ({
+    SHORTLISTED: ['Shortlisted ★', 'background:var(--info-soft); color:var(--info);'],
+    REJECTED: ['Not selected', 'background:var(--bad-soft); color:var(--bad);'],
+    AWARDED: ['Awarded', 'background:var(--ok-soft); color:var(--ok);'],
+  })[ownQuote.status] || ['Quoted ✓', 'background:var(--sunken); color:var(--tx4);'];
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-center gap-4">' +
       avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40) +
@@ -1463,7 +1555,7 @@ function opportunityCard(r){
       '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '—') + '</div></div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">CLOSES IN</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
       (quoted
-        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">Quoted ✓</span>'
+        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="' + quotedLabel[1] + '">' + quotedLabel[0] + '</span>'
         : tl.past
         ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">Closed</span>'
         : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit quote</button>') +
@@ -1600,13 +1692,21 @@ function renderOrderDetail(){
       : '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Awaiting supplier confirmation</span>';
   }
 
+  // the buyer can dispute an order that is still open; an admin then resumes or cancels it
+  const disputeAction = !isSupplier && ['CONFIRMED', 'IN_PROGRESS', 'SHIPPED', 'DELIVERED'].includes(order.status)
+    ? '<button onclick="openDisputeModal(\'' + order.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Open dispute</button>'
+    : '';
+  const disputeNote = order.status === 'DISPUTED'
+    ? '<div class="mb-4 rounded-xl border px-4 py-3 text-[13px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">This order is disputed and paused until a Biddex admin reviews it. The decision will appear in the messages below.</div>'
+    : '';
+
   return '<button onclick="closeOrderDetail()" class="mb-4 text-[12px] font-semibold" style="color:var(--tx4);">&larr; Back to LPO management</button>' +
   '<div class="eyebrow mb-1.5">ORDER · ' + esc(order.status) + '</div>' +
-  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfq.title : 'Order') + '</h1>' +
+  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfq.title : 'Order') + '</h1>' + disputeNote +
   '<div class="rounded-xl border p-4 mb-6" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-end justify-between gap-3">' +
       '<div class="flex-1 min-w-[220px]">' + orderProgressHtml(order, 'mt-2 text-[12.5px] font-semibold') + '</div>' +
-      '<div class="flex gap-2">' + deliveryAction + payAction + '</div>' +
+      '<div class="flex flex-wrap gap-2">' + deliveryAction + payAction + disputeAction + '</div>' +
     '</div>' +
   '</div>' +
   '<div class="grid gap-4 sm:grid-cols-2">' +
@@ -1674,20 +1774,29 @@ function renderChatPanel(){
     '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">Messages</div>' +
     '<div class="mb-3 flex max-h-[280px] flex-col gap-2 overflow-y-auto bx-scroll pr-1">' +
     (msgs.length === 0 ? '<div class="py-6 text-center text-[12px]" style="color:var(--tx4);">No messages yet — say hello.</div>' :
-      msgs.map(m => {
-        const mine = m.senderCompanyId === myCompanyId;
-        return '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '">' +
-          '<div class="max-w-[75%] rounded-xl px-3 py-2 text-[13px]" style="' + (mine ? 'background:var(--acc); color:white;' : 'background:var(--inset); color:var(--tx2);') + '">' +
-            (!mine ? '<div class="mb-0.5 text-[10px] font-semibold opacity-70">' + esc(m.senderCompany ? m.senderCompany.name : '') + '</div>' : '') +
-            esc(m.body) +
-          '</div></div>';
-      }).join('')) +
+      msgs.map(m => chatMessageHtml(m, myCompanyId)).join('')) +
     '</div>' +
     '<div class="flex gap-2">' +
       '<input data-chat="draft" type="text" value="' + esc(state.chatDraft) + '" placeholder="Type a message…" class="flex-1 rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
       '<button onclick="sendChatMessage()" ' + (state.chatBusy?'disabled':'') + ' class="rounded-lg px-4 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (state.chatBusy?'0.6':'1') + ';">Send</button>' +
     '</div>' +
   '</div>';
+}
+
+// A message without a sender company is a Biddex admin comment (e.g. a dispute decision): shown centred
+function chatMessageHtml(m, myCompanyId){
+  if (!m.senderCompanyId) {
+    return '<div class="flex justify-center">' +
+      '<div class="max-w-[90%] rounded-xl border px-3 py-2 text-[13px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' +
+        '<div class="mb-0.5 text-[10px] font-bold">BIDDEX ADMIN</div>' + esc(m.body) +
+      '</div></div>';
+  }
+  const mine = !!myCompanyId && m.senderCompanyId === myCompanyId;
+  return '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '">' +
+    '<div class="max-w-[75%] rounded-xl px-3 py-2 text-[13px]" style="' + (mine ? 'background:var(--acc); color:white;' : 'background:var(--inset); color:var(--tx2);') + '">' +
+      (!mine ? '<div class="mb-0.5 text-[10px] font-semibold opacity-70">' + esc(m.senderCompany ? m.senderCompany.name : '') + '</div>' : '') +
+      esc(m.body) +
+    '</div></div>';
 }
 
 function detailCard(title, rows){
@@ -1756,7 +1865,13 @@ function renderAdmin(){
   const filters = ['ALL','PENDING','IN_REVIEW','VERIFIED','REJECTED'];
   const list = (state.adminCompanies || []).filter(c => state.adminFilter === 'ALL' || c.verificationStatus === state.adminFilter);
 
-  const body = '<div class="eyebrow mb-1.5">SIJILLAT REGISTRY QUEUE</div>' +
+  const disputes = state.adminDisputes || [];
+  const tabs = '<div class="flex gap-2 mb-6">' +
+    '<button onclick="setAdminTab(\'companies\')" class="chip' + (state.adminTab === 'companies' ? ' active' : '') + '">Companies</button>' +
+    '<button onclick="setAdminTab(\'disputes\')" class="chip' + (state.adminTab === 'disputes' ? ' active' : '') + '">Disputes' + (disputes.length ? ' (' + disputes.length + ')' : '') + '</button>' +
+  '</div>';
+
+  const body = state.adminTab === 'disputes' ? renderAdminDisputes() : '<div class="eyebrow mb-1.5">SIJILLAT REGISTRY QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
     '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +
     actionBtn('+ Add credits', 'openCreditModal()', false) +
@@ -1783,7 +1898,55 @@ function renderAdmin(){
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + renderDocsModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + toastHtml();
+}
+
+function renderAdminDisputes(){
+  const list = state.adminDisputes || [];
+  return '<div class="eyebrow mb-1.5">ORDER DISPUTES</div>' +
+  '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">Disputes</h1>' +
+  (list.length === 0 ? emptyState('No open disputes', 'Orders disputed by buyers appear here for review.') :
+    '<div class="flex flex-col gap-3">' + list.map(o => {
+      const lpo = o.lpo || {};
+      return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="min-w-[240px] flex-1">' +
+          '<div class="font-semibold" style="color:var(--tx);">' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</div>' +
+          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">LPO-' + esc(String(lpo.id || '').slice(-4).toUpperCase()) + ' &middot; ' + fmt(lpo.totalAmount) +
+            ' &middot; ' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + '</div>' +
+          '<div class="mt-1.5 text-[12.5px]" style="color:var(--tx2);">' + (o.disputeReason ? '&ldquo;' + esc(o.disputeReason) + '&rdquo;' : '<span style="color:var(--tx4);">No reason given</span>') + '</div>' +
+          '<div class="mono mt-1 text-[11px]" style="color:var(--tx4);">Disputed ' + new Date(o.updatedAt).toLocaleString() + ' &middot; delivery ' + esc(o.delivery ? o.delivery.status : '—') + ' &middot; invoice ' + esc(o.invoice ? o.invoice.status : '—') + '</div>' +
+        '</div>' +
+        actionBtn('Review', "openAdminDispute('" + o.id + "')", false) +
+      '</div>';
+    }).join('') + '</div>');
+}
+
+function renderAdminDisputeModal(){
+  if (!state.adminDisputeId) return '';
+  const o = (state.adminDisputes || []).find(x => x.id === state.adminDisputeId);
+  if (!o) return '';
+  const lpo = o.lpo || {};
+  const msgs = state.adminDisputeChat || [];
+  // what RESUME will do, as the server decides it: COMPLETED if paid meanwhile, else the pre-dispute status
+  const resumeTo = o.invoice && o.invoice.status === 'PAID' ? 'COMPLETED' : o.statusBeforeDispute;
+  const busy = state.resolveBusy;
+  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise w-full max-w-2xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between gap-3"><h3 class="text-lg font-bold" style="color:var(--tx);">Dispute &middot; ' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</h3>' +
+      '<button onclick="closeAdminDispute()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' (buyer) &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + ' (supplier) &middot; ' + fmt(lpo.totalAmount) + '</div>' +
+      '<div class="mt-4 text-[12px] font-bold" style="color:var(--tx);">Order chat</div>' +
+      '<div class="mt-2 flex max-h-[260px] flex-col gap-2 overflow-y-auto bx-scroll rounded-xl border p-3" style="border-color:var(--bd); background:var(--inset);">' +
+        (msgs.length === 0 ? '<div class="py-4 text-center text-[12px]" style="color:var(--tx4);">No messages.</div>' : msgs.map(m => chatMessageHtml(m, null)).join('')) +
+      '</div>' +
+      '<div class="mt-4 text-[12px] font-bold" style="color:var(--tx);">Decision comment <span class="font-normal" style="color:var(--tx4);">(posted to the order chat, both parties are notified)</span></div>' +
+      '<textarea data-resolve="comment" maxlength="1000" rows="3" class="mt-2 w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Supplier will replace the damaged units by Thursday">' + esc(state.resolveComment) + '</textarea>' +
+      '<div class="mt-4 flex flex-wrap justify-end gap-2">' +
+        '<button onclick="' + (busy ? '' : "resolveDispute('CANCEL')") + '" class="rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bad); color:var(--bad); opacity:' + (busy?'0.6':'1') + ';">Cancel order</button>' +
+        '<button onclick="' + (busy ? '' : "resolveDispute('RESUME')") + '" class="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' +
+          (busy ? 'Working…' : 'Resume' + (resumeTo ? ' (' + esc(ORDER_STATUS_LABELS[resumeTo] || resumeTo) + ')' : '')) + '</button>' +
+      '</div>' +
+    '</div></div>';
 }
 
 function renderCreditModal(){
@@ -1912,8 +2075,31 @@ function renderModals(){
         '</div>' +
       '</div></div>';
   }
+  if (state.disputeOrderId) {
+    html += modalWrap('Open dispute', 'closeDisputeModal()',
+      '<p class="text-[13px]" style="color:var(--tx3);">The order will be paused until a Biddex admin reviews it and either resumes or cancels it. Your reason is posted to the order chat and the supplier is notified.</p>' +
+      '<textarea data-dispute="reason" maxlength="1000" rows="4" class="w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="What went wrong? e.g. 20 of 100 units arrived damaged">' + esc(state.disputeReason) + '</textarea>',
+      'submitDispute()', state.disputeBusy ? 'Opening…' : 'Open dispute', state.disputeBusy);
+  }
   if (state.compareRfqId) {
     const q = state.compareQuotes;
+    const compareRfq = (state.rfqs || []).find(r => r.id === state.compareRfqId);
+    // quotes can be evaluated while bidding is open or closed, until the RFQ is awarded or cancelled
+    const evaluating = !compareRfq || ['PUBLISHED', 'QUOTING_CLOSED'].includes(compareRfq.status);
+    const pill = (txt, style) => '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + txt + '</span>';
+    const quoteActions = (x) => {
+      if (x.status === 'AWARDED') return pill('Awarded', 'background:var(--ok-soft); color:var(--ok);');
+      if (x.status === 'REJECTED') return pill('Rejected', 'background:var(--bad-soft); color:var(--bad);');
+      if (x.status === 'WITHDRAWN') return pill('Withdrawn', 'background:var(--sunken); color:var(--tx4);');
+      const busy = state.compareBusyId === x.id;
+      const shortlisted = x.status === 'SHORTLISTED' ? pill('Shortlisted', 'background:var(--info-soft); color:var(--info);') : '';
+      if (!evaluating) return shortlisted;
+      const btn = (label, fn, style) => '<button onclick="' + (busy || state.compareBusyId ? '' : fn) + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="' + style + ' opacity:' + (busy?'0.6':'1') + ';">' + label + '</button>';
+      return shortlisted +
+        (x.status === 'SUBMITTED' ? btn('Shortlist', "changeQuoteStatus('" + x.id + "','shortlist')", 'border-color:var(--bd2); color:var(--tx);') : '') +
+        btn('Reject', "changeQuoteStatus('" + x.id + "','reject')", 'border-color:var(--bd2); color:var(--bad);') +
+        '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">Award</button>';
+    };
     html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
       '<div class="bx-rise w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quotes</h3>' +
@@ -1921,17 +2107,11 @@ function renderModals(){
         '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
         (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">Loading…</div>' :
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">No quotes yet.</div>' :
-          q.map(x => '<div class="flex items-center justify-between gap-3 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);">' +
+          q.map(x => '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);">' +
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') + '</div>' +
             '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(x.price) + ' &middot; ' + x.deliveryTimeDays + 'd</div></div></div>' +
-            (x.status === 'AWARDED'
-              ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--ok-soft); color:var(--ok);">Awarded</span>'
-              : x.status === 'REJECTED'
-                ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Rejected</span>'
-              : x.status === 'WITHDRAWN'
-                ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx4);">Withdrawn</span>'
-                : '<button onclick="acceptQuote(\'' + x.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Award</button>')
+            '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div>'
           + '</div>').join('')
         ) +
         '</div></div></div>';
@@ -2022,6 +2202,12 @@ function bindEvents(){
   document.querySelectorAll('[data-chat]').forEach(el => {
     el.addEventListener('input', (e) => { state.chatDraft = e.target.value; });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !state.chatBusy) sendChatMessage(); });
+  });
+  document.querySelectorAll('[data-dispute]').forEach(el => {
+    el.addEventListener('input', (e) => { state.disputeReason = e.target.value; });
+  });
+  document.querySelectorAll('[data-resolve]').forEach(el => {
+    el.addEventListener('input', (e) => { state.resolveComment = e.target.value; });
   });
   document.querySelectorAll('[data-pay]').forEach(el => {
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', (e) => { state.payForm[el.getAttribute('data-pay')] = e.target.value; });
@@ -2121,7 +2307,7 @@ initTheme();
 initLang();
 loadSession();
 render();
-if (state.token) { if (state.view === 'admin') refreshAdminCompanies(); else refreshAll(); }
+if (state.token) { if (state.view === 'admin') refreshAdmin(); else refreshAll(); }
 
 // Tick countdown timers every second WITHOUT re-rendering the whole page (avoids flicker):
 // only the text/color of elements carrying a deadline is updated in place.
@@ -2144,14 +2330,14 @@ setInterval(() => {
     refreshNotifications();
     if (state.section === 'orderDetail' && state.selectedOrderId) refreshChat(state.selectedOrderId);
   } else if (state.view === 'admin') {
-    refreshAdminCompanies();
+    refreshAdmin();
   }
 }, 30000);
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !state.token) return;
   if (state.view === 'buyer' || state.view === 'supplier') refreshAll();
-  else if (state.view === 'admin') refreshAdminCompanies();
+  else if (state.view === 'admin') refreshAdmin();
 });
 </script>
 </body>
