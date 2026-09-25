@@ -2530,7 +2530,7 @@ const DOC_TYPE_LABELS = { TRADE_LICENSE:'Trade license', CR_CERTIFICATE:'Commerc
 function openDocsModal(companyId){ closeDocViewer(); setState({ showDocsModal: companyId }); }
 function closeDocsModal(){ closeDocViewer(); setState({ showDocsModal: null }); }
 function closeDocViewer(){
-  if (state.docViewer) { try { URL.revokeObjectURL(state.docViewer.url); } catch(e) {} }
+  if (state.docViewer && !state.docViewer.remote) { try { URL.revokeObjectURL(state.docViewer.url); } catch(e) {} }
   state.docViewer = null;
 }
 
@@ -2538,6 +2538,13 @@ async function viewDocument(companyId, docId){
   setState({ docBusyId: docId });
   try {
     const doc = await api('/api/admin/companies/' + companyId + '/documents/' + docId);
+    if (doc.url) {
+      // stored in the bucket: a 120-second link that shows the file inline
+      closeDocViewer();
+      setState({ docBusyId: null, docViewer: { id: docId, mime: doc.contentType, url: doc.url, remote: true } });
+      return;
+    }
+    // not yet moved to the bucket: the file comes inline as a data: URL
     const m = DOC_DATA_URL_RE.exec(doc.fileUrl || '');
     if (!m) throw new Error('This file type can’t be shown safely.');
     // decode to a Blob: blob: URLs render PDFs in the browser viewer, which data: URLs often don't
