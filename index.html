@@ -473,10 +473,35 @@ function retrySync(){
   setState({ syncErrors: {} });
   if (state.view === 'admin') refreshAdmin(); else refreshAll();
 }
+// ---------- New version check ----------
+// The app is one page that stays open for hours; after a release an open tab keeps running the old code (an
+// admin tab opened before the documents moved to the bucket still expected data: URLs and refused to show
+// them). Every 5 minutes, and when the tab comes back, compare index.html with what it was when this page
+// started checking, and offer a reload. no-cache: the browser revalidates (a cheap 304 while unchanged).
+let appHtmlHash = null;
+async function checkForNewVersion(){
+  try {
+    const res = await fetch(location.pathname, { cache: 'no-cache' });
+    if (!res.ok) return;
+    const text = await res.text();
+    let h = 0;
+    for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0;
+    if (appHtmlHash === null) appHtmlHash = h;
+    else if (h !== appHtmlHash && !state.newVersionAvailable) setState({ newVersionAvailable: true });
+  } catch(e) {} // offline etc.: try again next time
+}
+function newVersionBanner(){
+  if (!state.newVersionAvailable) return '';
+  return '<div role="status" class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-[12.5px]" style="border-color:var(--info); background:var(--info-soft); color:var(--info);">' +
+    '<span><b>A new version of Biddex is available.</b> Reload to use it — some features may not work in this version.</span>' +
+    '<button onclick="location.reload()" class="shrink-0 rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--info); color:var(--info);">Reload</button>' +
+  '</div>';
+}
+
 function syncBanner(){
   const msgs = [...new Set(Object.values(state.syncErrors || {}))];
-  if (msgs.length === 0) return '';
-  return '<div role="status" class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-[12.5px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' +
+  if (msgs.length === 0) return newVersionBanner();
+  return newVersionBanner() + '<div role="status" class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-[12.5px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' +
     '<span><b>' + t('syncFailed') + '</b> ' + esc(msgs[0]) + (msgs.length > 1 ? ' (+' + (msgs.length - 1) + ')' : '') + ' ' + t('syncRetrying') + '</span>' +
     '<button onclick="retrySync()" class="shrink-0 rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--warn); color:var(--warn);">' + t('retryNow') + '</button>' +
   '</div>';
@@ -2441,9 +2466,16 @@ function renderModals(){
         '<option value="OTHER"' + (v.docType==='OTHER'?' selected':'') + '>Other</option>' +
       '</select></label>' +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">File (PDF or image, max 2MB)</span>' +
-      '<input data-verify-file type="file" accept="application/pdf,image/*" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
+      // once a file is read, the (re-rendered, hence empty) native input would say "No file chosen" next to
+      // the ready line: show only the ready line, with a hidden input behind "Change file"
+      (v.fileUrl && state.verifyFileName
+        ? '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5" style="border-color:var(--ok); background:var(--ok-soft);">' +
+            '<span class="min-w-0 text-[12.5px] font-semibold" style="color:var(--ok); overflow-wrap:anywhere;">✓ ' + esc(state.verifyFileName) + ' ready to submit</span>' +
+            '<span class="shrink-0 text-[12px] font-semibold underline" style="color:var(--tx3); cursor:pointer;">Change file</span>' +
+            '<input data-verify-file type="file" accept="application/pdf,image/*" class="hidden" />' +
+          '</div>'
+        : '<input data-verify-file type="file" accept="application/pdf,image/*" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />') +
       (state.verifyFileBusy ? '<span class="text-[12px]" style="color:var(--tx4);">Reading file…</span>' : '') +
-      (v.fileUrl && state.verifyFileName ? '<span class="text-[12px] font-semibold" style="color:var(--acc);">✓ ' + esc(state.verifyFileName) + ' ready to submit</span>' : '') +
       '</label>',
       'submitVerifyDoc()', state.verifyBusy ? 'Submitting…' : 'Submit for review', state.verifyBusy || state.verifyFileBusy || !v.fileUrl);
   }
@@ -2525,6 +2557,8 @@ function bindEvents(){
 
 // Same whitelist as the API: PDF and raster images only (no SVG, which can carry script)
 const DOC_DATA_URL_RE = /^data:(application\/pdf|image\/(?:png|jpeg|webp|gif));base64,([A-Za-z0-9+/]+={0,2})$/;
+// what the document viewer shows inline (iframe for PDF, img for images); anything else is refused
+const VIEWABLE_DOC_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 const DOC_TYPE_LABELS = { TRADE_LICENSE:'Trade license', CR_CERTIFICATE:'Commercial registration', OTHER:'Other' };
 
 function openDocsModal(companyId){ closeDocViewer(); setState({ showDocsModal: companyId }); }
@@ -2539,13 +2573,16 @@ async function viewDocument(companyId, docId){
   try {
     const doc = await api('/api/admin/companies/' + companyId + '/documents/' + docId);
     if (doc.url) {
-      // stored in the bucket: a 120-second link that shows the file inline
+      // stored in the bucket: a 120-second link that shows the file inline — only for types a browser
+      // never executes (the server checks the content on upload; this is the second line of defence)
+      if (!VIEWABLE_DOC_TYPES.includes(doc.contentType)) throw new Error('This file type can’t be shown safely.');
       closeDocViewer();
       setState({ docBusyId: null, docViewer: { id: docId, mime: doc.contentType, url: doc.url, remote: true } });
       return;
     }
     // not yet moved to the bucket: the file comes inline as a data: URL
-    const m = DOC_DATA_URL_RE.exec(doc.fileUrl || '');
+    if (!doc.fileUrl) throw new Error('This document can’t be opened in this version of the page. Reload the page and try again.');
+    const m = DOC_DATA_URL_RE.exec(doc.fileUrl);
     if (!m) throw new Error('This file type can’t be shown safely.');
     // decode to a Blob: blob: URLs render PDFs in the browser viewer, which data: URLs often don't
     const bin = atob(m[2]);
@@ -2634,6 +2671,10 @@ setInterval(() => {
     refreshAdmin();
   }
 }, 30000);
+
+checkForNewVersion();
+setInterval(checkForNewVersion, 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForNewVersion(); });
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !state.token) return;
