@@ -207,7 +207,7 @@ let state = {
 
   showPostRfq: false, editRfqId: null, // editRfqId set -> the post modal edits that RFQ instead of creating one
   cancelRfqId: null, cancelBusy: false,
-  newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'' },
+  newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'', specifications:'' },
   postBusy: false,
 
   compareRfqId: null, compareQuotes: [], compareLoading: false, compareBusyId: null,
@@ -1066,13 +1066,27 @@ function bahrainDateOf(iso){ return iso ? new Date(new Date(iso).getTime() + 3 *
 function canEditRfq(r){ return (r.status === 'DRAFT' || r.status === 'PUBLISHED') && !(r._count && r._count.quotes > 0); }
 function canCancelRfq(r){ return ['DRAFT','PUBLISHED','QUOTING_CLOSED'].includes(r.status); }
 
-function openPostRfq(prefillTitle){ setState({ showPostRfq:true, editRfqId:null, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'' } }); }
+function openPostRfq(prefillTitle){ setState({ showPostRfq:true, editRfqId:null, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'', specifications:'' } }); }
+const MAX_SPECIFICATIONS = 2000; // as the server (RFQ.specifications)
+// "Show more" state of specifications on opportunity cards
+function toggleSpecs(id){ state.openSpecs = Object.assign({}, state.openSpecs, { [id]: !(state.openSpecs || {})[id] }); setState({}); }
+function specsHtml(text, id){
+  if (!text) return '';
+  const open = !!(state.openSpecs || {})[id];
+  const long = text.length > 160;
+  return '<div class="mt-1.5 text-[12.5px] leading-relaxed" style="color:var(--tx3); white-space:pre-wrap; overflow-wrap:anywhere;">' +
+    esc(long && !open ? text.slice(0, 160) + '…' : text) +
+    (long ? ' <button onclick="toggleSpecs(\'' + id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + (open ? 'Show less' : 'Show more') + '</button>' : '') +
+  '</div>';
+}
+
 function openEditRfq(rfqId){
   const r = (state.rfqs || []).find(x => x.id === rfqId);
   if (!r) return;
   setState({ showPostRfq:true, editRfqId: rfqId, newRfq:{
     title: r.title || '', quantity: r.quantity != null ? String(r.quantity) : '', unit: r.unit || 'pcs',
-    deadline: bahrainDateOf(r.deadline), category: ACTIVE_CATEGORIES.includes(categoryLabel(r.category)) ? categoryLabel(r.category) : ACTIVE_CATEGORIES[0], budget: r.budget != null ? String(Number(r.budget)) : ''
+    deadline: bahrainDateOf(r.deadline), category: ACTIVE_CATEGORIES.includes(categoryLabel(r.category)) ? categoryLabel(r.category) : ACTIVE_CATEGORIES[0], budget: r.budget != null ? String(Number(r.budget)) : '',
+    specifications: r.specifications || ''
   } });
 }
 function closePostRfq(){ setState({ showPostRfq:false, editRfqId:null }); }
@@ -1094,8 +1108,10 @@ async function submitNewRfq(){
     quantity: Number(r.quantity) || undefined,
     unit: r.unit,
     budget,
+    specifications: (r.specifications || '').trim(),
     deadline: bahrainEndOfDay(r.deadline)
   };
+  if (fields.specifications.length > MAX_SPECIFICATIONS) { showToast('Specifications can be at most ' + MAX_SPECIFICATIONS + ' characters.'); return; }
   setState({ postBusy:true });
   try {
     if (editId) await api('/api/rfqs/' + editId, { method:'PATCH', body: JSON.stringify(fields) });
@@ -1775,6 +1791,7 @@ function opportunityCard(r){
         '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
         '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; Verified buyer &middot; ' + esc(categoryLabel(r.category)) + '</div>' +
         (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">Your quote: ' + quotePriceText(ownQuote) + '</div>' : '') +
+        specsHtml(r.specifications, r.id) +
       '</div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">QUANTITY</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + esc(r.quantity||'—') + ' ' + esc(r.unit||'') + '</div></div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '—') + '</div></div>' +
@@ -2288,7 +2305,11 @@ function renderModals(){
       field('unit','Unit', r.unit, 'pcs') +
       field('budget','Budget (BHD, required) — suppliers pay 5% of this to bid', r.budget, 'e.g. 500') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Needed by</span>' +
-      '<input data-field="deadline" type="date" min="' + bahrainToday() + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
+      '<input data-field="deadline" type="date" min="' + bahrainToday() + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Specifications (optional)</span>' +
+        '<textarea data-field="specifications" rows="4" maxlength="' + MAX_SPECIFICATIONS + '" placeholder="Brand or quality requirements, packaging, delivery details…" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(r.specifications || '') + '</textarea>' +
+        '<span class="flex justify-between gap-3 text-[11px]" style="color:var(--tx4);"><span>Visible to suppliers. Don\'t include your company name or contacts — you stay anonymous until you award. Locked once a supplier quotes.</span><span id="spec-count" class="mono shrink-0">' + (r.specifications || '').length + ' / ' + MAX_SPECIFICATIONS + '</span></span>' +
+      '</label>',
       'submitNewRfq()', state.postBusy ? (editing ? 'Saving…' : 'Posting…') : (editing ? 'Save changes' : 'Post RFQ to suppliers'), state.postBusy);
   }
   if (state.showPayModal) {
@@ -2387,6 +2408,7 @@ function renderModals(){
       (hasBudget
         ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">Submitting a quote costs <b class="mono">' + fee.toFixed(3) + ' BHD</b> (5% of this RFQ\'s ' + fmt(rfqForQuote.budget) + ' budget), deducted from your wallet.</div>'
         : '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--bad-soft); color:var(--bad);">This RFQ has no budget set by the buyer, so a bid fee can\'t be calculated — you won\'t be able to submit a quote on it.</div>') +
+      (rfqForQuote && rfqForQuote.specifications ? '<div class="rounded-lg border px-3 py-2.5" style="border-color:var(--bd); background:var(--inset);"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Buyer\'s specifications</div><div class="mt-1 text-[12.5px] leading-relaxed" style="color:var(--tx2); white-space:pre-wrap; overflow-wrap:anywhere; max-height:160px; overflow-y:auto;">' + esc(rfqForQuote.specifications) + '</div></div>' : '') +
       '<div class="text-[12.5px]" style="color:var(--tx3);">Quantity requested: <b class="mono" style="color:var(--tx);">' + esc(rfqForQuote && rfqForQuote.quantity || '—') + ' ' + esc(rfqForQuote && rfqForQuote.unit || '') + '</b></div>' +
       field('price','Unit price (BHD per ' + esc(rfqForQuote && rfqForQuote.unit || 'unit') + ')', f.price, '5.800') +
       '<div id="quote-total" class="rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + quoteTotalHtml(f.price, rfqForQuote) + '</div>' +
@@ -2481,7 +2503,10 @@ function bindEvents(){
     el.addEventListener('input', (e) => {
       const f = el.getAttribute('data-field');
       if (state.view === 'auth') { if (f === 'consent') state.authForm.consent = e.target.checked; else state.authForm[f] = e.target.value; }
-      else if (state.showPostRfq && ['title','quantity','unit','deadline','budget'].includes(f)) state.newRfq[f] = e.target.value;
+      else if (state.showPostRfq && ['title','quantity','unit','deadline','budget','specifications'].includes(f)) {
+        state.newRfq[f] = e.target.value;
+        if (f === 'specifications') { const c = document.getElementById('spec-count'); if (c) c.textContent = e.target.value.length + ' / ' + MAX_SPECIFICATIONS; }
+      }
       else if (state.submitQuoteRfqId && ['price','days'].includes(f)) { state.quoteForm[f] = e.target.value; if (f === 'price') updateQuoteTotal(); }
       else if (state.showCatalogAdd && ['name','price'].includes(f)) state.newProduct[f] = e.target.value;
       else if (state.showVerifyModal && f === 'fileUrl') state.verifyForm.fileUrl = e.target.value;
