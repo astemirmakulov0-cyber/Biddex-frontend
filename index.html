@@ -960,15 +960,18 @@ async function acceptLpo(lpoId){
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
 }
 
-async function declineLpo(lpoId){
-  if (!confirm('Decline this purchase order? The buyer will be notified and can award the RFQ to another supplier. Your bid fee is not refunded.')) return;
-  setState({ ordersBusyId: lpoId });
+// Declining asks for a reason (optional, up to 500 characters); the buyer sees it next to the quote
+function declineLpo(lpoId){ setState({ declineLpoId: lpoId, declineReason: '', declineBusy: false }); }
+function closeDeclineLpo(){ setState({ declineLpoId: null }); }
+async function submitDeclineLpo(){
+  const lpoId = state.declineLpoId;
+  setState({ declineBusy: true, ordersBusyId: lpoId });
   try {
-    await api('/api/lpos/' + lpoId + '/decline', { method:'PATCH', body: JSON.stringify({}) });
+    await api('/api/lpos/' + lpoId + '/decline', { method:'PATCH', body: JSON.stringify({ reason: state.declineReason.trim() || undefined }) });
     showToast('Purchase order declined.');
-    setState({ ordersBusyId: null });
+    setState({ declineBusy: false, declineLpoId: null, ordersBusyId: null });
     refreshLpos();
-  } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); refreshLpos(); }
+  } catch(e) { setState({ declineBusy: false, ordersBusyId: null }); showToast(e.message); refreshLpos(); }
 }
 
 async function updateDelivery(orderId, status){
@@ -1126,6 +1129,19 @@ async function submitNewRfq(){
   }
 }
 
+// Close bidding early: no more quotes; awarding a submitted quote stays possible
+function openCloseBidding(rfqId){ setState({ closeBiddingRfqId: rfqId, closeBiddingBusy: false }); }
+function closeCloseBidding(){ setState({ closeBiddingRfqId: null }); }
+async function confirmCloseBidding(){
+  const rfqId = state.closeBiddingRfqId;
+  setState({ closeBiddingBusy: true });
+  try {
+    await api('/api/rfqs/' + rfqId, { method:'PATCH', body: JSON.stringify({ status: 'QUOTING_CLOSED' }) });
+    setState({ closeBiddingRfqId: null, closeBiddingBusy: false });
+    showToast('Bidding closed. You can still compare and award the quotes you received.');
+    refreshRfqs();
+  } catch(e) { setState({ closeBiddingBusy: false }); showToast(e.message); }
+}
 function openCancelRfq(rfqId){ setState({ cancelRfqId: rfqId }); }
 function closeCancelRfq(){ setState({ cancelRfqId: null }); }
 async function confirmCancelRfq(){
@@ -1275,7 +1291,15 @@ function renderLightbox(){
 }
 
 function openCatalogAdd(){ if (!companyVerified()) { showToast('Available after verification.'); return; } openCatalogAddModal(); }
-function openCatalogAddModal(){ setState({ showCatalogAdd:true, newProduct:{ name:'', price:'', unit:'kg', imageUrl:'' }, catalogPhotoName:'' }); }
+function openCatalogAddModal(){ setState({ showCatalogAdd:true, editCatalogId:null, catalogPhotoTouched:false, newProduct:{ name:'', price:'', unit:'kg', imageUrl:'' }, catalogPhotoName:'' }); }
+function openCatalogEdit(id){
+  if (!companyVerified()) { showToast('Available after verification.'); return; }
+  const it = (state.myCatalog || []).find(x => x.id === id);
+  if (!it) return;
+  // imageUrl here is the current photo's link, only for the preview; it is sent back only if replaced or removed
+  setState({ showCatalogAdd:true, editCatalogId:id, catalogPhotoTouched:false, catalogPhotoName:'',
+    newProduct:{ name: it.name || '', price: String(Number(it.price)), unit: it.unit || 'pcs', imageUrl: it.imageUrl || '' } });
+}
 function closeCatalogAdd(){ setState({ showCatalogAdd:false }); }
 function onProductField(field, e){ state.newProduct[field] = e.target.value; }
 
@@ -1311,16 +1335,25 @@ async function onCatalogPhotoChange(e){
   try {
     const dataUrl = await resizeImageFile(file, 1024, 0.82);
     state.newProduct.imageUrl = dataUrl;
-    setState({ catalogPhotoBusy: false, catalogPhotoName: file.name });
+    setState({ catalogPhotoBusy: false, catalogPhotoName: file.name, catalogPhotoTouched: true });
   } catch (err) { setState({ catalogPhotoBusy: false }); showToast(err.message); }
 }
-function removeCatalogPhoto(){ state.newProduct.imageUrl = ''; setState({ catalogPhotoName: '' }); }
+function removeCatalogPhoto(){ state.newProduct.imageUrl = ''; setState({ catalogPhotoName: '', catalogPhotoTouched: true }); }
 
 async function addProduct(){
   const p = state.newProduct;
   const price = parseFloat(p.price);
   if (!p.name || !price) return;
   try {
+    if (state.editCatalogId) {
+      const body = { name: p.name, price, unit: p.unit || 'pcs' };
+      if (state.catalogPhotoTouched) body.imageUrl = p.imageUrl || null; // new photo, or removed
+      await api('/api/catalog/' + state.editCatalogId, { method:'PATCH', body: JSON.stringify(body) });
+      setState({ showCatalogAdd:false, editCatalogId:null });
+      showToast('Item updated.');
+      refreshMyCatalog();
+      return;
+    }
     await api('/api/catalog', { method:'POST', body: JSON.stringify({ name: p.name, price, unit: p.unit || 'pcs', category:'general', imageUrl: p.imageUrl || undefined }) });
     setState({ showCatalogAdd:false });
     showToast('Item added to catalog.');
@@ -1615,6 +1648,7 @@ function rfqTable(rfqs){
         '<td>' + statusPill(r.status) + '</td>' +
         '<td class="text-right"><div class="flex items-center justify-end gap-2">' +
           (canEditRfq(r) ? '<button onclick="openEditRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Edit</button>' : '') +
+          (r.status === 'PUBLISHED' ? '<button onclick="openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Close bidding</button>' : '') +
           (canCancelRfq(r) ? '<button onclick="openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">Cancel</button>' : '') +
           '<button onclick="openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Compare bids</button>' +
         '</div></td>' +
@@ -1836,7 +1870,9 @@ function renderSupplierCatalogPage(){
       '<span class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</span></div></td>' +
       '<td style="color:var(--tx3);">' + esc(p.unit || 'pcs') + '</td>' +
       '<td class="mono" style="color:var(--tx2);">' + fmt(p.price) + '</td>' +
-      '<td class="text-right"><button onclick="deleteProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">Remove</button></td></tr>').join('') +
+      '<td class="text-right"><div class="flex justify-end gap-3">' +
+        (companyVerified() ? '<button onclick="openCatalogEdit(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">Edit</button>' : '') +
+        '<button onclick="deleteProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">Remove</button></div></td></tr>').join('') +
     '</tbody></table></div>');
 }
 
@@ -1888,7 +1924,7 @@ function renderSettings(){
   '</div>' +
   '<div class="mt-6 max-w-lg">' +
     '<div class="mb-3 flex items-center justify-between"><h2 class="text-[15px] font-bold" style="color:var(--tx);">Verification documents</h2>' +
-    (c.verificationStatus !== 'VERIFIED' ? '<button onclick="openVerifyModal()" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">+ Submit document</button>' : '') +
+    '<button onclick="openVerifyModal()" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">' + (c.verificationStatus === 'VERIFIED' ? '+ Submit updated document' : '+ Submit document') + '</button>' +
     '</div>' +
     (docs.length === 0 ? emptyState('No documents submitted', 'Submit a trade license or CR certificate for review.') :
       '<div class="flex flex-col gap-2">' + docs.map(d =>
@@ -2328,6 +2364,21 @@ function renderModals(){
         '<input data-pay="reference" type="text" maxlength="100" value="' + esc(f.reference) + '" placeholder="e.g. BBK-2026-004512" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>',
       'submitPayment()', state.payBusy ? 'Sending…' : 'Report payment', state.payBusy);
   }
+  if (state.closeBiddingRfqId) {
+    const cr = (state.rfqs || []).find(x => x.id === state.closeBiddingRfqId) || {};
+    const n = cr._count ? cr._count.quotes : 0;
+    html += modalWrap('Close bidding', 'closeCloseBidding()',
+      '<p class="text-[13px]" style="color:var(--tx3);">Close bidding on <b style="color:var(--tx);">' + esc(cr.title || '') + '</b> now? Suppliers will no longer be able to submit quotes. ' +
+        (n ? 'You can still compare and award the ' + n + ' quote(s) you received.' : 'No quotes have been submitted yet.') + ' This can\'t be undone.</p>',
+      'confirmCloseBidding()', state.closeBiddingBusy ? 'Closing…' : 'Yes, close bidding', state.closeBiddingBusy);
+  }
+  if (state.declineLpoId) {
+    html += modalWrap('Decline purchase order', 'closeDeclineLpo()',
+      '<p class="text-[13px]" style="color:var(--tx3);">The buyer will be notified and can award the RFQ to another supplier. Your bid fee is not refunded.</p>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reason for the buyer (optional)</span>' +
+        '<textarea data-decline="reason" rows="3" maxlength="500" placeholder="e.g. Out of stock until next month" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(state.declineReason || '') + '</textarea></label>',
+      'submitDeclineLpo()', state.declineBusy ? 'Declining…' : 'Decline purchase order', state.declineBusy);
+  }
   if (state.cancelRfqId) {
     const r = (state.rfqs || []).find(x => x.id === state.cancelRfqId) || {};
     const bids = r._count ? r._count.quotes : 0;
@@ -2392,7 +2443,9 @@ function renderModals(){
           q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') + '</div>' +
-            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + x.deliveryTimeDays + 'd</div></div></div>' +
+            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + x.deliveryTimeDays + 'd</div>' +
+            (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">Declined the LPO' + (x.lpo.declineReason ? ': ' + esc(x.lpo.declineReason) : '') + '</div>' : '') +
+            '</div></div>' +
             '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div></div>' +
             ((x.attachments || []).length ? '<div class="mt-3 flex flex-col gap-1.5">' + x.attachments.map(a => attachmentRowHtml(a, false)).join('') + '</div>' : '')
           + '</div>').join('')
@@ -2447,7 +2500,7 @@ function renderModals(){
   }
   if (state.showCatalogAdd) {
     const p = state.newProduct;
-    html += modalWrap('Add catalog item', 'closeCatalogAdd()',
+    html += modalWrap(state.editCatalogId ? 'Edit catalog item' : 'Add catalog item', 'closeCatalogAdd()',
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Product photo (optional)</span>' +
       (p.imageUrl
         ? '<div class="flex items-center gap-3"><img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-16 w-16 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" /><div class="flex-1 min-w-0"><div class="text-[12px] font-semibold truncate" style="color:var(--tx);">' + esc(state.catalogPhotoName) + '</div><button onclick="removeCatalogPhoto()" class="text-[11px] font-semibold" style="color:var(--tx4);">Remove photo</button></div></div>'
@@ -2457,14 +2510,17 @@ function renderModals(){
       field('name','Item name', p.name, 'e.g. A4 Paper Box') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Unit</span>' +
       '<select data-select="unit" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-        ['kg','pcs','box','carton','litre','ton'].map(u => '<option value="' + u + '"' + (p.unit===u?' selected':'') + '>' + u + '</option>').join('') +
+        ['kg','pcs','box','carton','litre','ton'].concat(['kg','pcs','box','carton','litre','ton'].includes(p.unit) ? [] : [p.unit]).map(u => '<option value="' + u + '"' + (p.unit===u?' selected':'') + '>' + u + '</option>').join('') +
       '</select></label>' +
       field('price','Price per unit (BHD)', p.price, '3.500'),
-      'addProduct()', 'Add item', false);
+      'addProduct()', state.editCatalogId ? 'Save changes' : 'Add item', false);
   }
   if (state.showVerifyModal) {
     const v = state.verifyForm;
     html += modalWrap('Submit verification document', 'closeVerifyModal()',
+      (state.company && state.company.verificationStatus === 'VERIFIED'
+        ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--ok-soft); color:var(--ok);">Your company stays Verified. The new document is added for the Biddex team to review (e.g. a renewed trade license).</div>'
+        : '') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Document type</span>' +
       '<select data-select="docType" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
         '<option value="TRADE_LICENSE"' + (v.docType==='TRADE_LICENSE'?' selected':'') + '>Trade license</option>' +
@@ -2535,6 +2591,9 @@ function bindEvents(){
   if (attFile) attFile.addEventListener('change', onAttFileChange);
   const docFile = document.querySelector('[data-docfile]');
   if (docFile) docFile.addEventListener('change', onDocFileChange);
+  document.querySelectorAll('[data-decline]').forEach(el => {
+    el.addEventListener('input', (e) => { state.declineReason = e.target.value; });
+  });
   document.querySelectorAll('[data-receipt]').forEach(el => {
     el.addEventListener('input', (e) => { state.receiptComment = e.target.value; });
   });
