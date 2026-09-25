@@ -229,6 +229,8 @@ let state = {
   resolveComment: '', resolveBusy: false,
   // buyer: open a dispute on an order (disputeOrderId = order id)
   disputeOrderId: null, disputeReason: '', disputeBusy: false,
+  // buyer: confirm receipt of the goods (receiptOrderId = order id)
+  receiptOrderId: null, receiptComment: '', receiptBusy: false,
 
   section: 'main', // main | rfqs | lpos | profile | orderDetail | catalog
   profileForm: { name:'', country:'', phone:'', registrationNumber:'' }, profileBusy: false,
@@ -594,6 +596,21 @@ async function openOrderDetail(orderId){
     refreshChat(orderId);
   } catch(e) { setState({ orderDetailLoading:false }); showToast(e.message); }
 }
+function openReceiptModal(orderId){ setState({ receiptOrderId: orderId, receiptComment: '', receiptBusy: false }); }
+function closeReceiptModal(){ setState({ receiptOrderId: null }); }
+async function submitReceipt(){
+  const orderId = state.receiptOrderId;
+  setState({ receiptBusy:true });
+  try {
+    await api('/api/orders/' + orderId + '/receipt', { method:'POST', body: JSON.stringify({ comment: state.receiptComment.trim() || undefined }) });
+    setState({ receiptBusy:false, receiptOrderId:null, receiptComment:'' });
+    showToast('Receipt confirmed — the invoice is now payable.');
+    refreshOrders();
+    if (state.section === 'orderDetail' && state.selectedOrderId === orderId) openOrderDetail(orderId);
+  } catch(e) { setState({ receiptBusy:false }); showToast(e.message); }
+}
+// "Report a problem" from the receipt dialog: the dispute dialog takes over
+function receiptReportProblem(){ const id = state.receiptOrderId; setState({ receiptOrderId:null }); openDisputeModal(id); }
 function openDisputeModal(orderId){ setState({ disputeOrderId: orderId, disputeReason: '', disputeBusy: false }); }
 function closeDisputeModal(){ setState({ disputeOrderId: null }); }
 async function submitDispute(){
@@ -1039,14 +1056,14 @@ function setOppCategory(c){ setState({ opportunityCategory: state.opportunityCat
 
 // ---------- Order pipeline stage helper (6-stage tracker) ----------
 
-const STAGES = ['LPO issued','Accepted','Delivery note sent','Invoice pending','Payment confirmed','Completed'];
+const STAGES = ['LPO issued','Accepted','Shipped','Received','Payment confirmed','Completed'];
 
 function orderStageIndex(o){
   const delivery = o.delivery || {}, invoice = o.invoice || {};
   if (o.status === 'COMPLETED') return 6;
-  if (invoice.status === 'PAID') return 5;
-  if (delivery.status === 'DELIVERED') return 4;
-  if (delivery.status === 'DISPATCHED') return 3;
+  // the invoice is paid only after the buyer confirms receipt
+  if (o.receivedAt) return invoice.status === 'PAID' ? 5 : 4;
+  if (['DISPATCHED', 'IN_TRANSIT', 'DELIVERED', 'FAILED'].includes(delivery.status)) return 3;
   return 2; // accepted, delivery pending
 }
 const ORDER_STATUS_LABELS = { CONFIRMED:'Confirmed', IN_PROGRESS:'In progress', SHIPPED:'Shipped', DELIVERED:'Delivered', COMPLETED:'Completed', DISPUTED:'Disputed', CANCELLED:'Cancelled' };
@@ -1685,15 +1702,24 @@ function renderOrderDetail(){
     else if (delivery.status === 'DISPATCHED') deliveryAction = actionBtn('Mark delivered', "updateDelivery('" + order.id + "','DELIVERED')", state.ordersBusyId === order.id);
   }
   const totals = invoiceTotals(invoice);
+  const awaitingReceipt = ['SHIPPED', 'DELIVERED'].includes(order.status) && !order.receivedAt;
   let payAction = '';
   if (!isSupplier && invoice.id && (invoice.status === 'ISSUED' || invoice.status === 'PARTIALLY_PAID') && order.status !== 'CANCELLED') {
-    payAction = totals.outstanding > 0
+    payAction = !order.receivedAt
+      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Payable after you confirm receipt</span>'
+      : totals.outstanding > 0
       ? actionBtn('Pay ' + fmt(totals.outstanding), 'openPayModal(\'' + invoice.id + '\',' + totals.outstanding + ')', false)
       : '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Awaiting supplier confirmation</span>';
   }
 
-  // the buyer can dispute an order that is still open; an admin then resumes or cancels it
-  const disputeAction = !isSupplier && ['CONFIRMED', 'IN_PROGRESS', 'SHIPPED', 'DELIVERED'].includes(order.status)
+  // once shipped, the buyer confirms receipt (or reports a problem, which opens a dispute)
+  const receiptAction = !isSupplier && awaitingReceipt
+    ? actionBtn('Confirm receipt', "openReceiptModal('" + order.id + "')", false)
+    : isSupplier && awaitingReceipt
+      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Awaiting buyer\'s receipt confirmation</span>'
+      : '';
+  // the buyer can dispute an order that is still open and not yet received; an admin then resumes or cancels it
+  const disputeAction = !isSupplier && !order.receivedAt && ['CONFIRMED', 'IN_PROGRESS', 'SHIPPED', 'DELIVERED'].includes(order.status)
     ? '<button onclick="openDisputeModal(\'' + order.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Open dispute</button>'
     : '';
   const disputeNote = order.status === 'DISPUTED'
@@ -1706,7 +1732,7 @@ function renderOrderDetail(){
   '<div class="rounded-xl border p-4 mb-6" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-end justify-between gap-3">' +
       '<div class="flex-1 min-w-[220px]">' + orderProgressHtml(order, 'mt-2 text-[12.5px] font-semibold') + '</div>' +
-      '<div class="flex flex-wrap gap-2">' + deliveryAction + payAction + disputeAction + '</div>' +
+      '<div class="flex flex-wrap gap-2">' + deliveryAction + receiptAction + payAction + disputeAction + '</div>' +
     '</div>' +
   '</div>' +
   '<div class="grid gap-4 sm:grid-cols-2">' +
@@ -1727,7 +1753,8 @@ function renderOrderDetail(){
       ['Status', delivery.status || '—'],
       ['Tracking', delivery.trackingInfo || '—'],
       ['Dispatched', delivery.dispatchedAt ? new Date(delivery.dispatchedAt).toLocaleString() : '—'],
-      ['Delivered', delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleString() : '—']
+      ['Delivered', delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleString() : '—'],
+      ['Receipt confirmed', order.receivedAt ? new Date(order.receivedAt).toLocaleString() : '—']
     ]) +
     detailCard('Invoice', [
       ['Amount', invoice.amount ? fmt(invoice.amount) : '—'],
@@ -2075,6 +2102,20 @@ function renderModals(){
         '</div>' +
       '</div></div>';
   }
+  if (state.receiptOrderId) {
+    const busy = state.receiptBusy;
+    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Confirm receipt</h3>' +
+        '<button onclick="closeReceiptModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Confirm that <b style="color:var(--tx);">all goods arrived in the agreed quantity and quality</b>. The confirmation is posted to the order chat, the supplier is notified and the invoice becomes payable. After confirming you can no longer open a dispute on this order.</p>' +
+        '<textarea data-receipt="comment" maxlength="1000" rows="2" class="mt-4 w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="Optional note, e.g. counted 200 bags, all intact">' + esc(state.receiptComment) + '</textarea>' +
+        '<div class="mt-5 flex flex-wrap gap-2">' +
+          '<button onclick="' + (busy ? '' : 'receiptReportProblem()') + '" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">Report a problem</button>' +
+          '<button onclick="' + (busy ? '' : 'submitReceipt()') + '" class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? 'Confirming…' : 'Everything is correct') + '</button>' +
+        '</div>' +
+      '</div></div>';
+  }
   if (state.disputeOrderId) {
     html += modalWrap('Open dispute', 'closeDisputeModal()',
       '<p class="text-[13px]" style="color:var(--tx3);">The order will be paused until a Biddex admin reviews it and either resumes or cancels it. Your reason is posted to the order chat and the supplier is notified.</p>' +
@@ -2202,6 +2243,9 @@ function bindEvents(){
   document.querySelectorAll('[data-chat]').forEach(el => {
     el.addEventListener('input', (e) => { state.chatDraft = e.target.value; });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !state.chatBusy) sendChatMessage(); });
+  });
+  document.querySelectorAll('[data-receipt]').forEach(el => {
+    el.addEventListener('input', (e) => { state.receiptComment = e.target.value; });
   });
   document.querySelectorAll('[data-dispute]').forEach(el => {
     el.addEventListener('input', (e) => { state.disputeReason = e.target.value; });
