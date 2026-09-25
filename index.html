@@ -284,6 +284,13 @@ function setIfChanged(key, data){
   if (JSON.stringify(state[key]) !== JSON.stringify(data)) setState({ [key]: data });
 }
 function fmt(n){ return (Number(n)||0).toFixed(3) + ' BHD'; }
+// Money inputs: accepts "," or "." as the decimal separator (so "2,5" reads as 2.5), at most 3 decimals.
+// Returns a Number, or null if the input isn't a valid non-negative amount.
+function parseMoneyInput(raw){
+  const s = String(raw == null ? '' : raw).trim().replace(',', '.');
+  if (!/^\d+(\.\d{1,3})?$/.test(s)) return null;
+  return parseFloat(s);
+}
 function showToast(msg){ setState({ toast: msg }); setTimeout(()=>{ if(state.toast===msg) setState({toast:''}); }, 3200); }
 
 async function api(path, opts={}) {
@@ -1117,8 +1124,9 @@ async function submitNewRfq(){
   const r = state.newRfq;
   if (!r.title || !r.quantity || !r.deadline || !r.budget) { showToast('Please fill in what you need, quantity, budget and the date.'); return; }
   // suppliers pay 5% of the budget to quote, so an RFQ without one could never receive a quote
-  const budget = Number(r.budget);
-  if (!Number.isFinite(budget) || budget <= 0) { showToast('Budget must be a positive amount in BHD.'); return; }
+  const budget = parseMoneyInput(r.budget);
+  if (budget == null) { showToast('Enter a number, e.g. 2.5'); return; }
+  if (budget <= 0) { showToast('Budget must be a positive amount in BHD.'); return; }
   // quotes are priced per unit (total = unit price × quantity), so the quantity must be a whole number
   if (!Number.isInteger(Number(r.quantity)) || Number(r.quantity) < 1) { showToast('Quantity must be a whole number (at least 1).'); return; }
   const editId = state.editRfqId;
@@ -1219,8 +1227,9 @@ function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
 // Quote total = unit price × the RFQ quantity, in fils (as the server computes it)
 function quoteTotalHtml(rawPrice, rfq){
   const qty = rfq && rfq.quantity;
-  const unit = parseFloat(rawPrice);
+  const unit = parseMoneyInput(rawPrice);
   if (!qty) return 'The buyer did not set a quantity — this RFQ can\'t be quoted.';
+  if (String(rawPrice || '').trim() && unit == null) return 'Enter a number, e.g. 2.5';
   if (!unit || unit <= 0) return 'Total: enter a unit price — total = unit price × ' + qty;
   const totalFils = Math.round(unit * 1000) * qty;
   const total = totalFils / 1000;
@@ -1242,9 +1251,10 @@ function quotePriceText(q){
 
 async function submitQuote(){
   const f = state.quoteForm;
-  const price = parseFloat(f.price), days = parseInt(f.days, 10);
-  if (!price || !days) return;
-  if (!/^\d+(\.\d{1,3})?$/.test(String(f.price).trim())) { showToast('Unit price can have at most 3 decimals (fils).'); return; }
+  const days = parseInt(f.days, 10);
+  if (!f.price || !days) return;
+  const price = parseMoneyInput(f.price);
+  if (price == null || price <= 0) { showToast('Enter a number, e.g. 2.5'); return; }
   const rfqId = state.submitQuoteRfqId;
   setState({ quoteBusy:true });
   try {
@@ -1360,8 +1370,9 @@ function removeCatalogPhoto(){ state.newProduct.imageUrl = ''; setState({ catalo
 
 async function addProduct(){
   const p = state.newProduct;
-  const price = parseFloat(p.price);
-  if (!p.name || !price) return;
+  if (!p.name || !p.price) return;
+  const price = parseMoneyInput(p.price);
+  if (price == null || price <= 0) { showToast('Enter a number, e.g. 2.5'); return; }
   try {
     if (state.editCatalogId) {
       const body = { name: p.name, price, unit: p.unit || 'pcs' };
