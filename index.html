@@ -36,6 +36,10 @@
   .bx-rise { animation:bxRise .25s cubic-bezier(.22,1,.36,1) both; }
   .bx-scroll::-webkit-scrollbar { width:8px; height:8px; }
   .bx-scroll::-webkit-scrollbar-thumb { background:var(--sunken); border-radius:99px; }
+  /* Modals: box never taller than the viewport, scrolls inside; page behind stays put while one is open. */
+  .bx-overlay { overscroll-behavior:contain; }
+  .bx-modal { max-height:90vh; max-height:90dvh; overflow-y:auto; overscroll-behavior:contain; }
+  body:has(.bx-overlay) { overflow:hidden; }
   ::-webkit-scrollbar { width:10px; }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
@@ -1882,7 +1886,7 @@ function renderWalletModal(){
   if (!state.showWalletModal) return '';
   const bal = state.wallet ? Number(state.wallet.balance) : 0;
   const txs = (state.wallet && state.wallet.transactions) || [];
-  return '<div class="fixed inset-0 z-50 flex items-center justify-end bg-black/50">' +
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-end bg-black/50">' +
     '<div class="bx-rise h-full w-full max-w-sm overflow-y-auto bx-scroll p-6" style="background:var(--panel);">' +
       '<div class="flex items-center justify-between mb-1"><span class="eyebrow">WALLET</span><button onclick="closeWalletModal()" class="text-[16px]" style="color:var(--tx4);">&times;</button></div>' +
       '<h2 class="text-[20px] font-extrabold mb-5" style="color:var(--tx);">Bid credits</h2>' +
@@ -2228,8 +2232,8 @@ function renderAdminDisputeModal(){
   // what RESUME will do, as the server decides it: COMPLETED if paid meanwhile, else the pre-dispute status
   const resumeTo = o.invoice && o.invoice.status === 'PAID' ? 'COMPLETED' : o.statusBeforeDispute;
   const busy = state.resolveBusy;
-  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-    '<div class="bx-rise w-full max-w-2xl max-h-[92vh] overflow-y-auto bx-scroll rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-2xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between gap-3"><h3 class="text-lg font-bold" style="color:var(--tx);">Dispute &middot; ' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</h3>' +
       '<button onclick="closeAdminDispute()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' (buyer) &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + ' (supplier) &middot; ' + fmt(lpo.totalAmount) + '</div>' +
@@ -2255,8 +2259,8 @@ function renderCreditModal(){
   const c = suppliers.find(x => x.id === f.companyId);
   const bal = c && c.wallet ? Number(c.wallet.balance) : 0;
   const amount = Number(f.amount);
-  const box = (inner) => '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+  const box = (inner) => '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Add credits</h3>' +
       '<button onclick="closeCreditModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' + inner +
     '</div></div>';
@@ -2289,8 +2293,8 @@ function renderCreditModal(){
 function renderResetModal(){
   if (!state.showResetModal) return '';
   const c = (state.adminCompanies || []).find(x => x.id === state.showResetModal);
-  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Reset password</h3>' +
       '<button onclick="closeResetModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       (!state.resetResult ?
@@ -2305,8 +2309,8 @@ function renderResetModal(){
 
 function renderDeleteModal(){
   if (!state.showDeleteModal) return '';
-  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Delete company</h3>' +
       '<button onclick="closeDeleteModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Are you sure you want to permanently delete <b style="color:var(--tx);">' + esc(state.deleteCompanyName) + '</b>? Its open RFQs are cancelled (bid fees refunded to suppliers) and its data is removed. If it has purchase orders with other companies, those orders, invoices and payments are kept for the counterparties and the company is anonymized instead. This cannot be undone.</p>' +
@@ -2382,8 +2386,8 @@ function renderModals(){
   if (state.cancelRfqId) {
     const r = (state.rfqs || []).find(x => x.id === state.cancelRfqId) || {};
     const bids = r._count ? r._count.quotes : 0;
-    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-      '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+    html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Cancel RFQ</h3>' +
         '<button onclick="closeCancelRfq()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
         '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Cancel <b style="color:var(--tx);">' + esc(r.title || '') + '</b>? Suppliers will no longer be able to quote, and it can\'t be reopened or awarded.</p>' +
@@ -2396,8 +2400,8 @@ function renderModals(){
   }
   if (state.receiptOrderId) {
     const busy = state.receiptBusy;
-    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-      '<div class="bx-rise w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+    html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise bx-modal bx-scroll w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Confirm receipt</h3>' +
         '<button onclick="closeReceiptModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
         '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Confirm that <b style="color:var(--tx);">all goods arrived in the agreed quantity and quality</b>. The confirmation is posted to the order chat, the supplier is notified and the invoice becomes payable. After confirming you can no longer open a dispute on this order.</p>' +
@@ -2433,8 +2437,8 @@ function renderModals(){
         btn('Reject', "changeQuoteStatus('" + x.id + "','reject')", 'border-color:var(--bd2); color:var(--bad);') +
         '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">Award</button>';
     };
-    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-      '<div class="bx-rise w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+    html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quotes</h3>' +
         '<button onclick="closeCompare()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
         '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
@@ -2483,8 +2487,8 @@ function renderModals(){
     const quote = ownQuoteOf(rfq);
     const editable = attachmentsEditable(rfq, quote);
     const list = state.attList || [];
-    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-      '<div class="bx-rise w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+    html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise bx-modal bx-scroll w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quote files</h3>' +
         '<button onclick="closeAttachments()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
         '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + esc(rfq.title || '') + '</div>' +
@@ -2545,8 +2549,8 @@ function renderModals(){
 }
 
 function modalWrap(title, onClose, fieldsHtml, onSubmit, submitLabel, busy){
-  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-    '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + title + '</h3>' +
       '<button onclick="' + onClose + '" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<div class="mt-4 flex flex-col gap-4">' + fieldsHtml + '</div>' +
@@ -2672,8 +2676,8 @@ function renderDocsModal(){
         ? '<iframe src="' + esc(v.url) + '" title="Document" class="w-full rounded-lg border" style="height:60vh; border-color:var(--bd); background:white;"></iframe>'
         : '<img src="' + esc(v.url) + '" alt="Document" class="mx-auto max-h-[60vh] rounded-lg border object-contain" style="border-color:var(--bd);" />') +
       '<div class="mt-2 text-right"><a href="' + esc(v.url) + '" target="_blank" rel="noopener" class="text-[12px] font-semibold" style="color:var(--acc);">Open in new tab</a></div>';
-  return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-    '<div class="bx-rise w-full max-w-3xl max-h-[92vh] overflow-y-auto bx-scroll rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-3xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Documents · ' + esc(c.name) + '</h3>' +
       '<button onclick="closeDocsModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + esc(c.verificationStatus) + '</div>' +
