@@ -1252,7 +1252,8 @@ function renderLightbox(){
   '</div>';
 }
 
-function openCatalogAdd(){ setState({ showCatalogAdd:true, newProduct:{ name:'', price:'', unit:'kg', imageUrl:'' }, catalogPhotoName:'' }); }
+function openCatalogAdd(){ if (!companyVerified()) { showToast('Available after verification.'); return; } openCatalogAddModal(); }
+function openCatalogAddModal(){ setState({ showCatalogAdd:true, newProduct:{ name:'', price:'', unit:'kg', imageUrl:'' }, catalogPhotoName:'' }); }
 function closeCatalogAdd(){ setState({ showCatalogAdd:false }); }
 function onProductField(field, e){ state.newProduct[field] = e.target.value; }
 
@@ -1791,11 +1792,17 @@ function renderOpportunityFeedPage(){
     '<div class="flex flex-col gap-3">' + rfqs.filter(r => !state.opportunityCategory || r.category === state.opportunityCategory).map(opportunityCard).join('') + '</div>');
 }
 
+// adding and editing catalog items (and quoting) need a verified company, as the server enforces
+function companyVerified(){ return !!state.company && state.company.verificationStatus === 'VERIFIED'; }
+
 function renderSupplierCatalogPage(){
   const myCatalog = state.myCatalog || [];
   return '<div class="eyebrow mb-1.5">MASTER DATA</div>' +
   '<div class="flex items-center justify-between mb-5"><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Product catalog</h1>' +
-    '<button onclick="openCatalogAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">+ Add item</button></div>' +
+    (companyVerified()
+      ? '<button onclick="openCatalogAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">+ Add item</button></div>'
+      : '<div class="flex items-center gap-3"><span class="text-[12px]" style="color:var(--tx4);">Available after verification</span><button disabled class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:0.45; cursor:not-allowed;">+ Add item</button></div></div>' +
+        '<div class="mb-5 rounded-xl border px-4 py-3 text-[13px]" style="border-color:var(--bd); background:var(--acc-soft2); color:var(--tx2);">Catalog items can be added once the Biddex team has verified your company. Buyers only see products of verified suppliers.</div>') +
   (myCatalog.length === 0 ? emptyState('No catalog items yet', 'Add products so buyers can find you and post an RFQ.') :
     '<div class="overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>Item</th><th>Unit</th><th>List price</th><th></th></tr></thead><tbody>' +
