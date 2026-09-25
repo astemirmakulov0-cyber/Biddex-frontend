@@ -56,7 +56,13 @@
 
 <script>
 const API = 'https://b2b-procurement-backend-production.up.railway.app';
-const CATEGORIES = ['Restaurant Groceries','Beauty & Salons','Construction','Generators & Machinery','Rental Cars','Office & Facilities','General'];
+// RFQ categories — the same lists as the server (src/utils/categories.js): RFQs can only be posted in an active
+// category; the others are shown as "Coming soon" and can't be chosen.
+const ACTIVE_CATEGORIES = ['Restaurants & Cafés'];
+const COMING_SOON_CATEGORIES = ['Beauty & Salons','Construction','Generators & Machinery','Rental Cars','Office & Facilities','General'];
+const CATEGORIES = ACTIVE_CATEGORIES.concat(COMING_SOON_CATEGORIES);
+// RFQs saved before the rename
+const categoryLabel = (c) => c === 'Restaurant Groceries' ? 'Restaurants & Cafés' : (c || '—');
 const AVATAR_PALETTE = [
   {bg:'#FDE9E1', fg:'#B45309'}, {bg:'#DFF3EC', fg:'#0F766E'}, {bg:'#E6E9FB', fg:'#4338CA'},
   {bg:'#FCE7F3', fg:'#BE185D'}, {bg:'#E0F2FE', fg:'#0369A1'}, {bg:'#FEF3C7', fg:'#92400E'}
@@ -201,7 +207,7 @@ let state = {
 
   showPostRfq: false, editRfqId: null, // editRfqId set -> the post modal edits that RFQ instead of creating one
   cancelRfqId: null, cancelBusy: false,
-  newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' },
+  newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'' },
   postBusy: false,
 
   compareRfqId: null, compareQuotes: [], compareLoading: false, compareBusyId: null,
@@ -1060,13 +1066,13 @@ function bahrainDateOf(iso){ return iso ? new Date(new Date(iso).getTime() + 3 *
 function canEditRfq(r){ return (r.status === 'DRAFT' || r.status === 'PUBLISHED') && !(r._count && r._count.quotes > 0); }
 function canCancelRfq(r){ return ['DRAFT','PUBLISHED','QUOTING_CLOSED'].includes(r.status); }
 
-function openPostRfq(prefillTitle){ setState({ showPostRfq:true, editRfqId:null, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: CATEGORIES[0], budget:'' } }); }
+function openPostRfq(prefillTitle){ setState({ showPostRfq:true, editRfqId:null, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'' } }); }
 function openEditRfq(rfqId){
   const r = (state.rfqs || []).find(x => x.id === rfqId);
   if (!r) return;
   setState({ showPostRfq:true, editRfqId: rfqId, newRfq:{
     title: r.title || '', quantity: r.quantity != null ? String(r.quantity) : '', unit: r.unit || 'pcs',
-    deadline: bahrainDateOf(r.deadline), category: r.category || CATEGORIES[0], budget: r.budget != null ? String(Number(r.budget)) : ''
+    deadline: bahrainDateOf(r.deadline), category: ACTIVE_CATEGORIES.includes(categoryLabel(r.category)) ? categoryLabel(r.category) : ACTIVE_CATEGORIES[0], budget: r.budget != null ? String(Number(r.budget)) : ''
   } });
 }
 function closePostRfq(){ setState({ showPostRfq:false, editRfqId:null }); }
@@ -1084,7 +1090,7 @@ async function submitNewRfq(){
   const fields = {
     title: r.title,
     description: r.title + ' — ' + r.quantity + ' ' + r.unit,
-    category: r.category || 'general',
+    category: ACTIVE_CATEGORIES.includes(r.category) ? r.category : ACTIVE_CATEGORIES[0],
     quantity: Number(r.quantity) || undefined,
     unit: r.unit,
     budget,
@@ -1413,7 +1419,7 @@ function renderLanding(){
     '<div class="mx-auto max-w-[1220px] px-5 py-16">' +
       '<h2 class="text-[26px] font-extrabold mb-8" style="color:var(--tx); letter-spacing:-0.01em;">' + t('builtFor') + '</h2>' +
       '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">' +
-        [{n:'Restaurants & Cafés',live:true},{n:'Hotels & Hospitality',live:false},{n:'Retail & Supermarkets',live:false},{n:'Construction & Facilities',live:false}].map(c =>
+        ACTIVE_CATEGORIES.map(n => ({ n, live: true })).concat(COMING_SOON_CATEGORIES.map(n => ({ n, live: false }))).map(c =>
          '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--inset); opacity:' + (c.live?'1':'0.5') + ';"><div class="text-[13px] font-bold" style="color:var(--tx);">' + c.n + (c.live?'':' <span style=\'font-weight:400;font-size:11px;\'>(Coming soon)</span>') + '</div></div>'
         ).join('') +
       '</div>' +
@@ -1587,7 +1593,7 @@ function rfqTable(rfqs){
       const tl = timeLeftLabel(r.deadline);
       return '<tr>' +
         '<td><div class="flex items-center gap-2.5">' + avatarHtml(r.title, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</div></div></div></td>' +
-        '<td style="color:var(--tx3);">' + esc(r.category || 'General') + '</td>' +
+        '<td style="color:var(--tx3);">' + esc(categoryLabel(r.category)) + '</td>' +
         '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
         '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' +
         '<td>' + statusPill(r.status) + '</td>' +
@@ -1767,7 +1773,7 @@ function opportunityCard(r){
       avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40) +
       '<div class="flex-1 min-w-[200px]">' +
         '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; Verified buyer &middot; ' + esc(r.category || 'General') + '</div>' +
+        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; Verified buyer &middot; ' + esc(categoryLabel(r.category)) + '</div>' +
         (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">Your quote: ' + quotePriceText(ownQuote) + '</div>' : '') +
       '</div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">QUANTITY</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + esc(r.quantity||'—') + ' ' + esc(r.unit||'') + '</div></div>' +
@@ -1787,9 +1793,11 @@ function renderOpportunityFeedPage(){
   const rfqs = state.rfqs || [];
   return '<div class="eyebrow mb-1.5">ZONE B · OPPORTUNITY FEED</div>' +
   '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Opportunities</h1>' +
-  '<div class="flex gap-2 overflow-x-auto pb-1 mb-5">' + CATEGORIES.map(c => '<span onclick="setOppCategory(' + jsAttr(c) + ')" class="chip' + (state.opportunityCategory===c?' active':'') + '">' + c + '</span>').join('') + '</div>' +
+  '<div class="flex gap-2 overflow-x-auto pb-1 mb-5">' +
+    ACTIVE_CATEGORIES.map(c => '<span onclick="setOppCategory(' + jsAttr(c) + ')" class="chip' + (state.opportunityCategory===c?' active':'') + '">' + esc(c) + '</span>').join('') +
+    COMING_SOON_CATEGORIES.map(c => '<span class="chip" title="Coming soon" style="opacity:0.45; cursor:not-allowed;">' + esc(c) + ' · Coming soon</span>').join('') + '</div>' +
   (rfqs.length === 0 ? emptyState('No open requests right now', 'Check back soon — new RFQs appear here as buyers post them.') :
-    '<div class="flex flex-col gap-3">' + rfqs.filter(r => !state.opportunityCategory || r.category === state.opportunityCategory).map(opportunityCard).join('') + '</div>');
+    '<div class="flex flex-col gap-3">' + rfqs.filter(r => !state.opportunityCategory || categoryLabel(r.category) === state.opportunityCategory).map(opportunityCard).join('') + '</div>');
 }
 
 // adding and editing catalog items (and quoting) need a verified company, as the server enforces
@@ -2273,7 +2281,8 @@ function renderModals(){
       field('title','What do you need', r.title, 'e.g. 200 office chairs') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Category</span>' +
       '<select data-select="category" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-        CATEGORIES.map(c => '<option value="' + esc(c) + '"' + (r.category===c?' selected':'') + '>' + c + '</option>').join('') +
+        ACTIVE_CATEGORIES.map(c => '<option value="' + esc(c) + '"' + (r.category===c?' selected':'') + '>' + esc(c) + '</option>').join('') +
+        COMING_SOON_CATEGORIES.map(c => '<option value="' + esc(c) + '" disabled>' + esc(c) + ' — Coming soon</option>').join('') +
       '</select></label>' +
       field('quantity','Quantity', r.quantity, 'e.g. 200') +
       field('unit','Unit', r.unit, 'pcs') +
