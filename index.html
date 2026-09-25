@@ -233,6 +233,8 @@ let state = {
   receiptOrderId: null, receiptComment: '', receiptBusy: false,
   // order documents (files in private storage): list of the open order / admin dispute, upload form
   orderDocs: [], docKind: 'OTHER', docUploading: false, docBusyId: null,
+  // bid attachments: files picked in the submit-quote dialog; the supplier's "Files" dialog for its quote
+  quoteFiles: [], attQuoteId: null, attRfqId: null, attList: [], attUploading: false,
 
   section: 'main', // main | rfqs | lpos | profile | orderDetail | catalog
   profileForm: { name:'', country:'', phone:'', registrationNumber:'' }, profileBusy: false,
@@ -604,7 +606,15 @@ async function openOrderDetail(orderId){
 }
 // ---------- Order documents ----------
 
-const DOC_KIND_LABELS = { DELIVERY_NOTE: 'Delivery note', INVOICE: 'Invoice', OTHER: 'Other' };
+const DOC_KIND_LABELS = { DELIVERY_NOTE: 'Delivery note', INVOICE: 'Invoice', OTHER: 'Other', QUOTE_ATTACHMENT: 'Bid attachment' };
+const DOC_TYPE_RE = /^(application\/pdf|image\/(jpeg|png|webp))$/;
+const DOC_EXT_RE = /\.(pdf|jpe?g|png|webp)$/i;
+// the same checks the server makes, so a wrong file is refused before uploading it
+function docFileProblem(file){
+  if (file.size > DOC_MAX_BYTES) return file.name + ': must be at most 10 MB';
+  if (!DOC_EXT_RE.test(file.name) && !DOC_TYPE_RE.test(file.type)) return file.name + ': only PDF, JPEG, PNG or WebP';
+  return '';
+}
 const DOC_MAX_BYTES = 10 * 1024 * 1024;
 
 async function refreshOrderDocs(orderId){
@@ -623,10 +633,8 @@ async function onDocFileChange(e){
   e.target.value = '';
   const orderId = state.selectedOrderId;
   if (!file || !orderId) return;
-  if (file.size > DOC_MAX_BYTES) { showToast('File must be at most 10 MB.'); return; }
-  if (!/\.(pdf|jpe?g|png|webp)$/i.test(file.name) && !/^(application\/pdf|image\/(jpeg|png|webp))$/.test(file.type)) {
-    showToast('Only PDF, JPEG, PNG or WebP files are accepted.'); return;
-  }
+  const problem = docFileProblem(file);
+  if (problem) { showToast(problem); return; }
   const form = new FormData();
   form.append('kind', state.docKind);
   form.append('file', file, file.name);
@@ -640,16 +648,18 @@ async function onDocFileChange(e){
 }
 
 // The API returns a 120-second link that downloads the file as an attachment
-async function downloadDoc(docId){
-  setState({ docBusyId: docId });
+async function openDownload(path, busyId){
+  setState({ docBusyId: busyId });
   try {
-    const { url } = await api('/api/documents/' + docId + '/download');
+    const { url } = await api(path);
     const a = document.createElement('a');
     a.href = url; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
   } catch(e) { showToast(e.message); }
   setState({ docBusyId: null });
 }
+function downloadDoc(docId){ return openDownload('/api/documents/' + docId + '/download', docId); }
+function downloadAttachment(id){ return openDownload('/api/quote-attachments/' + id + '/download', id); }
 
 async function deleteDoc(docId){
   const orderId = state.selectedOrderId;
@@ -684,7 +694,7 @@ function renderDocumentsPanel(opts){
             '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + esc(d.uploadedByCompany ? d.uploadedByCompany.name : '') + ' &middot; ' + new Date(d.createdAt).toLocaleString() + '</div>' +
           '</div>' +
           '<div class="flex gap-2 shrink-0">' +
-            (opts.canUpload && mine && open ? '<button onclick="' + (busy ? '' : "deleteDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
+            (opts.canUpload && mine && open && d.kind !== 'QUOTE_ATTACHMENT' ? '<button onclick="' + (busy ? '' : "deleteDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
             '<button onclick="' + (busy ? '' : "downloadDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? 'Working…' : 'Download') + '</button>' +
           '</div>' +
         '</div>';
@@ -704,6 +714,86 @@ function renderDocumentsPanel(opts){
   return '<div class="' + (opts.compact ? 'mt-4' : 'mt-6 rounded-xl border p-4') + '" style="' + (opts.compact ? '' : 'border-color:var(--bd); background:var(--panel);') + '">' +
     '<div class="mb-3 text-[' + (opts.compact ? '12' : '13') + 'px] font-bold" style="color:var(--tx);">Documents</div>' + list + uploader +
   '</div>';
+}
+
+// ---------- Bid attachments ----------
+
+const MAX_QUOTE_FILES = 5;
+
+// submit-quote dialog: files are uploaded right after the quote is created
+function onQuoteFilesChange(e){
+  const picked = [...(e.target.files || [])];
+  e.target.value = '';
+  const problems = picked.map(docFileProblem).filter(Boolean);
+  const ok = picked.filter(f => !docFileProblem(f));
+  const room = MAX_QUOTE_FILES - state.quoteFiles.length;
+  if (ok.length > room) problems.push('At most ' + MAX_QUOTE_FILES + ' files per quote');
+  setState({ quoteFiles: [...state.quoteFiles, ...ok.slice(0, Math.max(0, room))] });
+  if (problems.length) showToast(problems[0]);
+}
+function removeQuoteFile(i){ setState({ quoteFiles: state.quoteFiles.filter((_, j) => j !== i) }); }
+
+// uploads one file to a quote; returns '' or the error message
+async function uploadQuoteFile(quoteId, file){
+  const form = new FormData();
+  form.append('file', file, file.name);
+  try { await api('/api/quotes/' + quoteId + '/attachments', { method:'POST', body: form }); return ''; }
+  catch(e) { return file.name + ': ' + e.message; }
+}
+
+// the supplier's own quote on an RFQ, and whether its files may still change (as the server decides)
+function ownQuoteOf(rfq){ return rfq && (rfq.quotes || []).find(q => q.status !== 'WITHDRAWN'); }
+function attachmentsEditable(rfq, quote){
+  return !!quote && quote.status === 'SUBMITTED' && rfq.status === 'PUBLISHED' && !(rfq.deadline && new Date(rfq.deadline) <= new Date());
+}
+
+async function openAttachments(rfqId){
+  const rfq = (state.rfqs || []).find(r => r.id === rfqId);
+  const quote = ownQuoteOf(rfq);
+  if (!quote) return;
+  setState({ attQuoteId: quote.id, attRfqId: rfqId, attList: [], attUploading: false });
+  refreshAttachments();
+}
+function closeAttachments(){ setState({ attQuoteId: null, attRfqId: null, attList: [] }); refreshRfqs(); }
+async function refreshAttachments(){
+  const id = state.attQuoteId;
+  if (!id) return;
+  try {
+    const data = await api('/api/quotes/' + id + '/attachments');
+    if (state.attQuoteId === id) setState({ attList: data });
+  } catch(e) { showToast(e.message); }
+}
+async function onAttFileChange(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file || !state.attQuoteId) return;
+  const problem = docFileProblem(file);
+  if (problem) { showToast(problem); return; }
+  setState({ attUploading: true });
+  const err = await uploadQuoteFile(state.attQuoteId, file);
+  setState({ attUploading: false });
+  showToast(err || 'File attached.');
+  refreshAttachments();
+}
+async function removeAttachment(id){
+  if (!confirm('Remove this file from your quote?')) return;
+  setState({ docBusyId: id });
+  try { await api('/api/quote-attachments/' + id, { method:'DELETE' }); showToast('File removed.'); }
+  catch(e) { showToast(e.message); }
+  setState({ docBusyId: null });
+  refreshAttachments();
+}
+
+// one attachment row: name, size and actions
+function attachmentRowHtml(a, canRemove){
+  const busy = state.docBusyId === a.id;
+  return '<div class="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-[12.5px]" style="border-color:var(--bd);">' +
+    '<div class="min-w-0"><div class="truncate font-semibold" style="color:var(--tx);">' + esc(a.fileName) + '</div>' +
+    '<div class="mono text-[11px]" style="color:var(--tx4);">' + fmtBytes(a.sizeBytes) + '</div></div>' +
+    '<div class="flex gap-2 shrink-0">' +
+      (canRemove ? '<button onclick="' + (busy ? '' : "removeAttachment('" + a.id + "')") + '" class="rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
+      '<button onclick="' + (busy ? '' : "downloadAttachment('" + a.id + "')") + '" class="rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? '…' : 'Download') + '</button>' +
+    '</div></div>';
 }
 
 function openReceiptModal(orderId){ setState({ receiptOrderId: orderId, receiptComment: '', receiptBusy: false }); }
@@ -1047,7 +1137,7 @@ async function acceptQuote(quoteId){
   } catch(e) { showToast(e.message); }
 }
 
-function openSubmitQuote(rfqId){ setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'' } }); }
+function openSubmitQuote(rfqId){ setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'' }, quoteFiles: [], quoteUploadNote: '' }); }
 function closeSubmitQuote(){ setState({ submitQuoteRfqId:null }); }
 function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
 
@@ -1061,9 +1151,19 @@ async function submitQuote(){
     const quote = await api('/api/rfqs/' + rfqId + '/quotes', { method:'POST', body: JSON.stringify({
       price, currency:'BHD', deliveryTimeDays: days
     })});
+    // the quote exists (and is paid for) now; attach the picked files one by one
+    const files = state.quoteFiles;
+    const errors = [];
+    for (let i = 0; i < files.length; i++) {
+      setState({ quoteUploadNote: 'Uploading file ' + (i + 1) + ' of ' + files.length + '…' });
+      const err = await uploadQuoteFile(quote.id, files[i]);
+      if (err) errors.push(err);
+    }
     // show "Quoted" right away; the server copy arrives with the next refreshRfqs()
-    setState({ submitQuoteRfqId:null, quoteBusy:false, rfqs: (state.rfqs || []).map(r => r.id === rfqId ? { ...r, quotes: [quote] } : r) });
-    showToast('Quote submitted.');
+    setState({ submitQuoteRfqId:null, quoteBusy:false, quoteFiles: [], quoteUploadNote: '', rfqs: (state.rfqs || []).map(r => r.id === rfqId ? { ...r, quotes: [{ ...quote, _count: { attachments: files.length - errors.length } }] } : r) });
+    showToast(errors.length
+      ? 'Quote submitted, but ' + errors.length + ' file(s) failed (' + errors[0] + '). Add them via Files.'
+      : 'Quote submitted' + (files.length ? ' with ' + files.length + ' file(s).' : '.'));
     refreshWallet(); refreshRfqs();
   } catch(e) {
     if (e.status === 409) {
@@ -1682,7 +1782,8 @@ function opportunityCard(r){
       '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '—') + '</div></div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">CLOSES IN</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
       (quoted
-        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="' + quotedLabel[1] + '">' + quotedLabel[0] + '</span>'
+        ? '<div class="flex items-center gap-2 shrink-0"><button onclick="openAttachments(\'' + r.id + '\')" class="rounded-lg border px-3 py-2 text-[12px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">Files (' + ((ownQuote._count && ownQuote._count.attachments) || 0) + ')</button>' +
+          '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold" style="' + quotedLabel[1] + '">' + quotedLabel[0] + '</span></div>'
         : tl.past
         ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">Closed</span>'
         : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit quote</button>') +
@@ -2260,11 +2361,12 @@ function renderModals(){
         '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
         (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">Loading…</div>' :
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">No quotes yet.</div>' :
-          q.map(x => '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);">' +
+          q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') + '</div>' +
             '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(x.price) + ' &middot; ' + x.deliveryTimeDays + 'd</div></div></div>' +
-            '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div>'
+            '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div></div>' +
+            ((x.attachments || []).length ? '<div class="mt-3 flex flex-col gap-1.5">' + x.attachments.map(a => attachmentRowHtml(a, false)).join('') + '</div>' : '')
           + '</div>').join('')
         ) +
         '</div></div></div>';
@@ -2279,8 +2381,38 @@ function renderModals(){
         ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">Submitting a quote costs <b class="mono">' + fee.toFixed(3) + ' BHD</b> (5% of this RFQ\'s ' + fmt(rfqForQuote.budget) + ' budget), deducted from your wallet.</div>'
         : '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--bad-soft); color:var(--bad);">This RFQ has no budget set by the buyer, so a bid fee can\'t be calculated — you won\'t be able to submit a quote on it.</div>') +
       field('price','Unit price (BHD)', f.price, '5.800') +
-      field('days','Delivery (days)', f.days, '2'),
+      field('days','Delivery (days)', f.days, '2') +
+      '<div class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Attachments (optional, up to ' + MAX_QUOTE_FILES + ')</span>' +
+        (state.quoteFiles.length ? '<div class="flex flex-col gap-1.5">' + state.quoteFiles.map((file, i) =>
+          '<div class="flex items-center justify-between gap-2 rounded-lg border px-3 py-1.5 text-[12px]" style="border-color:var(--bd);"><span class="truncate" style="color:var(--tx);">' + esc(file.name) + ' <span class="mono" style="color:var(--tx4);">' + fmtBytes(file.size) + '</span></span>' +
+          (state.quoteBusy ? '' : '<button onclick="removeQuoteFile(' + i + ')" class="text-[11px] font-semibold shrink-0" style="color:var(--tx4);">Remove</button>') + '</div>').join('') + '</div>' : '') +
+        (state.quoteFiles.length < MAX_QUOTE_FILES && !state.quoteBusy
+          ? '<input data-quotefiles type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" class="w-full rounded-lg border px-3 py-2 text-[12px] outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />'
+          : '') +
+        '<span class="text-[11px]" style="color:var(--tx4);">Specs, certificates or photos: PDF, JPEG, PNG or WebP, up to 10 MB each. Only the buyer and Biddex admins can see them. You can change them until the buyer shortlists your quote or bidding closes.</span>' +
+        (state.quoteUploadNote ? '<span class="text-[12px] font-semibold" style="color:var(--acc);">' + esc(state.quoteUploadNote) + '</span>' : '') +
+      '</div>',
       'submitQuote()', state.quoteBusy ? 'Submitting…' : 'Submit quote', state.quoteBusy || !hasBudget);
+  }
+  if (state.attQuoteId) {
+    const rfq = (state.rfqs || []).find(r => r.id === state.attRfqId) || {};
+    const quote = ownQuoteOf(rfq);
+    const editable = attachmentsEditable(rfq, quote);
+    const list = state.attList || [];
+    html += '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+      '<div class="bx-rise w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quote files</h3>' +
+        '<button onclick="closeAttachments()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+        '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + esc(rfq.title || '') + '</div>' +
+        '<div class="mt-4 flex flex-col gap-2">' + (list.length ? list.map(a => attachmentRowHtml(a, editable)).join('') : '<div class="text-[12px]" style="color:var(--tx4);">No files attached.</div>') + '</div>' +
+        (editable && list.length < MAX_QUOTE_FILES
+          ? '<label class="mt-4 inline-block rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); cursor:pointer; opacity:' + (state.attUploading?'0.6':'1') + ';">' + (state.attUploading ? 'Uploading…' : 'Add file') +
+            '<input data-attfile type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" class="hidden"' + (state.attUploading ? ' disabled' : '') + ' /></label>'
+          : '') +
+        '<p class="mt-3 text-[11px]" style="color:var(--tx4);">' + (editable
+          ? 'Up to ' + MAX_QUOTE_FILES + ' files, 10 MB each. Visible only to the buyer and Biddex admins. Files are frozen once the buyer shortlists your quote or bidding closes.'
+          : 'Files are frozen: the buyer evaluates your quote with the files above.') + '</p>' +
+      '</div></div>';
   }
   if (state.showCatalogAdd) {
     const p = state.newProduct;
@@ -2356,6 +2488,10 @@ function bindEvents(){
     el.addEventListener('input', (e) => { state.chatDraft = e.target.value; });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !state.chatBusy) sendChatMessage(); });
   });
+  const quoteFilesInput = document.querySelector('[data-quotefiles]');
+  if (quoteFilesInput) quoteFilesInput.addEventListener('change', onQuoteFilesChange);
+  const attFile = document.querySelector('[data-attfile]');
+  if (attFile) attFile.addEventListener('change', onAttFileChange);
   const docFile = document.querySelector('[data-docfile]');
   if (docFile) docFile.addEventListener('change', onDocFileChange);
   document.querySelectorAll('[data-receipt]').forEach(el => {
