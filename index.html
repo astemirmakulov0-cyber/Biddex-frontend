@@ -231,6 +231,8 @@ let state = {
   disputeOrderId: null, disputeReason: '', disputeBusy: false,
   // buyer: confirm receipt of the goods (receiptOrderId = order id)
   receiptOrderId: null, receiptComment: '', receiptBusy: false,
+  // order documents (files in private storage): list of the open order / admin dispute, upload form
+  orderDocs: [], docKind: 'OTHER', docUploading: false, docBusyId: null,
 
   section: 'main', // main | rfqs | lpos | profile | orderDetail | catalog
   profileForm: { name:'', country:'', phone:'', registrationNumber:'' }, profileBusy: false,
@@ -279,7 +281,8 @@ function fmt(n){ return (Number(n)||0).toFixed(3) + ' BHD'; }
 function showToast(msg){ setState({ toast: msg }); setTimeout(()=>{ if(state.toast===msg) setState({toast:''}); }, 3200); }
 
 async function api(path, opts={}) {
-  const headers = { 'Content-Type':'application/json', ...(opts.headers||{}) };
+  const isForm = typeof FormData !== 'undefined' && opts.body instanceof FormData;
+  const headers = { ...(isForm ? {} : { 'Content-Type':'application/json' }), ...(opts.headers||{}) };
   if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
   let res;
   try { res = await fetch(API + path, { ...opts, headers }); }
@@ -527,18 +530,19 @@ async function refreshAdminDisputes(){
     syncOk('adminDisputes');
     if (state.adminDisputeId) {
       // the dispute under review was resolved elsewhere: close it
-      if (!data.some(o => o.id === state.adminDisputeId)) setState({ adminDisputeId:null, adminDisputeChat:[] });
-      else refreshAdminDisputeChat();
+      if (!data.some(o => o.id === state.adminDisputeId)) setState({ adminDisputeId:null, adminDisputeChat:[], orderDocs: [] });
+      else { refreshAdminDisputeChat(); refreshOrderDocs(state.adminDisputeId); }
     }
   } catch(e) { syncFailed('adminDisputes', e); }
 }
 function setAdminTab(tab){ setState({ adminTab: tab }); if (tab === 'disputes') refreshAdminDisputes(); }
 
 async function openAdminDispute(orderId){
-  setState({ adminDisputeId: orderId, adminDisputeChat: [], resolveComment: '', resolveBusy: false });
+  setState({ adminDisputeId: orderId, adminDisputeChat: [], orderDocs: [], resolveComment: '', resolveBusy: false });
   refreshAdminDisputeChat();
+  refreshOrderDocs(orderId);
 }
-function closeAdminDispute(){ setState({ adminDisputeId:null, adminDisputeChat:[] }); }
+function closeAdminDispute(){ setState({ adminDisputeId:null, adminDisputeChat:[], orderDocs: [] }); }
 async function refreshAdminDisputeChat(){
   const id = state.adminDisputeId;
   if (!id) return;
@@ -592,10 +596,116 @@ async function openOrderDetail(orderId){
       // optional: the order renders without the RFQ's request details
       try { rfq = await api('/api/rfqs/' + order.lpo.rfqId); } catch(e) {}
     }
-    setState({ orderDetail: { order, rfq }, orderDetailLoading:false });
+    const isSup = state.company && state.company.type === 'SUPPLIER';
+    setState({ orderDetail: { order, rfq }, orderDetailLoading:false, orderDocs: [], docKind: isSup ? 'DELIVERY_NOTE' : 'OTHER' });
     refreshChat(orderId);
+    refreshOrderDocs(orderId);
   } catch(e) { setState({ orderDetailLoading:false }); showToast(e.message); }
 }
+// ---------- Order documents ----------
+
+const DOC_KIND_LABELS = { DELIVERY_NOTE: 'Delivery note', INVOICE: 'Invoice', OTHER: 'Other' };
+const DOC_MAX_BYTES = 10 * 1024 * 1024;
+
+async function refreshOrderDocs(orderId){
+  if (!state.token) return;
+  try {
+    const data = await api('/api/orders/' + orderId + '/documents');
+    // the order / dispute on screen may have changed while this was loading
+    if (state.selectedOrderId === orderId || state.adminDisputeId === orderId) setIfChanged('orderDocs', data);
+    syncOk('docs');
+  } catch(e) { syncFailed('docs', e); }
+}
+function setDocKind(e){ state.docKind = e.target.value; }
+
+async function onDocFileChange(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  const orderId = state.selectedOrderId;
+  if (!file || !orderId) return;
+  if (file.size > DOC_MAX_BYTES) { showToast('File must be at most 10 MB.'); return; }
+  if (!/\.(pdf|jpe?g|png|webp)$/i.test(file.name) && !/^(application\/pdf|image\/(jpeg|png|webp))$/.test(file.type)) {
+    showToast('Only PDF, JPEG, PNG or WebP files are accepted.'); return;
+  }
+  const form = new FormData();
+  form.append('kind', state.docKind);
+  form.append('file', file, file.name);
+  setState({ docUploading: true });
+  try {
+    await api('/api/orders/' + orderId + '/documents', { method:'POST', body: form });
+    showToast(DOC_KIND_LABELS[state.docKind] + ' uploaded.');
+  } catch(err) { showToast(err.message); }
+  setState({ docUploading: false });
+  refreshOrderDocs(orderId);
+}
+
+// The API returns a 120-second link that downloads the file as an attachment
+async function downloadDoc(docId){
+  setState({ docBusyId: docId });
+  try {
+    const { url } = await api('/api/documents/' + docId + '/download');
+    const a = document.createElement('a');
+    a.href = url; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  } catch(e) { showToast(e.message); }
+  setState({ docBusyId: null });
+}
+
+async function deleteDoc(docId){
+  const orderId = state.selectedOrderId;
+  if (!confirm('Remove this document from the order?')) return;
+  setState({ docBusyId: docId });
+  try {
+    await api('/api/documents/' + docId, { method:'DELETE' });
+    showToast('Document removed.');
+  } catch(e) { showToast(e.message); }
+  setState({ docBusyId: null });
+  if (orderId) refreshOrderDocs(orderId);
+}
+
+function fmtBytes(n){ return n >= 1024 * 1024 ? (n / 1024 / 1024).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+
+// Documents list; opts.canUpload / opts.isSupplier / opts.order for the order page, read-only for the admin
+function renderDocumentsPanel(opts){
+  const docs = state.orderDocs || [];
+  const myCompanyId = state.company ? state.company.id : null;
+  const order = opts.order || {};
+  const open = !['COMPLETED', 'CANCELLED'].includes(order.status);
+  const kinds = opts.isSupplier ? ['DELIVERY_NOTE', 'INVOICE', 'OTHER'] : ['OTHER'];
+  const list = docs.length === 0
+    ? '<div class="text-[12px]" style="color:var(--tx4);">No documents yet.' + (opts.canUpload ? ' Upload delivery notes, invoices, certificates or photos (PDF, JPEG, PNG, WebP, up to 10 MB).' : '') + '</div>'
+    : '<div class="flex flex-col gap-2">' + docs.map(d => {
+        const busy = state.docBusyId === d.id;
+        const mine = !!myCompanyId && d.uploadedByCompanyId === myCompanyId;
+        return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd);">' +
+          '<div class="min-w-0 flex-1">' +
+            '<div class="flex items-center gap-2"><span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx3);">' + esc(DOC_KIND_LABELS[d.kind] || d.kind) + '</span>' +
+            '<span class="truncate font-semibold" style="color:var(--tx);">' + esc(d.fileName) + '</span></div>' +
+            '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + esc(d.uploadedByCompany ? d.uploadedByCompany.name : '') + ' &middot; ' + new Date(d.createdAt).toLocaleString() + '</div>' +
+          '</div>' +
+          '<div class="flex gap-2 shrink-0">' +
+            (opts.canUpload && mine && open ? '<button onclick="' + (busy ? '' : "deleteDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
+            '<button onclick="' + (busy ? '' : "downloadDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? 'Working…' : 'Download') + '</button>' +
+          '</div>' +
+        '</div>';
+      }).join('') + '</div>';
+  const uploader = opts.canUpload && order.status !== 'CANCELLED'
+    ? '<div class="mt-3 flex flex-wrap items-center gap-2">' +
+        '<select onchange="setDocKind(event)" class="rounded-lg border px-2.5 py-1.5 text-[12px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
+          kinds.map(k => '<option value="' + k + '"' + (state.docKind === k ? ' selected' : '') + '>' + DOC_KIND_LABELS[k] + '</option>').join('') +
+        '</select>' +
+        '<label class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); cursor:pointer; opacity:' + (state.docUploading?'0.6':'1') + ';">' +
+          (state.docUploading ? 'Uploading…' : 'Upload file') +
+          '<input data-docfile type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" class="hidden"' + (state.docUploading ? ' disabled' : '') + ' />' +
+        '</label>' +
+        '<span class="text-[11px]" style="color:var(--tx4);">PDF, JPEG, PNG or WebP, up to 10 MB. Visible only to you, your counterparty and Biddex admins.</span>' +
+      '</div>'
+    : '';
+  return '<div class="' + (opts.compact ? 'mt-4' : 'mt-6 rounded-xl border p-4') + '" style="' + (opts.compact ? '' : 'border-color:var(--bd); background:var(--panel);') + '">' +
+    '<div class="mb-3 text-[' + (opts.compact ? '12' : '13') + 'px] font-bold" style="color:var(--tx);">Documents</div>' + list + uploader +
+  '</div>';
+}
+
 function openReceiptModal(orderId){ setState({ receiptOrderId: orderId, receiptComment: '', receiptBusy: false }); }
 function closeReceiptModal(){ setState({ receiptOrderId: null }); }
 async function submitReceipt(){
@@ -1765,6 +1875,7 @@ function renderOrderDetail(){
     ]) +
   '</div>' +
   renderPaymentsPanel(invoice, isSupplier) +
+  renderDocumentsPanel({ order, isSupplier, canUpload: true }) +
   renderChatPanel();
 }
 
@@ -1958,7 +2069,7 @@ function renderAdminDisputeModal(){
   const resumeTo = o.invoice && o.invoice.status === 'PAID' ? 'COMPLETED' : o.statusBeforeDispute;
   const busy = state.resolveBusy;
   return '<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-    '<div class="bx-rise w-full max-w-2xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="bx-rise w-full max-w-2xl max-h-[92vh] overflow-y-auto bx-scroll rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between gap-3"><h3 class="text-lg font-bold" style="color:var(--tx);">Dispute &middot; ' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</h3>' +
       '<button onclick="closeAdminDispute()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' (buyer) &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + ' (supplier) &middot; ' + fmt(lpo.totalAmount) + '</div>' +
@@ -1966,6 +2077,7 @@ function renderAdminDisputeModal(){
       '<div class="mt-2 flex max-h-[260px] flex-col gap-2 overflow-y-auto bx-scroll rounded-xl border p-3" style="border-color:var(--bd); background:var(--inset);">' +
         (msgs.length === 0 ? '<div class="py-4 text-center text-[12px]" style="color:var(--tx4);">No messages.</div>' : msgs.map(m => chatMessageHtml(m, null)).join('')) +
       '</div>' +
+      renderDocumentsPanel({ order: o, compact: true }) +
       '<div class="mt-4 text-[12px] font-bold" style="color:var(--tx);">Decision comment <span class="font-normal" style="color:var(--tx4);">(posted to the order chat, both parties are notified)</span></div>' +
       '<textarea data-resolve="comment" maxlength="1000" rows="3" class="mt-2 w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Supplier will replace the damaged units by Thursday">' + esc(state.resolveComment) + '</textarea>' +
       '<div class="mt-4 flex flex-wrap justify-end gap-2">' +
@@ -2244,6 +2356,8 @@ function bindEvents(){
     el.addEventListener('input', (e) => { state.chatDraft = e.target.value; });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !state.chatBusy) sendChatMessage(); });
   });
+  const docFile = document.querySelector('[data-docfile]');
+  if (docFile) docFile.addEventListener('change', onDocFileChange);
   document.querySelectorAll('[data-receipt]').forEach(el => {
     el.addEventListener('input', (e) => { state.receiptComment = e.target.value; });
   });
@@ -2372,7 +2486,7 @@ setInterval(() => {
     refreshOrders();
     refreshLpos();
     refreshNotifications();
-    if (state.section === 'orderDetail' && state.selectedOrderId) refreshChat(state.selectedOrderId);
+    if (state.section === 'orderDetail' && state.selectedOrderId) { refreshChat(state.selectedOrderId); refreshOrderDocs(state.selectedOrderId); }
   } else if (state.view === 'admin') {
     refreshAdmin();
   }
