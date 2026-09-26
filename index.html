@@ -115,7 +115,7 @@ const I18N = {
     settingsEmailHeading:'Email notifications', settingsEmailNewRfq:'Email me about new RFQs', settingsEmailOther:'Other email notifications',
     settingsPrivacyHeading:'Privacy & data', settingsPrivacySubtext:'Your rights under Bahrain’s Personal Data Protection Law (PDPL).',
     settingsExportData:'Download my data', settingsDeleteAccount:'Delete account',
-    deleteAccountTitle:'Delete account', accountClosedBadge:'account closed',
+    deleteAccountTitle:'Delete account', accountClosedBadge:'account closed', accountSuspendedBadge:'account suspended',
     deleteAccountIntro:'This permanently erases your personal data (name, email, phone, address, verification documents and catalog photos) and signs you out everywhere. Your company’s business name and CR number are kept, along with any purchase orders, invoices and payments already shared with other companies, for accounting records — without your personal details. This cannot be undone.',
     deleteAccountBlockedIntro:'Your account cannot be deleted yet:',
     deleteAccountCreditsWarning:'Remaining credits ({amount} BHD) will be lost.',
@@ -163,7 +163,7 @@ const I18N = {
     settingsEmailHeading:'إشعارات البريد الإلكتروني', settingsEmailNewRfq:'إرسال بريد إلكتروني عن طلبات التسعير الجديدة', settingsEmailOther:'إشعارات البريد الإلكتروني الأخرى',
     settingsPrivacyHeading:'الخصوصية والبيانات', settingsPrivacySubtext:'حقوقك بموجب قانون حماية البيانات الشخصية البحريني (PDPL).',
     settingsExportData:'تنزيل بياناتي', settingsDeleteAccount:'حذف الحساب',
-    deleteAccountTitle:'حذف الحساب', accountClosedBadge:'الحساب مغلق',
+    deleteAccountTitle:'حذف الحساب', accountClosedBadge:'الحساب مغلق', accountSuspendedBadge:'الحساب موقوف',
     deleteAccountIntro:'سيؤدي هذا إلى محو بياناتك الشخصية نهائيًا (الاسم والبريد الإلكتروني والهاتف والعنوان ومستندات التحقق وصور الكتالوج) وتسجيل خروجك من كل الأجهزة. يبقى الاسم التجاري لشركتك ورقم السجل التجاري، إلى جانب أي أوامر شراء وفواتير ومدفوعات مشتركة مع شركات أخرى، لأغراض المحاسبة — دون بياناتك الشخصية. لا يمكن التراجع عن هذا الإجراء.',
     deleteAccountBlockedIntro:'لا يمكن حذف حسابك حاليًا للأسباب التالية:',
     deleteAccountCreditsWarning:'سيتم فقدان الرصيد المتبقي ({amount} د.ب).',
@@ -236,7 +236,7 @@ let state = {
 
   compareRfqId: null, compareQuotes: [], compareLoading: false, compareBusyId: null,
 
-  submitQuoteRfqId: null, quoteForm: { price:'', days:'' }, quoteBusy: false,
+  submitQuoteRfqId: null, quoteForm: { price:'', days:'', paymentTerms:'30' }, quoteBusy: false,
 
   showCatalogAdd: false, newProduct: { name:'', price:'', unit:'kg', imageUrl:'' },
   catalogPhotoBusy: false, catalogPhotoName: '',
@@ -249,6 +249,16 @@ let state = {
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
+  // admin: All RFQs tab (filters, page, results)
+  adminRfqs: [], adminRfqsTotal: 0, adminRfqsPage: 1, adminRfqsLoading: false,
+  adminRfqsFilters: { status:'', buyerCompanyId:'', dateFrom:'', dateTo:'', q:'' },
+  // admin: All orders tab
+  adminOrdersAll: [], adminOrdersAllTotal: 0, adminOrdersAllPage: 1, adminOrdersAllLoading: false,
+  adminOrdersAllFilters: { status:'', buyerCompanyId:'', supplierCompanyId:'', dateFrom:'', dateTo:'' },
+  // admin: analytics dashboard
+  adminAnalytics: null, adminAnalyticsLoading: false,
+  // admin: read-only order card opened from the "All orders" list
+  adminOrderId: null, adminOrderDetail: null, adminOrderChat: [],
   // buyer: open a dispute on an order (disputeOrderId = order id)
   disputeOrderId: null, disputeReason: '', disputeBusy: false,
   // buyer: confirm receipt of the goods (receiptOrderId = order id)
@@ -281,6 +291,10 @@ let state = {
 
   showDeleteModal: null, deleteCompanyName: '', deleteBusy: false,
 
+  // admin: deactivate/reactivate a company (reversible suspension, reason required to deactivate)
+  showDeactivateModal: null, deactivateCompanyName: '', deactivateReason: '', deactivateBusy: false,
+  reactivateBusyId: null,
+
   showWalletModal: false,
 
   // PDPL: Settings > Delete account
@@ -289,6 +303,9 @@ let state = {
 
   // buyer: report a payment against an invoice (showPayModal = invoice id)
   showPayModal: null, payOutstanding: 0, payForm: { amount:'', method:'bank_transfer', reference:'' }, payBusy: false,
+
+  // supplier: mark a delivery as failed (reason required)
+  showDeliveryFailModal: null, deliveryFailReason: '',
 
   // admin: credit a company's wallet (step 'form' -> 'confirm')
   showCreditModal: false, creditForm: { companyId:'', amount:'' }, creditStep: 'form', creditBusy: false,
@@ -306,6 +323,12 @@ function setIfChanged(key, data){
   if (JSON.stringify(state[key]) !== JSON.stringify(data)) setState({ [key]: data });
 }
 function fmt(n){ return (Number(n)||0).toFixed(3) + ' BHD'; }
+// "Overdue N days" for an invoice past its due date (dueDate is only set once receipt is confirmed)
+function overdueDaysLabel(dueDate){
+  if (!dueDate) return '';
+  const days = Math.max(0, Math.floor((Date.now() - new Date(dueDate).getTime()) / 86400000));
+  return 'Overdue ' + days + (days === 1 ? ' day' : ' days');
+}
 // Money inputs: accepts "," or "." as the decimal separator (so "2,5" reads as 2.5), at most 3 decimals.
 // Returns a Number, or null if the input isn't a valid non-negative amount.
 function parseMoneyInput(raw){
@@ -362,7 +385,11 @@ function clearSession(){ try { localStorage.removeItem('biddex_session'); } catc
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 // A counterparty company's name, with an "(account closed)" note once it has erased its own account
 // (PDPL deletion keeps the LPO/order/invoice but anonymizes the company — isActive turns false).
-function companyLabel(c){ return c ? esc(c.name) + (c.isActive === false ? ' <span style="color:var(--tx4);">(' + t('accountClosedBadge') + ')</span>' : '') : ''; }
+function companyLabel(c){
+  if (!c) return '';
+  const badge = c.isActive === false ? t('accountClosedBadge') : c.suspendedAt ? t('accountSuspendedBadge') : '';
+  return esc(c.name) + (badge ? ' <span style="color:var(--tx4);">(' + badge + ')</span>' : '');
+}
 // JS string literal for use inside a double-quoted HTML attribute (onclick="fn(' + jsAttr(x) + ')"):
 // escape for JS first, then HTML-escape so a '"' in the value can't close the attribute.
 function jsAttr(s){ return esc("'" + String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'\\r') + "'"); }
@@ -487,7 +514,7 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 async function refreshAll(){
@@ -589,7 +616,8 @@ function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); }
 async function refreshAdminDisputes(){
   if (!state.token) return;
   try {
-    const data = await api('/api/admin/orders?status=DISPUTED');
+    const res = await api('/api/admin/orders?status=DISPUTED&pageSize=100');
+    const data = res.items || res; // tolerate the old plain-array shape too
     setIfChanged('adminDisputes', data);
     syncOk('adminDisputes');
     if (state.adminDisputeId) {
@@ -599,7 +627,71 @@ async function refreshAdminDisputes(){
     }
   } catch(e) { syncFailed('adminDisputes', e); }
 }
-function setAdminTab(tab){ setState({ adminTab: tab }); if (tab === 'disputes') refreshAdminDisputes(); }
+function setAdminTab(tab){
+  setState({ adminTab: tab });
+  if (tab === 'disputes') refreshAdminDisputes();
+  else if (tab === 'rfqs') refreshAdminRfqs();
+  else if (tab === 'orders') refreshAdminOrdersAll();
+  else if (tab === 'analytics') refreshAdminAnalytics();
+}
+
+// ---------- Admin: all RFQs ----------
+
+async function refreshAdminRfqs(){
+  if (!state.token) return;
+  const f = state.adminRfqsFilters;
+  const qs = new URLSearchParams();
+  if (f.status) qs.set('status', f.status);
+  if (f.buyerCompanyId) qs.set('buyerCompanyId', f.buyerCompanyId);
+  if (f.dateFrom) qs.set('dateFrom', f.dateFrom);
+  if (f.dateTo) qs.set('dateTo', f.dateTo);
+  if (f.q) qs.set('q', f.q);
+  qs.set('page', state.adminRfqsPage);
+  qs.set('pageSize', 20);
+  setState({ adminRfqsLoading: true });
+  try {
+    const data = await api('/api/admin/rfqs?' + qs.toString());
+    setState({ adminRfqs: data.items, adminRfqsTotal: data.total, adminRfqsLoading: false });
+    syncOk('adminRfqs');
+  } catch(e) { setState({ adminRfqsLoading: false }); syncFailed('adminRfqs', e); }
+}
+function setAdminRfqsFilter(patch){ setState({ adminRfqsFilters: { ...state.adminRfqsFilters, ...patch }, adminRfqsPage: 1 }); refreshAdminRfqs(); }
+function setAdminRfqsPage(page){ setState({ adminRfqsPage: page }); refreshAdminRfqs(); }
+
+// ---------- Admin: all orders ----------
+
+async function refreshAdminOrdersAll(){
+  if (!state.token) return;
+  const f = state.adminOrdersAllFilters;
+  const qs = new URLSearchParams();
+  if (f.status) qs.set('status', f.status);
+  if (f.buyerCompanyId) qs.set('buyerCompanyId', f.buyerCompanyId);
+  if (f.supplierCompanyId) qs.set('supplierCompanyId', f.supplierCompanyId);
+  if (f.dateFrom) qs.set('dateFrom', f.dateFrom);
+  if (f.dateTo) qs.set('dateTo', f.dateTo);
+  qs.set('page', state.adminOrdersAllPage);
+  qs.set('pageSize', 20);
+  setState({ adminOrdersAllLoading: true });
+  try {
+    const data = await api('/api/admin/orders?' + qs.toString());
+    setState({ adminOrdersAll: data.items, adminOrdersAllTotal: data.total, adminOrdersAllLoading: false });
+    syncOk('adminOrdersAll');
+  } catch(e) { setState({ adminOrdersAllLoading: false }); syncFailed('adminOrdersAll', e); }
+}
+function setAdminOrdersAllFilter(patch){ setState({ adminOrdersAllFilters: { ...state.adminOrdersAllFilters, ...patch }, adminOrdersAllPage: 1 }); refreshAdminOrdersAll(); }
+function setAdminOrdersAllPage(page){ setState({ adminOrdersAllPage: page }); refreshAdminOrdersAll(); }
+
+// ---------- Admin: analytics ----------
+
+async function refreshAdminAnalytics(){
+  if (!state.token) return;
+  setState({ adminAnalyticsLoading: true });
+  try {
+    const data = await api('/api/admin/analytics');
+    setState({ adminAnalytics: data, adminAnalyticsLoading: false });
+    syncOk('adminAnalytics');
+  } catch(e) { setState({ adminAnalyticsLoading: false }); syncFailed('adminAnalytics', e); }
+}
 
 async function openAdminDispute(orderId){
   setState({ adminDisputeId: orderId, adminDisputeChat: [], orderDocs: [], resolveComment: '', resolveBusy: false });
@@ -696,7 +788,7 @@ async function refreshOrderDocs(orderId){
   try {
     const data = await api('/api/orders/' + orderId + '/documents');
     // the order / dispute on screen may have changed while this was loading
-    if (state.selectedOrderId === orderId || state.adminDisputeId === orderId) setIfChanged('orderDocs', data);
+    if (state.selectedOrderId === orderId || state.adminDisputeId === orderId || state.adminOrderId === orderId) setIfChanged('orderDocs', data);
     syncOk('docs');
   } catch(e) { syncFailed('docs', e); }
 }
@@ -1029,6 +1121,31 @@ async function confirmDeleteCompany(){
   } catch(e) { setState({ deleteBusy:false }); showToast(e.message); }
 }
 
+function openDeactivateModal(companyId, companyName){ setState({ showDeactivateModal: companyId, deactivateCompanyName: companyName, deactivateReason: '' }); }
+function closeDeactivateModal(){ setState({ showDeactivateModal: null, deactivateCompanyName: '', deactivateReason: '' }); }
+
+async function confirmDeactivateCompany(){
+  const reason = state.deactivateReason.trim();
+  if (!reason) { showToast('A reason is required.'); return; }
+  setState({ deactivateBusy:true });
+  try {
+    await api('/api/admin/companies/' + state.showDeactivateModal + '/deactivate', { method:'POST', body: JSON.stringify({ reason }) });
+    setState({ deactivateBusy:false, showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'' });
+    showToast('Company deactivated. Its open RFQs were closed and pending quotes withdrawn.');
+    refreshAdminCompanies();
+  } catch(e) { setState({ deactivateBusy:false }); showToast(e.message); }
+}
+
+async function reactivateCompany(companyId){
+  setState({ reactivateBusyId: companyId });
+  try {
+    await api('/api/admin/companies/' + companyId + '/reactivate', { method:'POST' });
+    setState({ reactivateBusyId: null });
+    showToast('Company reactivated.');
+    refreshAdminCompanies();
+  } catch(e) { setState({ reactivateBusyId: null }); showToast(e.message); }
+}
+
 async function refreshLpos(){
   if (!state.token) return;
   try { const data = await api('/api/lpos'); setIfChanged('lpos', data); syncOk('lpos'); }
@@ -1064,15 +1181,26 @@ async function submitDeclineLpo(){
   } catch(e) { setState({ declineBusy: false, ordersBusyId: null }); showToast(e.message); refreshLpos(); }
 }
 
-async function updateDelivery(orderId, status){
+const DELIVERY_ACTION_TOAST = { DISPATCHED:'Marked as dispatched.', IN_TRANSIT:'Marked as shipped.', DELIVERED:'Marked as delivered.', FAILED:'Delivery marked as failed.' };
+async function updateDelivery(orderId, status, extra){
   setState({ ordersBusyId: orderId });
   try {
-    await api('/api/orders/' + orderId + '/delivery', { method:'PATCH', body: JSON.stringify({ status }) });
-    showToast(status === 'DISPATCHED' ? 'Marked as dispatched.' : 'Marked as delivered.');
+    await api('/api/orders/' + orderId + '/delivery', { method:'PATCH', body: JSON.stringify({ status, ...(extra||{}) }) });
+    showToast(DELIVERY_ACTION_TOAST[status] || 'Delivery status updated.');
     setState({ ordersBusyId: null });
     refreshOrders();
     if (state.section === 'orderDetail' && state.selectedOrderId === orderId) openOrderDetail(orderId);
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
+}
+
+function openDeliveryFailModal(orderId){ setState({ showDeliveryFailModal: orderId, deliveryFailReason: '' }); }
+function closeDeliveryFailModal(){ setState({ showDeliveryFailModal: null, deliveryFailReason: '' }); }
+async function confirmDeliveryFail(){
+  const reason = state.deliveryFailReason.trim();
+  if (!reason) { showToast('Describe why the delivery failed.'); return; }
+  const orderId = state.showDeliveryFailModal;
+  setState({ showDeliveryFailModal: null, deliveryFailReason: '' });
+  await updateDelivery(orderId, 'FAILED', { reason });
 }
 
 // Confirmed / pending / still-open amounts of an invoice, summed in fils (1 BHD = 1000 fils, as stored)
@@ -1285,7 +1413,7 @@ async function acceptQuote(quoteId){
   } catch(e) { showToast(e.message); }
 }
 
-function openSubmitQuote(rfqId){ setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'' }, quoteFiles: [], quoteUploadNote: '' }); }
+function openSubmitQuote(rfqId){ setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'', paymentTerms:'30' }, quoteFiles: [], quoteUploadNote: '' }); }
 function closeSubmitQuote(){ setState({ submitQuoteRfqId:null }); }
 function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
 
@@ -1320,11 +1448,13 @@ async function submitQuote(){
   if (!f.price || !days) return;
   const price = parseMoneyInput(f.price);
   if (price == null || price <= 0) { showToast('Enter a number, e.g. 2.5'); return; }
+  const paymentTerms = f.paymentTerms === '' ? 30 : parseInt(f.paymentTerms, 10);
+  if (!Number.isInteger(paymentTerms) || paymentTerms < 0 || paymentTerms > 120) { showToast('Payment terms must be a whole number of days, 0-120.'); return; }
   const rfqId = state.submitQuoteRfqId;
   setState({ quoteBusy:true });
   try {
     const quote = await api('/api/rfqs/' + rfqId + '/quotes', { method:'POST', body: JSON.stringify({
-      unitPrice: price, currency:'BHD', deliveryTimeDays: days
+      unitPrice: price, currency:'BHD', deliveryTimeDays: days, paymentTermsDays: paymentTerms
     })});
     // the quote exists (and is paid for) now; attach the picked files one by one
     const files = state.quoteFiles;
@@ -1673,8 +1803,18 @@ function renderDashboard(role){
     : state.section === 'lpos' ? renderLpoManagement(isBuyer)
     : (isBuyer ? renderBuyerHub() : renderSupplierHub());
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + suspensionBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
     renderModals() + renderWalletModal() + renderLightbox() + renderEraseAccountModal() + toastHtml();
+}
+
+// Shown on every page while the company is admin-suspended: it can still work on orders already in
+// flight, but not post/edit RFQs, submit quotes or edit its catalog (enforced server-side too).
+function suspensionBanner(){
+  if (!state.company || !state.company.suspendedAt) return '';
+  return '<div class="mb-6 rounded-xl border p-4" style="border-color:var(--bad); background:var(--bad-soft);">' +
+    '<div class="text-[13px] font-bold" style="color:var(--bad);">Account suspended' + (state.company.suspensionReason ? ': ' + esc(state.company.suspensionReason) : '') + '</div>' +
+    '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);">You can still manage orders already in progress (delivery, receipt, payments, documents, messages, disputes), but cannot post or edit RFQs, submit quotes, or edit your catalog. Contact Biddex support to reactivate your account.</div>' +
+  '</div>';
 }
 
 function navBar(role){
@@ -1825,7 +1965,8 @@ function lpoTrackerRow(o, isBuyer){
   const counterpartyCompany = isBuyer ? (o.lpo && o.lpo.supplierCompany) : (o.lpo && o.lpo.buyerCompany);
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);' + (isOrderClosed(o) ? ' opacity:0.85;' : '') + '">' +
     '<div class="flex flex-wrap items-center justify-between gap-3">' +
-      '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) + '</div>' +
+      '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) +
+        (o.invoice && o.invoice.status === 'OVERDUE' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">' + overdueDaysLabel(o.invoice.dueDate) + '</span>' : '') + '</div>' +
         '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">' + idLabel + (counterpartyCompany ? ' · ' + companyLabel(counterpartyCompany) : '') + '</div></div>' +
       '<div class="flex-1 min-w-[180px]">' + orderProgressHtml(o, 'mt-1.5 text-[11.5px] font-semibold') + '</div>' +
       '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
@@ -2082,8 +2223,16 @@ function renderOrderDetail(){
 
   let deliveryAction = '';
   if (isSupplier) {
-    if (delivery.status === 'PENDING') deliveryAction = actionBtn('Mark dispatched', "updateDelivery('" + order.id + "','DISPATCHED')", state.ordersBusyId === order.id);
-    else if (delivery.status === 'DISPATCHED') deliveryAction = actionBtn('Mark delivered', "updateDelivery('" + order.id + "','DELIVERED')", state.ordersBusyId === order.id);
+    const st = delivery.status;
+    const busy = state.ordersBusyId === order.id;
+    const btns = [];
+    if (st === 'PENDING' || st === 'DISPATCHED') btns.push(actionBtn('Mark as shipped', "updateDelivery('" + order.id + "','IN_TRANSIT')", busy));
+    if (st === 'DISPATCHED' || st === 'IN_TRANSIT') btns.push(actionBtn('Mark as delivered', "updateDelivery('" + order.id + "','DELIVERED')", busy));
+    if (st === 'FAILED') btns.push(actionBtn('Send again', "updateDelivery('" + order.id + "','IN_TRANSIT')", busy));
+    if (st === 'DISPATCHED' || st === 'IN_TRANSIT') {
+      btns.push('<button onclick="' + (busy ? '' : "openDeliveryFailModal('" + order.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Delivery failed</button>');
+    }
+    deliveryAction = btns.join('');
   }
   const totals = invoiceTotals(invoice);
   const awaitingReceipt = ['SHIPPED', 'DELIVERED'].includes(order.status) && !order.receivedAt;
@@ -2130,6 +2279,7 @@ function renderOrderDetail(){
       [isSupplier ? 'Buyer' : 'Supplier', (isSupplier ? lpo.buyerCompany : lpo.supplierCompany)?.name || '—'],
       ['Amount', fmt(lpo.totalAmount)],
       ['Terms', lpo.terms || '—'],
+      ['Payment terms', (lpo.paymentTermsDays != null ? lpo.paymentTermsDays : 30) + ' days after receipt is confirmed'],
       // the LPO document stays ACCEPTED once taken; how the deal went is the order's status
       ['Status', (ORDER_STATUS_LABELS[order.status] || order.status) + (lpo.status ? ' (LPO ' + lpo.status.toLowerCase() + ')' : '')]
     ]) +
@@ -2142,7 +2292,8 @@ function renderOrderDetail(){
     ]) +
     detailCard('Invoice', [
       ['Amount', invoice.amount ? fmt(invoice.amount) : '—'],
-      ['Status', invoice.status || '—'],
+      ['Status', (invoice.status || '—') + (invoice.status === 'OVERDUE' ? ' · ' + overdueDaysLabel(invoice.dueDate) : '')],
+      ['Due date', invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '—'],
       ['Confirmed', fmt(totals.paid)],
       ['Awaiting confirmation', fmt(totals.pending)],
       ['Outstanding', fmt(totals.outstanding)]
@@ -2278,12 +2429,20 @@ function renderAdmin(){
   const list = (state.adminCompanies || []).filter(c => state.adminFilter === 'ALL' || c.verificationStatus === state.adminFilter);
 
   const disputes = state.adminDisputes || [];
-  const tabs = '<div class="flex gap-2 mb-6">' +
+  const tabs = '<div class="flex flex-wrap gap-2 mb-6">' +
     '<button onclick="setAdminTab(\'companies\')" class="chip' + (state.adminTab === 'companies' ? ' active' : '') + '">Companies</button>' +
     '<button onclick="setAdminTab(\'disputes\')" class="chip' + (state.adminTab === 'disputes' ? ' active' : '') + '">Disputes' + (disputes.length ? ' (' + disputes.length + ')' : '') + '</button>' +
+    '<button onclick="setAdminTab(\'rfqs\')" class="chip' + (state.adminTab === 'rfqs' ? ' active' : '') + '">All RFQs</button>' +
+    '<button onclick="setAdminTab(\'orders\')" class="chip' + (state.adminTab === 'orders' ? ' active' : '') + '">All orders</button>' +
+    '<button onclick="setAdminTab(\'analytics\')" class="chip' + (state.adminTab === 'analytics' ? ' active' : '') + '">Analytics</button>' +
   '</div>';
 
-  const body = state.adminTab === 'disputes' ? renderAdminDisputes() : '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
+  const body =
+    state.adminTab === 'disputes' ? renderAdminDisputes() :
+    state.adminTab === 'rfqs' ? renderAdminRfqs() :
+    state.adminTab === 'orders' ? renderAdminOrdersAll() :
+    state.adminTab === 'analytics' ? renderAdminAnalyticsPage() :
+    '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
     '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +
     actionBtn('+ Add credits', 'openCreditModal()', false) +
@@ -2296,7 +2455,8 @@ function renderAdmin(){
       '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex min-w-[220px] flex-1 items-center gap-3">' + avatarHtml(c.name, 36) +
         '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
-          (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
+          (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' :
+           c.suspendedAt ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);" title="' + esc(c.suspensionReason || '') + '">Suspended</span>' : '') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
           (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(3) + ' credits' : '') + '</div></div></div>' +
         '<div class="flex flex-wrap items-center justify-end gap-2">' +
@@ -2306,11 +2466,14 @@ function renderAdmin(){
           ((c.documents || []).length ? '<button onclick="openDocsModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx);">Documents (' + c.documents.length + ')</button>' : '') +
           (c.type === 'SUPPLIER' ? '<button onclick="openCreditModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Add credits</button>' : '') +
           '<button onclick="openResetModal(\'' + c.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx3);">Reset password</button>' +
+          (c.suspendedAt
+            ? actionBtn('Reactivate', "reactivateCompany('" + c.id + "')", state.reactivateBusyId === c.id)
+            : '<button onclick="openDeactivateModal(\'' + c.id + '\',' + jsAttr(c.name) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bad); color:var(--bad);">Deactivate</button>') +
           '<button onclick="openDeleteModal(\'' + c.id + '\',' + jsAttr(c.name) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bad); color:var(--bad);">Delete</button>' +
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + toastHtml();
 }
 
 function renderAdminDisputes(){
@@ -2331,6 +2494,158 @@ function renderAdminDisputes(){
         actionBtn('Review', "openAdminDispute('" + o.id + "')", false) +
       '</div>';
     }).join('') + '</div>');
+}
+
+// Small "Page X of Y (N total)" + Prev/Next control, shared by the admin list tabs.
+function pagerHtml(page, pageSize, total, onPageFn){
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  return '<div class="mt-4 flex items-center justify-between gap-3 text-[12px]" style="color:var(--tx3);">' +
+    '<span>' + total + ' total &middot; page ' + page + ' of ' + pages + '</span>' +
+    '<div class="flex gap-2">' +
+      '<button ' + (page<=1?'disabled':'') + ' onclick="' + onPageFn + '(' + (page-1) + ')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3); opacity:' + (page<=1?'0.5':'1') + ';">Prev</button>' +
+      '<button ' + (page>=pages?'disabled':'') + ' onclick="' + onPageFn + '(' + (page+1) + ')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3); opacity:' + (page>=pages?'0.5':'1') + ';">Next</button>' +
+    '</div></div>';
+}
+
+const RFQ_STATUS_LABELS = { DRAFT:'Draft', PUBLISHED:'Published', QUOTING_CLOSED:'Quoting closed', AWARDED:'Awarded', CANCELLED:'Cancelled' };
+
+function renderAdminRfqs(){
+  const f = state.adminRfqsFilters;
+  const list = state.adminRfqs || [];
+  const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  return '<div class="eyebrow mb-1.5">ALL RFQS</div>' +
+  '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">All RFQs</h1>' +
+  '<div class="mb-5 flex flex-wrap items-end gap-2">' +
+    '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">Search title' +
+      '<input value="' + esc(f.q) + '" onchange="setAdminRfqsFilter({q:this.value})" placeholder="Search…" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+    '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">Status' +
+      '<select onchange="setAdminRfqsFilter({status:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '">' +
+        '<option value="">All</option>' + Object.keys(RFQ_STATUS_LABELS).map(s => '<option value="' + s + '"' + (f.status===s?' selected':'') + '>' + RFQ_STATUS_LABELS[s] + '</option>').join('') +
+      '</select></label>' +
+    '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">From' +
+      '<input type="date" value="' + esc(f.dateFrom) + '" onchange="setAdminRfqsFilter({dateFrom:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+    '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">To' +
+      '<input type="date" value="' + esc(f.dateTo) + '" onchange="setAdminRfqsFilter({dateTo:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+  '</div>' +
+  (state.adminRfqsLoading ? '<div class="py-8 text-center text-[12px]" style="color:var(--tx4);">Loading…</div>' :
+   list.length === 0 ? emptyState('No RFQs found', 'Nothing matches these filters.') :
+    '<div class="flex flex-col gap-3">' + list.map(r =>
+      '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="min-w-[220px] flex-1">' +
+          '<div class="font-semibold" style="color:var(--tx);">' + esc(r.title) +
+            (r.buyerCompany && r.buyerCompany.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
+          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + esc(r.buyerCompany ? r.buyerCompany.name : '—') + ' &middot; ' + (r._count ? r._count.quotes : 0) + ' quote(s) &middot; ' + new Date(r.createdAt).toLocaleDateString() + '</div>' +
+        '</div>' +
+        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + (RFQ_STATUS_LABELS[r.status] || r.status) + '</span>' +
+      '</div>').join('') + '</div>') +
+  pagerHtml(state.adminRfqsPage, 20, state.adminRfqsTotal, 'setAdminRfqsPage');
+}
+
+function renderAdminOrdersAll(){
+  const f = state.adminOrdersAllFilters;
+  const list = state.adminOrdersAll || [];
+  const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  return '<div class="eyebrow mb-1.5">ALL ORDERS</div>' +
+  '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">All orders</h1>' +
+  '<div class="mb-5 flex flex-wrap items-end gap-2">' +
+    '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">Status' +
+      '<select onchange="setAdminOrdersAllFilter({status:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '">' +
+        '<option value="">All</option>' + Object.keys(ORDER_STATUS_LABELS).map(s => '<option value="' + s + '"' + (f.status===s?' selected':'') + '>' + ORDER_STATUS_LABELS[s] + '</option>').join('') +
+      '</select></label>' +
+    '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">From' +
+      '<input type="date" value="' + esc(f.dateFrom) + '" onchange="setAdminOrdersAllFilter({dateFrom:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+    '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">To' +
+      '<input type="date" value="' + esc(f.dateTo) + '" onchange="setAdminOrdersAllFilter({dateTo:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+  '</div>' +
+  (state.adminOrdersAllLoading ? '<div class="py-8 text-center text-[12px]" style="color:var(--tx4);">Loading…</div>' :
+   list.length === 0 ? emptyState('No orders found', 'Nothing matches these filters.') :
+    '<div class="flex flex-col gap-3">' + list.map(o => {
+      const lpo = o.lpo || {};
+      return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel); cursor:pointer;" onclick="openAdminOrder(\'' + o.id + '\')">' +
+        '<div class="min-w-[220px] flex-1">' +
+          '<div class="font-semibold" style="color:var(--tx);">' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</div>' +
+          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">LPO-' + esc(String(lpo.id || '').slice(-4).toUpperCase()) + ' &middot; ' + fmt(lpo.totalAmount) +
+            ' &middot; ' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + '</div>' +
+          '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">delivery ' + esc(o.delivery ? o.delivery.status : '—') + ' &middot; invoice ' + esc(o.invoice ? o.invoice.status : '—') +
+            (o.invoice && o.invoice.status === 'OVERDUE' ? ' (' + overdueDaysLabel(o.invoice.dueDate) + ')' : '') + '</div>' +
+        '</div>' +
+        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + (ORDER_STATUS_LABELS[o.status] || o.status) + '</span>' +
+      '</div>';
+    }).join('') + '</div>') +
+  pagerHtml(state.adminOrdersAllPage, 20, state.adminOrdersAllTotal, 'setAdminOrdersAllPage');
+}
+
+// Admin opening an order from the "All orders" list: a read-only card (the server lets ADMIN read any
+// order and its chat, but not post to it — only resolving a dispute writes to the chat as admin).
+async function openAdminOrder(orderId){
+  setState({ adminOrderId: orderId, adminOrderDetail: null, adminOrderChat: [], orderDocs: [] });
+  try {
+    const [order, chat] = await Promise.all([
+      api('/api/orders/' + orderId),
+      api('/api/orders/' + orderId + '/messages'),
+    ]);
+    if (state.adminOrderId === orderId) setState({ adminOrderDetail: order, adminOrderChat: chat });
+    refreshOrderDocs(orderId);
+  } catch(e) { showToast(e.message); setState({ adminOrderId: null }); }
+}
+function closeAdminOrder(){ setState({ adminOrderId: null, adminOrderDetail: null, adminOrderChat: [], orderDocs: [] }); }
+
+function renderAdminOrderModal(){
+  if (!state.adminOrderId) return '';
+  const o = state.adminOrderDetail;
+  if (!o) return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div class="bx-rise rounded-2xl border p-6" style="border-color:var(--bd); background:var(--panel); color:var(--tx4);">Loading…</div></div>';
+  const lpo = o.lpo || {};
+  const msgs = state.adminOrderChat || [];
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-2xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between gap-3"><h3 class="text-lg font-bold" style="color:var(--tx);">' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</h3>' +
+      '<button onclick="closeAdminOrder()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' (buyer) &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + ' (supplier) &middot; ' + fmt(lpo.totalAmount) + '</div>' +
+      '<div class="mt-3 flex flex-wrap gap-2 text-[11px]">' +
+        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--sunken); color:var(--tx3);">Order: ' + (ORDER_STATUS_LABELS[o.status] || o.status) + '</span>' +
+        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--sunken); color:var(--tx3);">Delivery: ' + esc(o.delivery ? o.delivery.status : '—') + '</span>' +
+        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--sunken); color:var(--tx3);">Invoice: ' + esc(o.invoice ? o.invoice.status : '—') + (o.invoice && o.invoice.status === 'OVERDUE' ? ' &middot; ' + overdueDaysLabel(o.invoice.dueDate) : '') + '</span>' +
+      '</div>' +
+      '<div class="mt-4 text-[12px] font-bold" style="color:var(--tx);">Order chat</div>' +
+      '<div class="mt-2 flex max-h-[220px] flex-col gap-2 overflow-y-auto bx-scroll rounded-xl border p-3" style="border-color:var(--bd); background:var(--inset);">' +
+        (msgs.length === 0 ? '<div class="py-4 text-center text-[12px]" style="color:var(--tx4);">No messages.</div>' : msgs.map(m => chatMessageHtml(m, null)).join('')) +
+      '</div>' +
+      renderDocumentsPanel({ order: o, compact: true }) +
+    '</div></div>';
+}
+
+function statCard(label, value){
+  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="eyebrow" style="color:var(--tx4);">' + esc(label) + '</div>' +
+    '<div class="mt-1 text-[20px] font-extrabold" style="color:var(--tx);">' + esc(value) + '</div>' +
+  '</div>';
+}
+
+function renderAdminAnalyticsPage(){
+  const a = state.adminAnalytics;
+  if (state.adminAnalyticsLoading || !a) return '<div class="eyebrow mb-1.5">ANALYTICS</div><h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">Analytics</h1><div class="py-8 text-center text-[12px]" style="color:var(--tx4);">Loading…</div>';
+
+  const byStatus = a.companiesByStatus || {};
+  const windowLabels = { '7d':'Last 7 days', '30d':'Last 30 days', all:'All time' };
+  return '<div class="eyebrow mb-1.5">ANALYTICS</div>' +
+  '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">Analytics</h1>' +
+  '<div class="eyebrow mb-2" style="color:var(--tx4);">COMPANIES BY VERIFICATION STATUS</div>' +
+  '<div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">' +
+    Object.keys(byStatus).map(s => statCard(s, byStatus[s])).join('') +
+  '</div>' +
+  Object.keys(windowLabels).map(w => {
+    const d = a.windows[w] || {};
+    return '<div class="mb-6">' +
+      '<div class="eyebrow mb-2" style="color:var(--tx4);">' + windowLabels[w].toUpperCase() + '</div>' +
+      '<div class="grid grid-cols-2 gap-3 sm:grid-cols-5">' +
+        statCard('RFQs published', d.rfqsPublished) +
+        statCard('Quotes submitted', d.quotesSubmitted) +
+        statCard('LPOs issued', d.lposIssued) +
+        statCard('Completed orders (BHD)', d.completedOrdersAmount) +
+        statCard('Bid-fee revenue (BHD)', d.bidFeeRevenue) +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 function renderAdminDisputeModal(){
@@ -2427,6 +2742,22 @@ function renderDeleteModal(){
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="closeDeleteModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
         '<button onclick="confirmDeleteCompany()" ' + (state.deleteBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deleteBusy?'0.6':'1') + ';">' + (state.deleteBusy ? 'Deleting…' : 'Yes, delete') + '</button>' +
+      '</div>' +
+    '</div></div>';
+}
+
+function renderDeactivateModal(){
+  if (!state.showDeactivateModal) return '';
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Deactivate company</h3>' +
+      '<button onclick="closeDeactivateModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Deactivate <b style="color:var(--tx);">' + esc(state.deactivateCompanyName) + '</b>? It can still sign in and manage orders already in progress, but cannot post/edit RFQs, submit quotes or edit its catalog until reactivated. Its open RFQs are closed (bid fees refunded) and its pending quotes are withdrawn. This is reversible.</p>' +
+      '<label class="mt-4 flex flex-col gap-1.5 text-[12px] font-semibold" style="color:var(--tx3);">Reason (shown to the company, required)' +
+        '<textarea maxlength="500" rows="3" oninput="setState({deactivateReason:this.value})" class="rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Repeated late deliveries under review">' + esc(state.deactivateReason) + '</textarea></label>' +
+      '<div class="mt-5 flex gap-2">' +
+        '<button onclick="closeDeactivateModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
+        '<button onclick="confirmDeactivateCompany()" ' + (state.deactivateBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deactivateBusy?'0.6':'1') + ';">' + (state.deactivateBusy ? 'Deactivating…' : 'Deactivate') + '</button>' +
       '</div>' +
     '</div></div>';
 }
@@ -2590,7 +2921,7 @@ function renderModals(){
           q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') + '</div>' +
-            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + x.deliveryTimeDays + 'd</div>' +
+            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + x.deliveryTimeDays + 'd &middot; ' + (x.paymentTermsDays != null ? x.paymentTermsDays : 30) + '-day terms</div>' +
             (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">Declined the LPO' + (x.lpo.declineReason ? ': ' + esc(x.lpo.declineReason) : '') + '</div>' : '') +
             '</div></div>' +
             '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div></div>' +
@@ -2613,6 +2944,7 @@ function renderModals(){
       field('price','Unit price (BHD per ' + esc(rfqForQuote && rfqForQuote.unit || 'unit') + ')', f.price, '5.800') +
       '<div id="quote-total" class="rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + quoteTotalHtml(f.price, rfqForQuote) + '</div>' +
       field('days','Delivery (days)', f.days, '2') +
+      field('paymentTerms','Payment terms (days after buyer confirms receipt)', f.paymentTerms, '30') +
       '<div class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Attachments (optional, up to ' + MAX_QUOTE_FILES + ')</span>' +
         (state.quoteFiles.length ? '<div class="flex flex-col gap-1.5">' + state.quoteFiles.map((file, i) =>
           '<div class="flex items-center justify-between gap-2 rounded-lg border px-3 py-1.5 text-[12px]" style="border-color:var(--bd);"><span class="truncate" style="color:var(--tx);">' + esc(file.name) + ' <span class="mono" style="color:var(--tx4);">' + fmtBytes(file.size) + '</span></span>' +
@@ -2688,6 +3020,13 @@ function renderModals(){
       '</label>',
       'submitVerifyDoc()', state.verifyBusy ? 'Submitting…' : 'Submit for review', state.verifyBusy || state.verifyFileBusy || !v.fileUrl);
   }
+  if (state.showDeliveryFailModal) {
+    html += modalWrap('Delivery failed',
+      'closeDeliveryFailModal()',
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reason (shown to the buyer, required)</span>' +
+        '<textarea maxlength="1000" rows="3" oninput="setState({deliveryFailReason:this.value})" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Recipient not available, will retry tomorrow">' + esc(state.deliveryFailReason) + '</textarea></label>',
+      'confirmDeliveryFail()', state.ordersBusyId ? 'Working…' : 'Mark as failed', !!state.ordersBusyId);
+  }
   return html;
 }
 
@@ -2710,7 +3049,7 @@ function bindEvents(){
         state.newRfq[f] = e.target.value;
         if (f === 'specifications') { const c = document.getElementById('spec-count'); if (c) c.textContent = e.target.value.length + ' / ' + MAX_SPECIFICATIONS; }
       }
-      else if (state.submitQuoteRfqId && ['price','days'].includes(f)) { state.quoteForm[f] = e.target.value; if (f === 'price') updateQuoteTotal(); }
+      else if (state.submitQuoteRfqId && ['price','days','paymentTerms'].includes(f)) { state.quoteForm[f] = e.target.value; if (f === 'price') updateQuoteTotal(); }
       else if (state.showCatalogAdd && ['name','price'].includes(f)) state.newProduct[f] = e.target.value;
       else if (state.showVerifyModal && f === 'fileUrl') state.verifyForm.fileUrl = e.target.value;
     });
