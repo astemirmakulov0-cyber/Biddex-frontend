@@ -2237,7 +2237,7 @@ function renderOrderDetail(){
   const totals = invoiceTotals(invoice);
   const awaitingReceipt = ['SHIPPED', 'DELIVERED'].includes(order.status) && !order.receivedAt;
   let payAction = '';
-  if (!isSupplier && invoice.id && (invoice.status === 'ISSUED' || invoice.status === 'PARTIALLY_PAID') && order.status !== 'CANCELLED') {
+  if (!isSupplier && invoice.id && ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'].includes(invoice.status) && order.status !== 'CANCELLED') {
     payAction = !order.receivedAt
       ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Payable after you confirm receipt</span>'
       : totals.outstanding > 0
