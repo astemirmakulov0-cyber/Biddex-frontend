@@ -112,7 +112,16 @@ const I18N = {
     reverifyConfirm:'Your company is verified. Changing its name or CR number removes the verification until an admin checks it again; meanwhile you cannot post RFQs or submit quotes. Continue?',
     reverifyToast:'Saved. Your company is back in review until an admin re-verifies it.',
     networkError:'Network error — check your connection.', syncFailed:'Couldn’t refresh data.', syncRetrying:'Retrying automatically.', retryNow:'Retry now',
-    settingsEmailHeading:'Email notifications', settingsEmailNewRfq:'Email me about new RFQs', settingsEmailOther:'Other email notifications'
+    settingsEmailHeading:'Email notifications', settingsEmailNewRfq:'Email me about new RFQs', settingsEmailOther:'Other email notifications',
+    settingsPrivacyHeading:'Privacy & data', settingsPrivacySubtext:'Your rights under Bahrain’s Personal Data Protection Law (PDPL).',
+    settingsExportData:'Download my data', settingsDeleteAccount:'Delete account',
+    deleteAccountTitle:'Delete account', accountClosedBadge:'account closed',
+    deleteAccountIntro:'This permanently erases your personal data (name, email, phone, address, verification documents and catalog photos) and signs you out everywhere. Your company’s business name and CR number are kept, along with any purchase orders, invoices and payments already shared with other companies, for accounting records — without your personal details. This cannot be undone.',
+    deleteAccountBlockedIntro:'Your account cannot be deleted yet:',
+    deleteAccountCreditsWarning:'Remaining credits ({amount} BHD) will be lost.',
+    deleteAccountConfirmCompanyLabel:'Type your company name to confirm', deleteAccountConfirmPasswordLabel:'Your password',
+    deleteAccountCancelButton:'Cancel', deleteAccountConfirmButton:'Yes, delete my account',
+    deleteAccountSuccessToast:'Your account has been deleted.'
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -151,7 +160,16 @@ const I18N = {
     reverifyConfirm:'شركتك موثّقة. تغيير اسمها أو رقم سجلها التجاري يلغي التوثيق حتى يراجعه المسؤول مجددًا، ولن تتمكن خلال ذلك من نشر طلبات التسعير أو تقديم العروض. هل تريد المتابعة؟',
     reverifyToast:'تم الحفظ. شركتك قيد المراجعة مجددًا حتى يعيد المسؤول توثيقها.',
     networkError:'خطأ في الشبكة — تحقّق من اتصالك.', syncFailed:'تعذّر تحديث البيانات.', syncRetrying:'ستتم إعادة المحاولة تلقائيًا.', retryNow:'أعد المحاولة الآن',
-    settingsEmailHeading:'إشعارات البريد الإلكتروني', settingsEmailNewRfq:'إرسال بريد إلكتروني عن طلبات التسعير الجديدة', settingsEmailOther:'إشعارات البريد الإلكتروني الأخرى'
+    settingsEmailHeading:'إشعارات البريد الإلكتروني', settingsEmailNewRfq:'إرسال بريد إلكتروني عن طلبات التسعير الجديدة', settingsEmailOther:'إشعارات البريد الإلكتروني الأخرى',
+    settingsPrivacyHeading:'الخصوصية والبيانات', settingsPrivacySubtext:'حقوقك بموجب قانون حماية البيانات الشخصية البحريني (PDPL).',
+    settingsExportData:'تنزيل بياناتي', settingsDeleteAccount:'حذف الحساب',
+    deleteAccountTitle:'حذف الحساب', accountClosedBadge:'الحساب مغلق',
+    deleteAccountIntro:'سيؤدي هذا إلى محو بياناتك الشخصية نهائيًا (الاسم والبريد الإلكتروني والهاتف والعنوان ومستندات التحقق وصور الكتالوج) وتسجيل خروجك من كل الأجهزة. يبقى الاسم التجاري لشركتك ورقم السجل التجاري، إلى جانب أي أوامر شراء وفواتير ومدفوعات مشتركة مع شركات أخرى، لأغراض المحاسبة — دون بياناتك الشخصية. لا يمكن التراجع عن هذا الإجراء.',
+    deleteAccountBlockedIntro:'لا يمكن حذف حسابك حاليًا للأسباب التالية:',
+    deleteAccountCreditsWarning:'سيتم فقدان الرصيد المتبقي ({amount} د.ب).',
+    deleteAccountConfirmCompanyLabel:'اكتب اسم شركتك للتأكيد', deleteAccountConfirmPasswordLabel:'كلمة المرور',
+    deleteAccountCancelButton:'إلغاء', deleteAccountConfirmButton:'نعم، احذف حسابي',
+    deleteAccountSuccessToast:'تم حذف حسابك.'
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -265,6 +283,10 @@ let state = {
 
   showWalletModal: false,
 
+  // PDPL: Settings > Delete account
+  showEraseModal: false, eraseCheckLoading: false, eraseBlockers: [], eraseWalletBalance: '0.000',
+  eraseForm: { companyName: '', password: '' }, eraseBusy: false, exportBusy: false,
+
   // buyer: report a payment against an invoice (showPayModal = invoice id)
   showPayModal: null, payOutstanding: 0, payForm: { amount:'', method:'bank_transfer', reference:'' }, payBusy: false,
 
@@ -308,6 +330,7 @@ async function api(path, opts={}) {
   if (!res.ok) {
     const err = new Error((data && data.error) || ('Request failed (' + res.status + ')'));
     err.status = res.status;
+    err.data = data;
     // A 401 from the auth middleware mid-session means the token expired or the account was deactivated:
     // end the session instead of leaving every panel silently empty. (Other 401s, e.g. a wrong current
     // password on the change-password form, must not log the user out.)
@@ -337,6 +360,9 @@ function saveSession(){
 function clearSession(){ try { localStorage.removeItem('biddex_session'); } catch(e) {} }
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// A counterparty company's name, with an "(account closed)" note once it has erased its own account
+// (PDPL deletion keeps the LPO/order/invoice but anonymizes the company — isActive turns false).
+function companyLabel(c){ return c ? esc(c.name) + (c.isActive === false ? ' <span style="color:var(--tx4);">(' + t('accountClosedBadge') + ')</span>' : '') : ''; }
 // JS string literal for use inside a double-quoted HTML attribute (onclick="fn(' + jsAttr(x) + ')"):
 // escape for JS first, then HTML-escape so a '"' in the value can't close the attribute.
 function jsAttr(s){ return esc("'" + String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'\\r') + "'"); }
@@ -739,7 +765,7 @@ function renderDocumentsPanel(opts){
           '<div class="min-w-0 flex-1">' +
             '<div class="flex items-center gap-2"><span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx3);">' + esc(DOC_KIND_LABELS[d.kind] || d.kind) + '</span>' +
             '<span class="truncate font-semibold" style="color:var(--tx);">' + esc(d.fileName) + '</span></div>' +
-            '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + esc(d.uploadedByCompany ? d.uploadedByCompany.name : '') + ' &middot; ' + new Date(d.createdAt).toLocaleString() + '</div>' +
+            '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + companyLabel(d.uploadedByCompany) + ' &middot; ' + new Date(d.createdAt).toLocaleString() + '</div>' +
           '</div>' +
           '<div class="flex gap-2 shrink-0">' +
             (opts.canUpload && mine && open && d.kind !== 'QUOTE_ATTACHMENT' ? '<button onclick="' + (busy ? '' : "deleteDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
@@ -936,6 +962,45 @@ async function submitChangePassword(){
     if (data && data.token) { state.token = data.token; saveSession(); }
     setState({ changePwBusy:false, changePwForm:{ currentPassword:'', newPassword:'' }, changePwMsg:'Password updated. Other sessions have been signed out.', changePwOk:true });
   } catch(e) { setState({ changePwBusy:false, changePwMsg: e.message, changePwOk:false }); }
+}
+
+// ---------- PDPL: download my data / delete account ----------
+
+async function downloadMyData(){
+  setState({ exportBusy:true });
+  try {
+    const data = await api('/api/auth/me/export');
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'biddex-my-data.json'; a.click();
+    URL.revokeObjectURL(url);
+    setState({ exportBusy:false });
+  } catch(e) { setState({ exportBusy:false }); showToast(e.message); }
+}
+
+async function openEraseModal(){
+  setState({ showEraseModal:true, eraseCheckLoading:true, eraseBlockers:[], eraseForm:{ companyName:'', password:'' } });
+  try {
+    const data = await api('/api/auth/me/deletion-check');
+    setState({ eraseCheckLoading:false, eraseBlockers: data.blockers || [], eraseWalletBalance: data.walletBalance || '0.000' });
+  } catch(e) { setState({ eraseCheckLoading:false }); showToast(e.message); }
+}
+function closeEraseModal(){ setState({ showEraseModal:false, eraseForm:{ companyName:'', password:'' } }); }
+function onEraseField(field, e){ state.eraseForm[field] = e.target.value; }
+
+async function confirmEraseAccount(){
+  const f = state.eraseForm;
+  if (!f.companyName || !f.password) { showToast('Enter the company name and your password.'); return; }
+  setState({ eraseBusy:true });
+  try {
+    await api('/api/auth/me/erase', { method:'DELETE', body: JSON.stringify(f) });
+    logout();
+    showToast(t('deleteAccountSuccessToast'));
+  } catch(e) {
+    setState({ eraseBusy:false, eraseBlockers: e.status === 409 && e.data && e.data.blockers ? e.data.blockers : state.eraseBlockers });
+    showToast(e.message);
+  }
 }
 
 // ---------- Admin: reset a company's password ----------
@@ -1609,7 +1674,7 @@ function renderDashboard(role){
     : (isBuyer ? renderBuyerHub() : renderSupplierHub());
 
   return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
-    renderModals() + renderWalletModal() + renderLightbox() + toastHtml();
+    renderModals() + renderWalletModal() + renderLightbox() + renderEraseAccountModal() + toastHtml();
 }
 
 function navBar(role){
@@ -1757,11 +1822,11 @@ function renderClosedOrders(closed, isBuyer){
 function lpoTrackerRow(o, isBuyer){
   const title = o.lpo && o.lpo.rfq ? o.lpo.rfq.title : 'Order';
   const idLabel = 'LPO-' + esc(String(o.lpo ? o.lpo.id : o.id).slice(-4).toUpperCase());
-  const counterparty = isBuyer ? (o.lpo && o.lpo.supplierCompany ? o.lpo.supplierCompany.name : '') : (o.lpo && o.lpo.buyerCompany ? o.lpo.buyerCompany.name : '');
+  const counterpartyCompany = isBuyer ? (o.lpo && o.lpo.supplierCompany) : (o.lpo && o.lpo.buyerCompany);
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);' + (isOrderClosed(o) ? ' opacity:0.85;' : '') + '">' +
     '<div class="flex flex-wrap items-center justify-between gap-3">' +
       '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) + '</div>' +
-        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">' + idLabel + (counterparty ? ' · ' + esc(counterparty) : '') + '</div></div>' +
+        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">' + idLabel + (counterpartyCompany ? ' · ' + companyLabel(counterpartyCompany) : '') + '</div></div>' +
       '<div class="flex-1 min-w-[180px]">' + orderProgressHtml(o, 'mt-1.5 text-[11.5px] font-semibold') + '</div>' +
       '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
       '<button onclick="openOrderDetail(\'' + o.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Open order</button>' +
@@ -1967,7 +2032,15 @@ function renderSettings(){
         '<div class="flex items-center justify-between rounded-lg border p-3 text-[13px]" style="border-color:var(--bd); background:var(--panel);"><span style="color:var(--tx);">' + esc(d.docType) + '</span><span class="mono" style="color:var(--tx4);">' + new Date(d.uploadedAt).toLocaleDateString() + '</span></div>'
       ).join('') + '</div>') +
   '</div>' +
-  renderChangePassword();
+  renderChangePassword() +
+  '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-1 text-[15px] font-bold" style="color:var(--tx);">' + t('settingsPrivacyHeading') + '</div>' +
+    '<div class="mb-4 text-[12.5px]" style="color:var(--tx4);">' + t('settingsPrivacySubtext') + '</div>' +
+    '<div class="flex flex-col gap-2.5">' +
+      '<button onclick="downloadMyData()" ' + (state.exportBusy?'disabled':'') + ' class="rounded-xl border px-4 py-2.5 text-left text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">' + (state.exportBusy ? t('pleaseWait') : t('settingsExportData')) + '</button>' +
+      '<button onclick="openEraseModal()" class="rounded-xl border px-4 py-2.5 text-left text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('settingsDeleteAccount') + '</button>' +
+    '</div>' +
+  '</div>';
 }
 
 function renderChangePassword(){
@@ -2133,7 +2206,7 @@ function chatMessageHtml(m, myCompanyId){
   const mine = !!myCompanyId && m.senderCompanyId === myCompanyId;
   return '<div class="flex ' + (mine ? 'justify-end' : 'justify-start') + '">' +
     '<div class="max-w-[75%] rounded-xl px-3 py-2 text-[13px]" style="' + (mine ? 'background:var(--acc); color:white;' : 'background:var(--inset); color:var(--tx2);') + '">' +
-      (!mine ? '<div class="mb-0.5 text-[10px] font-semibold opacity-70">' + esc(m.senderCompany ? m.senderCompany.name : '') + '</div>' : '') +
+      (!mine ? '<div class="mb-0.5 text-[10px] font-semibold opacity-70">' + companyLabel(m.senderCompany) + '</div>' : '') +
       esc(m.body) +
     '</div></div>';
 }
@@ -2354,6 +2427,39 @@ function renderDeleteModal(){
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="closeDeleteModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
         '<button onclick="confirmDeleteCompany()" ' + (state.deleteBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deleteBusy?'0.6':'1') + ';">' + (state.deleteBusy ? 'Deleting…' : 'Yes, delete') + '</button>' +
+      '</div>' +
+    '</div></div>';
+}
+
+function renderEraseAccountModal(){
+  if (!state.showEraseModal) return '';
+  const blockers = state.eraseBlockers || [];
+  const blocked = blockers.length > 0;
+  const credits = parseFloat(state.eraseWalletBalance) > 0;
+  const f = state.eraseForm;
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">' + t('deleteAccountTitle') + '</h3>' +
+      '<button onclick="closeEraseModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      (state.eraseCheckLoading ? '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + t('pleaseWait') + '</p>' :
+        blocked ?
+          '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + t('deleteAccountBlockedIntro') + '</p>' +
+          '<ul class="mt-2 list-disc pl-5 text-[13px]" style="color:var(--bad);">' + blockers.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>'
+        :
+          '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + t('deleteAccountIntro') + '</p>' +
+          (credits ? '<p class="mt-2 rounded-lg border px-3 py-2 text-[12.5px] font-semibold" style="border-color:var(--bad); color:var(--bad);">' + t('deleteAccountCreditsWarning').replace('{amount}', state.eraseWalletBalance) + '</p>' : '') +
+          '<div class="mt-4 flex flex-col gap-3">' +
+            '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('deleteAccountConfirmCompanyLabel') + '</span>' +
+            '<input type="text" value="' + esc(f.companyName) + '" oninput="onEraseField(\'companyName\', event)" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
+            '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('deleteAccountConfirmPasswordLabel') + '</span>' +
+            '<input type="password" value="' + esc(f.password) + '" oninput="onEraseField(\'password\', event)" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
+          '</div>'
+      ) +
+      '<div class="mt-5 flex gap-2">' +
+        '<button onclick="closeEraseModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t('deleteAccountCancelButton') + '</button>' +
+        (blocked || state.eraseCheckLoading ? '' :
+          '<button onclick="confirmEraseAccount()" ' + (state.eraseBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.eraseBusy?'0.6':'1') + ';">' + (state.eraseBusy ? t('pleaseWait') : t('deleteAccountConfirmButton')) + '</button>'
+        ) +
       '</div>' +
     '</div></div>';
 }
