@@ -2517,7 +2517,7 @@ function renderAdminRfqs(){
   '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">All RFQs</h1>' +
   '<div class="mb-5 flex flex-wrap items-end gap-2">' +
     '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">Search title' +
-      '<input value="' + esc(f.q) + '" onchange="setAdminRfqsFilter({q:this.value})" placeholder="Search…" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+      '<input value="' + esc(f.q) + '" onchange="setAdminRfqsFilter({q:this.value})" onkeydown="if(event.key===\'Enter\')this.blur()" placeholder="Search… (Enter to apply)" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
     '<label class="flex flex-col gap-1 text-[11px] font-semibold" style="color:var(--tx4);">Status' +
       '<select onchange="setAdminRfqsFilter({status:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '">' +
         '<option value="">All</option>' + Object.keys(RFQ_STATUS_LABELS).map(s => '<option value="' + s + '"' + (f.status===s?' selected':'') + '>' + RFQ_STATUS_LABELS[s] + '</option>').join('') +
@@ -2754,7 +2754,7 @@ function renderDeactivateModal(){
       '<button onclick="closeDeactivateModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Deactivate <b style="color:var(--tx);">' + esc(state.deactivateCompanyName) + '</b>? It can still sign in and manage orders already in progress, but cannot post/edit RFQs, submit quotes or edit its catalog until reactivated. Its open RFQs are closed (bid fees refunded) and its pending quotes are withdrawn. This is reversible.</p>' +
       '<label class="mt-4 flex flex-col gap-1.5 text-[12px] font-semibold" style="color:var(--tx3);">Reason (shown to the company, required)' +
-        '<textarea maxlength="500" rows="3" oninput="setState({deactivateReason:this.value})" class="rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Repeated late deliveries under review">' + esc(state.deactivateReason) + '</textarea></label>' +
+        '<textarea data-deactivate="reason" maxlength="500" rows="3" class="rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Repeated late deliveries under review">' + esc(state.deactivateReason) + '</textarea></label>' +
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="closeDeactivateModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
         '<button onclick="confirmDeactivateCompany()" ' + (state.deactivateBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deactivateBusy?'0.6':'1') + ';">' + (state.deactivateBusy ? 'Deactivating…' : 'Deactivate') + '</button>' +
@@ -3024,7 +3024,7 @@ function renderModals(){
     html += modalWrap('Delivery failed',
       'closeDeliveryFailModal()',
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reason (shown to the buyer, required)</span>' +
-        '<textarea maxlength="1000" rows="3" oninput="setState({deliveryFailReason:this.value})" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Recipient not available, will retry tomorrow">' + esc(state.deliveryFailReason) + '</textarea></label>',
+        '<textarea data-deliveryfail="reason" maxlength="1000" rows="3" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Recipient not available, will retry tomorrow">' + esc(state.deliveryFailReason) + '</textarea></label>',
       'confirmDeliveryFail()', state.ordersBusyId ? 'Working…' : 'Mark as failed', !!state.ordersBusyId);
   }
   return html;
@@ -3088,6 +3088,12 @@ function bindEvents(){
   });
   document.querySelectorAll('[data-resolve]').forEach(el => {
     el.addEventListener('input', (e) => { state.resolveComment = e.target.value; });
+  });
+  document.querySelectorAll('[data-deactivate]').forEach(el => {
+    el.addEventListener('input', (e) => { state.deactivateReason = e.target.value; });
+  });
+  document.querySelectorAll('[data-deliveryfail]').forEach(el => {
+    el.addEventListener('input', (e) => { state.deliveryFailReason = e.target.value; });
   });
   document.querySelectorAll('[data-pay]').forEach(el => {
     el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', (e) => { state.payForm[el.getAttribute('data-pay')] = e.target.value; });
