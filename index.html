@@ -67,6 +67,8 @@ const COMING_SOON_CATEGORIES = ['Beauty & Salons','Construction','Generators & M
 const CATEGORIES = ACTIVE_CATEGORIES.concat(COMING_SOON_CATEGORIES);
 // RFQs saved before the rename
 const categoryLabel = (c) => c === 'Restaurant Groceries' ? 'Restaurants & Cafés' : (c || '—');
+// Catalog units — the same fixed list the server accepts (src/controllers/catalog.controller.js CATALOG_UNITS)
+const CATALOG_UNITS = ['kg', 'pcs', 'box', 'carton', 'litre', 'ton'];
 const AVATAR_PALETTE = [
   {bg:'#FDE9E1', fg:'#B45309'}, {bg:'#DFF3EC', fg:'#0F766E'}, {bg:'#E6E9FB', fg:'#4338CA'},
   {bg:'#FCE7F3', fg:'#BE185D'}, {bg:'#E0F2FE', fg:'#0369A1'}, {bg:'#FEF3C7', fg:'#92400E'}
@@ -1749,7 +1751,10 @@ async function onBulkImportFileChange(e){
       let error = '';
       if (!row.name) error = 'Name is required';
       else if (row.name.length > 200) error = 'Name is too long';
-      else if (row.price && parseMoneyInput(row.price) == null) error = 'Price is not a valid number';
+      else if (!row.unit) error = 'Unit is required';
+      else if (!CATALOG_UNITS.includes(row.unit.toLowerCase())) error = 'Unknown unit "' + row.unit + '" — must be one of: ' + CATALOG_UNITS.join(', ');
+      else if (!row.price) error = 'Price is required';
+      else if (parseMoneyInput(row.price) == null) error = 'Price is not a valid number';
       const key = dupKey(row);
       const dupCatalog = !error && existingKeys.has(key);
       const dupFile = !error && seenInFile.has(key);
@@ -3080,7 +3085,7 @@ function renderBulkImportModal(){
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Upload Excel/CSV</h3>' +
       '<button onclick="closeBulkImport()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       (state.bulkImportStep === 'upload'
-        ? '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Columns: name, brand, unit, category, description, price (price is optional — you can add it later). Download the template to get the exact headers.</p>' +
+        ? '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Columns: name, brand (optional), unit, category (optional), description (optional), price. Name, unit and price are required — unit must be one of: ' + CATALOG_UNITS.join(', ') + '. Download the template to get the exact headers.</p>' +
           '<button onclick="downloadImportTemplate()" class="mt-3 rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Download template (.xlsx)</button>' +
           '<label class="mt-4 flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">File (.xlsx or .csv)</span>' +
             '<input data-bulk-import-file type="file" accept=".xlsx,.xls,.csv" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
@@ -3091,11 +3096,17 @@ function renderBulkImportModal(){
               const bad = !!r._error;
               const dup = !bad && (r._dupCatalog || r._dupFile);
               const style = bad ? 'border-color:var(--bad); background:var(--bad-soft);' : (dup && r._skip) ? 'border-color:var(--warn); background:var(--warn-soft);' : 'border-color:var(--bd); background:var(--inset);';
+              const badge = bad
+                ? '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--bad-soft); color:var(--bad);">Error</span>'
+                : dup
+                  ? '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--warn-soft); color:var(--warn);">Duplicate</span>'
+                  : '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--ok-soft); color:var(--ok);">OK</span>';
               return '<div class="rounded-lg border p-2.5 text-[12px]" style="' + style + '">' +
                 '<div class="flex items-center justify-between gap-2">' +
                   '<div class="min-w-0 flex-1"><span class="font-semibold truncate" style="color:var(--tx);">' + esc(r.name || '(no name)') + '</span>' +
                     (r.brand ? ' <span style="color:var(--tx4);">&middot; ' + esc(r.brand) + '</span>' : '') +
                     (r.unit ? ' <span style="color:var(--tx4);">&middot; ' + esc(r.unit) + '</span>' : '') + '</div>' +
+                  badge +
                   (dup ? '<label class="flex shrink-0 items-center gap-1.5 text-[11px] font-semibold" style="color:var(--warn);"><input type="checkbox" ' + (r._skip ? 'checked' : '') + ' onchange="toggleBulkImportRowSkip(' + i + ')" /> Skip duplicate</label>' : '') +
                 '</div>' +
                 (bad ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--bad);">' + esc(r._error) + '</div>' : '') +
@@ -3360,7 +3371,7 @@ function renderModals(){
       field('brand','Brand (optional)', p.brand, 'e.g. Almarai') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Unit</span>' +
       '<select data-select="unit" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-        ['kg','pcs','box','carton','litre','ton'].concat(['kg','pcs','box','carton','litre','ton'].includes(p.unit) ? [] : [p.unit]).map(u => '<option value="' + u + '"' + (p.unit===u?' selected':'') + '>' + u + '</option>').join('') +
+        CATALOG_UNITS.concat(CATALOG_UNITS.includes(p.unit) ? [] : [p.unit]).map(u => '<option value="' + u + '"' + (p.unit===u?' selected':'') + '>' + u + '</option>').join('') +
       '</select></label>' +
       field('price','Price per unit (BHD)', p.price, '3.500'),
       'addProduct()', state.editCatalogId ? 'Save changes' : 'Add item', false);
