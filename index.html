@@ -323,6 +323,9 @@ function setIfChanged(key, data){
   if (JSON.stringify(state[key]) !== JSON.stringify(data)) setState({ [key]: data });
 }
 function fmt(n){ return (Number(n)||0).toFixed(3) + ' BHD'; }
+// Platform-wide bid fee percent (from GET /api/companies/me; 5 is the backend's own default, used only
+// before the company has loaded). 0 is a supported value — callers check it and omit fee mentions entirely.
+function bidFeePercent(){ return (state.company && state.company.bidFeePercent != null) ? state.company.bidFeePercent : 5; }
 // "Overdue N days" for an invoice past its due date (dueDate is only set once receipt is confirmed)
 function overdueDaysLabel(dueDate){
   if (!dueDate) return '';
@@ -1316,7 +1319,7 @@ function onNewRfqField(field, e){ state.newRfq[field] = e.target.value; }
 async function submitNewRfq(){
   const r = state.newRfq;
   if (!r.title || !r.quantity || !r.deadline || !r.budget) { showToast('Please fill in what you need, quantity, budget and the date.'); return; }
-  // suppliers pay 5% of the budget to quote, so an RFQ without one could never receive a quote
+  // suppliers pay a % of the budget to quote (0 when bidding is free), so an RFQ without one could never receive a quote
   const budget = parseMoneyInput(r.budget);
   if (budget == null) { showToast('Enter a number, e.g. 2.5'); return; }
   if (budget <= 0) { showToast('Budget must be a positive amount in BHD.'); return; }
@@ -2124,7 +2127,7 @@ function renderWalletModal(){
       '<div class="rounded-xl p-5 mb-5" style="background:var(--acc-soft);">' +
         '<div class="eyebrow" style="color:var(--acc);">AVAILABLE BALANCE</div>' +
         '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(3) + ' credits</div>' +
-        '<div class="mt-1 text-[12px]" style="color:var(--tx3);">Credits are used to submit quotes: 5% of the RFQ budget per quote.</div>' +
+        (bidFeePercent() > 0 ? '<div class="mt-1 text-[12px]" style="color:var(--tx3);">Credits are used to submit quotes: ' + bidFeePercent() + '% of the RFQ budget per quote.</div>' : '') +
       '</div>' +
       '<div class="rounded-xl border px-4 py-3 text-[13px] font-semibold" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + t('walletContactAdmin') + '</div>' +
       '<h3 class="mt-6 mb-2 text-[13px] font-bold" style="color:var(--tx);">' + t('walletHistory') + '</h3>' +
@@ -2817,7 +2820,7 @@ function renderModals(){
       '</select></label>' +
       field('quantity','Quantity', r.quantity, 'e.g. 200') +
       field('unit','Unit', r.unit, 'pcs') +
-      field('budget','Budget (BHD, required) — suppliers pay 5% of this to bid', r.budget, 'e.g. 500') +
+      field('budget', bidFeePercent() > 0 ? 'Budget (BHD, required) — suppliers pay ' + bidFeePercent() + '% of this to bid' : 'Budget (BHD, required)', r.budget, 'e.g. 500') +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Needed by</span>' +
       '<input data-field="deadline" type="date" min="' + bahrainToday() + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Specifications (optional)</span>' +
@@ -2934,11 +2937,15 @@ function renderModals(){
     const f = state.quoteForm;
     const rfqForQuote = (state.rfqs || []).find(r => r.id === state.submitQuoteRfqId);
     const hasBudget = rfqForQuote && rfqForQuote.budget;
-    const fee = hasBudget ? Number(rfqForQuote.budget) * 0.05 : null;
+    const feePercent = bidFeePercent();
+    const fee = hasBudget && feePercent > 0 ? Number(rfqForQuote.budget) * (feePercent / 100) : 0;
+    const costNotice = !hasBudget
+      ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--bad-soft); color:var(--bad);">This RFQ has no budget set by the buyer' + (feePercent > 0 ? ', so a bid fee can\'t be calculated' : '') + ' — you won\'t be able to submit a quote on it.</div>'
+      : feePercent > 0
+      ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">Submitting a quote costs <b class="mono">' + fee.toFixed(3) + ' BHD</b> (' + feePercent + '% of this RFQ\'s ' + fmt(rfqForQuote.budget) + ' budget), deducted from your wallet.</div>'
+      : '';
     html += modalWrap('Submit quote', 'closeSubmitQuote()',
-      (hasBudget
-        ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">Submitting a quote costs <b class="mono">' + fee.toFixed(3) + ' BHD</b> (5% of this RFQ\'s ' + fmt(rfqForQuote.budget) + ' budget), deducted from your wallet.</div>'
-        : '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--bad-soft); color:var(--bad);">This RFQ has no budget set by the buyer, so a bid fee can\'t be calculated — you won\'t be able to submit a quote on it.</div>') +
+      costNotice +
       (rfqForQuote && rfqForQuote.specifications ? '<div class="rounded-lg border px-3 py-2.5" style="border-color:var(--bd); background:var(--inset);"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Buyer\'s specifications</div><div class="mt-1 text-[12.5px] leading-relaxed" style="color:var(--tx2); white-space:pre-wrap; overflow-wrap:anywhere; max-height:160px; overflow-y:auto;">' + esc(rfqForQuote.specifications) + '</div></div>' : '') +
       '<div class="text-[12.5px]" style="color:var(--tx3);">Quantity requested: <b class="mono" style="color:var(--tx);">' + esc(rfqForQuote && rfqForQuote.quantity || '—') + ' ' + esc(rfqForQuote && rfqForQuote.unit || '') + '</b></div>' +
       field('price','Unit price (BHD per ' + esc(rfqForQuote && rfqForQuote.unit || 'unit') + ')', f.price, '5.800') +
