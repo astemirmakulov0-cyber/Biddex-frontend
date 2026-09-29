@@ -739,7 +739,8 @@ const I18N = {
     lpStep3Badge:"ON CHANGES",
     lpStep3Title:"Re-check",
     lpStep3Body:"If you change your company name or CR number, your company goes back to review.",
-    lpComingSoon:"(Coming soon)"
+    lpComingSoon:"(Coming soon)",
+    logoTagline:"BAHRAIN B2B PROCUREMENT"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -1357,7 +1358,8 @@ const I18N = {
     lpStep3Badge:"عند التغيير",
     lpStep3Title:"إعادة المراجعة",
     lpStep3Body:"إذا غيّرت اسم شركتك أو رقم سجلها التجاري، تعود شركتك إلى المراجعة.",
-    lpComingSoon:"(قريبًا)"
+    lpComingSoon:"(قريبًا)",
+    logoTagline:"مشتريات الشركات في البحرين"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -3177,7 +3179,7 @@ function render(){
 }
 
 function logo(sub){
-  return '<div class="flex items-center gap-2 sm:gap-2.5 shrink-0"><span class="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border font-extrabold" style="border-color:var(--bd); background:var(--inset); color:var(--acc); font-size:17px;">B<span style="font-size:11px; vertical-align:sub;">x</span></span><div class="leading-tight"><div class="font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">Biddex</div><div class="eyebrow hidden sm:block" style="font-size:9.5px; color:var(--tx4);">' + (sub || 'BAHRAIN B2B PROCUREMENT') + '</div></div></div>';
+  return '<div class="flex items-center gap-2 sm:gap-2.5 shrink-0"><span class="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border font-extrabold" style="border-color:var(--bd); background:var(--inset); color:var(--acc); font-size:17px;">B<span style="font-size:11px; vertical-align:sub;">x</span></span><div class="leading-tight"><div class="font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">Biddex</div><div class="eyebrow hidden sm:block" style="font-size:9.5px; color:var(--tx4);">' + (sub || t('logoTagline')) + '</div></div></div>';
 }
 
 function toastHtml(){
