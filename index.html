@@ -96,6 +96,8 @@ const CATEGORIES = ACTIVE_CATEGORIES.concat(COMING_SOON_CATEGORIES);
 // RFQs saved before the rename
 // Category names for the RFQ form's dropdown in Arabic (the values sent to the server stay English)
 const CATEGORY_AR = {"Restaurants & Cafés":"المطاعم والمقاهي","Beauty & Salons":"التجميل والصالونات","Construction":"المقاولات والبناء","Generators & Machinery":"المولدات والآلات","Rental Cars":"تأجير السيارات","Office & Facilities":"المكاتب والمرافق","General":"عام"};
+const UNIT_AR = { kg: 'كجم', pcs: 'قطعة', box: 'صندوق', carton: 'كرتون', litre: 'لتر', ton: 'طن' };
+const unitLabel = (u) => (state.lang === 'ar' && UNIT_AR[u]) || u;
 const categoryOptionLabel = (c) => (state.lang === 'ar' && CATEGORY_AR[c]) || c;
 const categoryLabel = (c) => c === 'Restaurant Groceries' ? 'Restaurants & Cafés' : (c || '—');
 // Catalog units — the same fixed list the server accepts (src/controllers/catalog.controller.js CATALOG_UNITS)
@@ -166,14 +168,11 @@ const I18N = {
     saveChanges:'Save changes', addToStock:'Add to stock',
     rfqModalPost:"Post an RFQ",
     rfqModalEdit:"Edit RFQ",
-    rfqFindProduct:"Find a product (optional)",
     rfqChange:"Change",
-    rfqSearchPh:"e.g. mozzarella",
-    rfqNothingHere:"Nothing here? Just describe it below.",
     rfqSearching:"Searching…",
     rfqNoMatches:"No matches — describe it manually below instead.",
     rfqWhatNeed:"What do you need",
-    rfqWhatNeedPh:"e.g. 200 office chairs",
+    rfqWhatNeedPh:"e.g. Mozzarella 2 kg",
     rfqBrand:"Brand (optional)",
     rfqBrandPh:"e.g. Almarai",
     rfqEquivalent:"Equivalent accepted",
@@ -181,20 +180,18 @@ const I18N = {
     rfqCategory:"Category",
     rfqComingSoon:"Coming soon",
     rfqQuantity:"Quantity",
-    rfqQuantityPh:"e.g. 200",
+    rfqQuantityPh:"e.g. 20",
     rfqUnit:"Unit",
-    rfqUnitPh:"pcs",
     rfqBudget:"Budget (BHD, required)",
     rfqBudgetFee:" — suppliers pay {n}% of this to bid",
     rfqBudgetPh:"e.g. 500",
-    rfqNeededBy:"Needed by",
     rfqSpecs:"Specifications (optional)",
     rfqSpecsPh:"Brand or quality requirements, packaging, delivery details…",
     rfqSpecsHint:"Visible to suppliers. Don't include your company name or contacts — you stay anonymous until you award. Locked once a supplier quotes.",
     rfqPostSubmit:"Post RFQ to suppliers",
     rfqPosting:"Posting…",
     rfqSaving:"Saving…",
-    rfqFillFields:"Please fill in what you need, quantity, budget and the date.",
+    rfqFillFields:"Please fill in what you need, quantity and the date.",
     rfqBudgetNumber:"Enter a number, e.g. 2.5",
     rfqBudgetPositive:"Budget must be a positive amount in BHD.",
     rfqQtyWhole:"Quantity must be a whole number (at least 1).",
@@ -202,6 +199,16 @@ const I18N = {
     rfqUpdated:"RFQ updated.",
     rfqPosted:"RFQ posted to suppliers.",
     rfqLocked:"A supplier has already quoted on this RFQ, so it can no longer be edited.",
+    rfqMoreDetails:"More details",
+    rfqLessDetails:"Fewer details",
+    rfqMoreHint:"Brand, budget, specifications, category",
+    rfqWhen:"When do you need it",
+    rfqTomorrow:"Tomorrow",
+    rfqWithinWeek:"Within a week",
+    rfqPickDate:"Pick a date",
+    rfqBudgetOpt:"Budget (BHD, optional)",
+    rfqBudgetRequired:"Please enter a budget (it is required).",
+    budgetNotSpecified:"Budget not specified",
     close:"Close"
   },
   ar: {
@@ -262,14 +269,11 @@ const I18N = {
     saveChanges:'حفظ التغييرات', addToStock:'أضف إلى المخزون',
     rfqModalPost:"نشر طلب عرض سعر",
     rfqModalEdit:"تعديل طلب عرض السعر",
-    rfqFindProduct:"ابحث عن منتج (اختياري)",
     rfqChange:"تغيير",
-    rfqSearchPh:"مثال: جبنة موزاريلا",
-    rfqNothingHere:"لم تجد ما تبحث عنه؟ صِفه في الحقول أدناه.",
     rfqSearching:"جارٍ البحث…",
     rfqNoMatches:"لا توجد نتائج — صِف الطلب يدويًا أدناه.",
     rfqWhatNeed:"ما الذي تحتاجه",
-    rfqWhatNeedPh:"مثال: 200 كرسي مكتب",
+    rfqWhatNeedPh:"مثال: جبنة موزاريلا 2 كجم",
     rfqBrand:"العلامة التجارية (اختياري)",
     rfqBrandPh:"مثال: المراعي",
     rfqEquivalent:"يُقبل ما يعادله",
@@ -277,20 +281,18 @@ const I18N = {
     rfqCategory:"الفئة",
     rfqComingSoon:"قريبًا",
     rfqQuantity:"الكمية",
-    rfqQuantityPh:"مثال: 200",
+    rfqQuantityPh:"مثال: 20",
     rfqUnit:"الوحدة",
-    rfqUnitPh:"قطعة",
     rfqBudget:"الميزانية (د.ب، إلزامية)",
     rfqBudgetFee:" — يدفع الموردون {n}% منها لتقديم عرض",
     rfqBudgetPh:"مثال: 500",
-    rfqNeededBy:"مطلوب بحلول",
     rfqSpecs:"المواصفات (اختياري)",
     rfqSpecsPh:"متطلبات العلامة التجارية أو الجودة، التغليف، تفاصيل التسليم…",
     rfqSpecsHint:"ظاهرة للموردين. لا تذكر اسم شركتك أو بيانات التواصل — تبقى مجهول الهوية حتى الترسية. تُقفل بعد أن يقدّم أي مورد عرضًا.",
     rfqPostSubmit:"انشر الطلب للموردين",
     rfqPosting:"جارٍ النشر…",
     rfqSaving:"جارٍ الحفظ…",
-    rfqFillFields:"يرجى تعبئة ما تحتاجه والكمية والميزانية والتاريخ.",
+    rfqFillFields:"يرجى تعبئة ما تحتاجه والكمية والتاريخ.",
     rfqBudgetNumber:"أدخل رقمًا، مثال: 2.5",
     rfqBudgetPositive:"يجب أن تكون الميزانية مبلغًا موجبًا بالدينار البحريني.",
     rfqQtyWhole:"يجب أن تكون الكمية عددًا صحيحًا (1 على الأقل).",
@@ -298,6 +300,16 @@ const I18N = {
     rfqUpdated:"تم تحديث الطلب.",
     rfqPosted:"تم نشر الطلب للموردين.",
     rfqLocked:"قدّم مورد عرضًا على هذا الطلب، لذا لم يعد بالإمكان تعديله.",
+    rfqMoreDetails:"المزيد من التفاصيل",
+    rfqLessDetails:"تفاصيل أقل",
+    rfqMoreHint:"العلامة التجارية، الميزانية، المواصفات، الفئة",
+    rfqWhen:"متى تحتاجه",
+    rfqTomorrow:"غدًا",
+    rfqWithinWeek:"خلال أسبوع",
+    rfqPickDate:"اختر تاريخًا",
+    rfqBudgetOpt:"الميزانية (د.ب، اختيارية)",
+    rfqBudgetRequired:"يرجى إدخال الميزانية (إلزامية).",
+    budgetNotSpecified:"الميزانية غير محددة",
     close:"إغلاق"
   }
 };
@@ -1443,10 +1455,36 @@ function bahrainDateOf(iso){ return iso ? new Date(new Date(iso).getTime() + 3 *
 function canEditRfq(r){ return (r.status === 'DRAFT' || r.status === 'PUBLISHED') && !(r._count && r._count.quotes > 0); }
 function canCancelRfq(r){ return ['DRAFT','PUBLISHED','QUOTING_CLOSED'].includes(r.status); }
 
+// The buyer's category for a new RFQ: the one of their latest RFQ (companies have no category of their own),
+// else the platform default
+function defaultRfqCategory(){
+  const last = (state.rfqs || []).map(r => categoryLabel(r.category)).find(c => ACTIVE_CATEGORIES.includes(c));
+  return last || ACTIVE_CATEGORIES[0];
+}
+// today + n days in Bahrain time, as YYYY-MM-DD
+function addDaysBahrain(n){ return new Date(Date.now() + 3 * 3600e3 + n * 86400e3).toISOString().slice(0, 10); }
+function resetProductSearch(){ productSearchResults = []; productSearchedFor = null; clearTimeout(productSearchTimer); }
+
 function openPostRfq(prefillTitle){
-  productSearchResults = [];
-  setState({ showPostRfq:true, editRfqId:null, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'', specifications:'',
-    brand:'', exactBrandOnly:false, productId:undefined, productImageUrl:null, productSearchQuery:'' } });
+  resetProductSearch();
+  setState({ showPostRfq:true, editRfqId:null, rfqMore:null, rfqDatePick:false, newRfq:{ title: prefillTitle || '', quantity:'', unit:'pcs', deadline:'', category: defaultRfqCategory(), budget:'', specifications:'',
+    brand:'', exactBrandOnly:false, productId:undefined, productImageUrl:null } });
+}
+// "More details" is closed until the buyer opens it, unless something in it is already filled in
+// (an edit, a Re-order, a picked product with a brand); rfqMore === null means "decide from the values"
+function rfqMoreOpen(){
+  if (state.rfqMore != null) return state.rfqMore;
+  const r = state.newRfq;
+  return !!((r.brand || '').trim() || String(r.budget || '').trim() || (r.specifications || '').trim() || (r.category && r.category !== defaultRfqCategory()));
+}
+function toggleRfqMore(){ setState({ rfqMore: !rfqMoreOpen() }); }
+function setRfqDeadline(kind){
+  if (kind === 'custom') {
+    setState({ rfqDatePick: true });
+    setTimeout(() => { const el = document.querySelector('input[data-field="deadline"]'); if (el && el.showPicker) { try { el.showPicker(); } catch(e) {} } }, 50);
+    return;
+  }
+  setState({ rfqDatePick: false, newRfq: { ...state.newRfq, deadline: addDaysBahrain(kind === 'tomorrow' ? 1 : 7) } });
 }
 const MAX_SPECIFICATIONS = 2000; // as the server (RFQ.specifications)
 // "Show more" state of specifications on opportunity cards
@@ -1464,75 +1502,97 @@ function specsHtml(text, id){
 function openEditRfq(rfqId){
   const r = (state.rfqs || []).find(x => x.id === rfqId);
   if (!r) return;
-  productSearchResults = [];
-  setState({ showPostRfq:true, editRfqId: rfqId, newRfq:{
+  resetProductSearch();
+  setState({ showPostRfq:true, editRfqId: rfqId, rfqMore:null, rfqDatePick:false, newRfq:{
     title: r.title || '', quantity: r.quantity != null ? String(r.quantity) : '', unit: r.unit || 'pcs',
     deadline: bahrainDateOf(r.deadline), category: ACTIVE_CATEGORIES.includes(categoryLabel(r.category)) ? categoryLabel(r.category) : ACTIVE_CATEGORIES[0], budget: r.budget != null ? String(Number(r.budget)) : '',
     specifications: r.specifications || '',
     // productId stays undefined (not null) until the buyer actively picks or clears a product here, so
     // saving without touching the picker never wipes the photo the RFQ already has
-    brand: r.brand || '', exactBrandOnly: !!r.exactBrandOnly, productId: undefined, productImageUrl: r.imageUrl || null, productSearchQuery: ''
+    brand: r.brand || '', exactBrandOnly: !!r.exactBrandOnly, productId: undefined, productImageUrl: r.imageUrl || null
   } });
 }
 function closePostRfq(){ setState({ showPostRfq:false, editRfqId:null }); }
 function onNewRfqField(field, e){ state.newRfq[field] = e.target.value; }
 
-// ---------- RFQ: pick a product from a supplier's catalog (optional) ----------
-// Search results live outside `state` and are painted with a targeted DOM update (like updateQuoteTotal()),
-// never via setState/render — the search box would otherwise lose focus on every keystroke or every time
+// ---------- RFQ: "What do you need" doubles as the catalog search ----------
+// Suggestions live outside `state` and are painted with a targeted DOM update (like updateQuoteTotal()),
+// never via setState/render — the field would otherwise lose focus on every keystroke or every time
 // results arrive mid-typing (the whole #app subtree is replaced on every render()).
 let productSearchResults = [];
+let productSearchedFor = null; // the query productSearchResults answers (so "no matches" isn't shown before a search ran)
 let productSearchTimer = null;
 
-function onProductSearchInput(e){
-  state.newRfq.productSearchQuery = e.target.value;
-  const box = document.getElementById('product-search-results');
-  if (box) box.innerHTML = renderProductSearchResults(true);
+function paintProductArea(loading){
+  const box = document.getElementById('rfq-product-area');
+  if (box) box.innerHTML = renderRfqProductArea(loading);
+}
+
+// Typing in the title field: it's the RFQ title, and (until a product is picked) the catalog search query.
+// Editing the text unlinks a previously picked product — the words no longer describe it.
+function onRfqTitleInput(e){
+  const r = state.newRfq;
+  r.title = e.target.value;
+  if (r.productId) { r.productId = null; r.productImageUrl = null; }
+  paintProductArea(r.title.trim().length >= 2);
   clearTimeout(productSearchTimer);
   productSearchTimer = setTimeout(searchProducts, 300);
 }
 
 async function searchProducts(){
-  const q = (state.newRfq.productSearchQuery || '').trim();
-  if (q.length < 2) { productSearchResults = []; const box = document.getElementById('product-search-results'); if (box) box.innerHTML = renderProductSearchResults(); return; }
-  try {
-    productSearchResults = await api('/api/catalog/search?q=' + encodeURIComponent(q));
-  } catch (e) { productSearchResults = []; }
-  const box = document.getElementById('product-search-results');
-  if (box) box.innerHTML = renderProductSearchResults();
+  const q = (state.newRfq.title || '').trim();
+  if (q.length < 2) { productSearchResults = []; productSearchedFor = null; paintProductArea(); return; }
+  let results;
+  try { results = await api('/api/catalog/search?q=' + encodeURIComponent(q)); } catch (e) { results = []; }
+  if ((state.newRfq.title || '').trim() !== q || state.newRfq.productId) return; // typed on, or picked one, meanwhile
+  productSearchResults = results;
+  productSearchedFor = q;
+  paintProductArea();
 }
 
-function renderProductSearchResults(loading){
-  const q = (state.newRfq.productSearchQuery || '').trim();
-  if (loading) return '<div class="text-[12px] py-2" style="color:var(--tx4);">' + t('rfqSearching') + '</div>';
+// Under the title field: the picked product, or the suggestions for what is typed
+function renderRfqProductArea(loading){
+  const r = state.newRfq;
+  if (r.productId) {
+    return '<div class="flex items-center gap-2.5 rounded-lg border p-2" style="border-color:var(--bd); background:var(--inset);">' +
+      (r.productImageUrl ? '<img src="' + esc(r.productImageUrl) + '" class="h-10 w-10 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' : '') +
+      '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
+        ((r.brand || r.unit) ? '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([r.brand, unitLabel(r.unit)].filter(Boolean).join(' · ')) + '</div>' : '') + '</div>' +
+      '<button type="button" onclick="clearProduct()" class="shrink-0 text-[11px] font-semibold" style="color:var(--acc);">' + t('rfqChange') + '</button>' +
+    '</div>';
+  }
+  const q = (r.title || '').trim();
   if (q.length < 2) return '';
-  if (!productSearchResults.length) return '<div class="text-[12px] py-2" style="color:var(--tx4);">' + t('rfqNoMatches') + '</div>';
-  return '<div class="grid grid-cols-2 gap-2 mt-2">' + productSearchResults.map(it =>
-    '<button type="button" onclick="pickProduct(' + jsAttr(it.id) + ')" class="flex flex-col items-start gap-1 rounded-lg border p-2 text-start" style="border-color:var(--bd); background:var(--panel);">' +
-      (it.imageUrl ? '<img src="' + esc(it.imageUrl) + '" class="h-16 w-full rounded object-cover" />' : '<div class="h-16 w-full rounded" style="background:var(--sunken);"></div>') +
-      '<div class="text-[12px] font-semibold truncate w-full" style="color:var(--tx);">' + esc(it.name) + '</div>' +
-      '<div class="text-[10.5px] truncate w-full" style="color:var(--tx4);">' + esc([it.brand, it.unit, it.category].filter(Boolean).join(' · ') || ' ') + '</div>' +
+  if (loading) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('rfqSearching') + '</div>';
+  if (productSearchedFor !== q) return '';
+  if (!productSearchResults.length) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('rfqNoMatches') + '</div>';
+  return '<div class="bx-scroll flex max-h-52 flex-col gap-1.5 overflow-y-auto">' + productSearchResults.map(it =>
+    '<button type="button" onclick="pickProduct(' + jsAttr(it.id) + ')" class="flex items-center gap-2.5 rounded-lg border p-2 text-start" style="border-color:var(--bd); background:var(--panel);">' +
+      (it.imageUrl ? '<img src="' + esc(it.imageUrl) + '" class="h-10 w-10 shrink-0 rounded object-cover" />' : '<div class="h-10 w-10 shrink-0 rounded" style="background:var(--sunken);"></div>') +
+      '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(it.name) + '</div>' +
+      '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([it.brand, unitLabel(it.unit), it.category].filter(Boolean).join(' · ') || ' ') + '</div></div>' +
     '</button>'
   ).join('') + '</div>';
 }
 
+// Picking a suggestion fills the name, photo, brand and unit; the buyer still reviews and posts normally
 function pickProduct(id){
   const item = productSearchResults.find(i => i.id === id);
   if (!item) return;
   productSearchResults = [];
+  productSearchedFor = null;
   setState({ newRfq: { ...state.newRfq,
-    title: state.newRfq.title || item.name,
+    title: item.name,
     unit: item.unit || state.newRfq.unit,
     brand: item.brand || '',
     productId: item.id,
     productImageUrl: item.imageUrl || null,
-    productSearchQuery: '',
   } });
-  updateBrandToggleVisibility();
 }
 
 function clearProduct(){
-  setState({ newRfq: { ...state.newRfq, productId: null, productImageUrl: null, productSearchQuery: '' } });
+  setState({ newRfq: { ...state.newRfq, productId: null, productImageUrl: null } });
+  searchProducts();
 }
 
 function setExactBrandOnly(v){ setState({ newRfq: { ...state.newRfq, exactBrandOnly: v } }); }
@@ -1546,13 +1606,18 @@ function updateBrandToggleVisibility(){
 
 async function submitNewRfq(){
   const r = state.newRfq;
-  if (!r.title || !r.quantity || !r.deadline || !r.budget) { showToast(t('rfqFillFields')); return; }
-  // suppliers pay a % of the budget to quote (0 when bidding is free), so an RFQ without one could never receive a quote
-  const budget = parseMoneyInput(r.budget);
-  if (budget == null) { showToast(t('rfqBudgetNumber')); return; }
-  if (budget <= 0) { showToast(t('rfqBudgetPositive')); return; }
-  // quotes are priced per unit (total = unit price × quantity), so the quantity must be a whole number
+  if (!(r.title || '').trim() || !r.quantity || !r.deadline) { showToast(t('rfqFillFields')); return; }
+  // quantity is a whole number (quotes are priced per unit: total = unit price × quantity)
   if (!Number.isInteger(Number(r.quantity)) || Number(r.quantity) < 1) { showToast(t('rfqQtyWhole')); return; }
+  // the budget is optional while bidding is free; once suppliers pay a % of it to quote it is required (the server enforces this too)
+  const hasBudget = String(r.budget || '').trim() !== '';
+  let budget = null;
+  if (bidFeePercent() > 0 && !hasBudget) { setState({ rfqMore: true }); showToast(t('rfqBudgetRequired')); return; }
+  if (hasBudget) {
+    budget = parseMoneyInput(r.budget);
+    if (budget == null) { setState({ rfqMore: true }); showToast(t('rfqBudgetNumber')); return; }
+    if (budget <= 0) { setState({ rfqMore: true }); showToast(t('rfqBudgetPositive')); return; }
+  }
   const editId = state.editRfqId;
   const fields = {
     title: r.title,
@@ -2503,7 +2568,7 @@ function opportunityCard(r){
         specsHtml(r.specifications, r.id) +
       '</div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">QUANTITY</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + esc(r.quantity||'—') + ' ' + esc(r.unit||'') + '</div></div>' +
-      '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '—') + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '<span class="text-[12px] font-semibold" style="color:var(--tx4);">' + t('budgetNotSpecified') + '</span>') + '</div></div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">CLOSES IN</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
       (quoted
         ? '<div class="flex items-center gap-2 shrink-0"><button onclick="openAttachments(\'' + r.id + '\')" class="rounded-lg border px-3 py-2 text-[12px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">Files (' + ((ownQuote._count && ownQuote._count.attachments) || 0) + ')</button>' +
@@ -2708,11 +2773,11 @@ async function submitStockCount(){
 // Opens "Post an RFQ" prefilled from a known product (a stock item or a past order) — the buyer still
 // reviews and publishes normally, nothing is submitted on their behalf.
 function openReorder({ title, unit, brand, category, quantity, productId }){
-  productSearchResults = [];
-  setState({ showPostRfq:true, editRfqId:null, newRfq:{
+  resetProductSearch();
+  setState({ showPostRfq:true, editRfqId:null, rfqMore:null, rfqDatePick:false, newRfq:{
     title: title || '', quantity: quantity != null ? String(quantity) : '', unit: unit || 'pcs',
-    deadline: '', category: ACTIVE_CATEGORIES.includes(category) ? category : ACTIVE_CATEGORIES[0], budget: '',
-    specifications: '', brand: brand || '', exactBrandOnly: false, productId: productId || undefined, productImageUrl: null, productSearchQuery: ''
+    deadline: '', category: ACTIVE_CATEGORIES.includes(category) ? category : defaultRfqCategory(), budget: '',
+    specifications: '', brand: brand || '', exactBrandOnly: false, productId: productId || undefined, productImageUrl: null
   } });
 }
 function reorderFromStock(id){
@@ -3575,40 +3640,63 @@ function renderModals(){
   if (state.showPostRfq) {
     const r = state.newRfq;
     const editing = !!state.editRfqId;
+    const label = (txt) => '<span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + txt + '</span>';
+    const boxStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+    const tomorrow = addDaysBahrain(1), inWeek = addDaysBahrain(7);
+    const customDate = !!state.rfqDatePick || !!(r.deadline && r.deadline !== tomorrow && r.deadline !== inWeek);
+    const chip = (text, on, click) => '<button type="button" onclick="' + click + '" class="min-w-0 flex-1 rounded-lg border px-2 py-2.5 text-[12.5px] font-bold" style="' +
+      (on ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + text + '</button>';
+    const more = rfqMoreOpen();
+    const units = CATALOG_UNITS.concat(r.unit && !CATALOG_UNITS.includes(r.unit) ? [r.unit] : []);
+    const feeOn = bidFeePercent() > 0;
     html += modalWrap(t(editing ? 'rfqModalEdit' : 'rfqModalPost'), 'closePostRfq()',
-      '<div class="rounded-lg border p-3" style="border-color:var(--bd); background:var(--inset);">' +
-        '<div class="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('rfqFindProduct') + '</div>' +
-        (r.productId
-          ? '<div class="flex items-center gap-2.5 rounded-lg border p-2" style="border-color:var(--bd); background:var(--panel);">' +
-              (r.productImageUrl ? '<img src="' + esc(r.productImageUrl) + '" class="h-10 w-10 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' : '') +
-              '<div class="min-w-0 flex-1 truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-              '<button type="button" onclick="clearProduct()" class="shrink-0 text-[11px] font-semibold" style="color:var(--acc);">' + t('rfqChange') + '</button>' +
-            '</div>'
-          : '<input data-field="productSearch" type="text" value="' + esc(r.productSearchQuery || '') + '" placeholder="' + t('rfqSearchPh') + '" class="mb-1 w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--panel); color:var(--tx);" />' +
-            '<div id="product-search-results">' + renderProductSearchResults() + '</div>' +
-            '<div class="mt-1 text-[11px]" style="color:var(--tx4);">' + t('rfqNothingHere') + '</div>') +
+      // 1. what
+      '<div class="flex flex-col gap-1.5"><label class="flex flex-col gap-1.5">' + label(t('rfqWhatNeed')) +
+        '<input data-field="title" type="text" autocomplete="off" value="' + esc(r.title) + '" placeholder="' + t('rfqWhatNeedPh') + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + boxStyle + '" /></label>' +
+        '<div id="rfq-product-area" class="flex flex-col gap-1.5">' + renderRfqProductArea() + '</div></div>' +
+      // 2. quantity + unit
+      '<div class="grid grid-cols-2 gap-3">' +
+        '<label class="flex min-w-0 flex-col gap-1.5">' + label(t('rfqQuantity')) +
+          '<input data-field="quantity" type="text" inputmode="numeric" value="' + esc(r.quantity) + '" placeholder="' + t('rfqQuantityPh') + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + boxStyle + '" /></label>' +
+        '<label class="flex min-w-0 flex-col gap-1.5">' + label(t('rfqUnit')) +
+          '<select data-select="unit" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + boxStyle + '">' +
+            units.map(u => '<option value="' + esc(u) + '"' + (r.unit === u ? ' selected' : '') + '>' + esc(unitLabel(u)) + '</option>').join('') +
+          '</select></label>' +
       '</div>' +
-      field('title', t('rfqWhatNeed'), r.title, t('rfqWhatNeedPh')) +
-      field('brand', t('rfqBrand'), r.brand, t('rfqBrandPh')) +
-      '<div id="brand-toggle-container" class="flex gap-2" style="display:' + ((r.brand || '').trim() ? 'flex' : 'none') + ';">' +
-        '<button type="button" onclick="setExactBrandOnly(false)" class="flex-1 rounded-lg border px-3 py-2 text-[12px] font-bold" style="' + (!r.exactBrandOnly ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('rfqEquivalent') + '</button>' +
-        '<button type="button" onclick="setExactBrandOnly(true)" class="flex-1 rounded-lg border px-3 py-2 text-[12px] font-bold" style="' + (r.exactBrandOnly ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('rfqExactBrand') + '</button>' +
+      // 3. when
+      '<div class="flex flex-col gap-1.5">' + label(t('rfqWhen')) +
+        '<div class="flex gap-2">' +
+          chip(t('rfqTomorrow'), !customDate && r.deadline === tomorrow, "setRfqDeadline('tomorrow')") +
+          chip(t('rfqWithinWeek'), !customDate && r.deadline === inWeek, "setRfqDeadline('week')") +
+          chip(t('rfqPickDate'), customDate, "setRfqDeadline('custom')") +
+        '</div>' +
+        (customDate ? '<input data-field="deadline" type="date" min="' + addDaysBahrain(0) + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + boxStyle + '" />' : '') +
       '</div>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('rfqCategory') + '</span>' +
-      '<select data-select="category" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-        ACTIVE_CATEGORIES.map(c => '<option value="' + esc(c) + '"' + (r.category===c?' selected':'') + '>' + esc(categoryOptionLabel(c)) + '</option>').join('') +
-        COMING_SOON_CATEGORIES.map(c => '<option value="' + esc(c) + '" disabled>' + esc(categoryOptionLabel(c)) + ' — ' + t('rfqComingSoon') + '</option>').join('') +
-      '</select></label>' +
-      field('quantity', t('rfqQuantity'), r.quantity, t('rfqQuantityPh')) +
-      field('unit', t('rfqUnit'), r.unit, t('rfqUnitPh')) +
-      field('budget', t('rfqBudget') + (bidFeePercent() > 0 ? t('rfqBudgetFee').replace('{n}', bidFeePercent()) : ''), r.budget, t('rfqBudgetPh')) +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('rfqNeededBy') + '</span>' +
-      '<input data-field="deadline" type="date" min="' + bahrainToday() + '" value="' + esc(r.deadline) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('rfqSpecs') + '</span>' +
-        '<textarea data-field="specifications" rows="4" maxlength="' + MAX_SPECIFICATIONS + '" placeholder="' + t('rfqSpecsPh') + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(r.specifications || '') + '</textarea>' +
-        '<span class="flex justify-between gap-3 text-[11px]" style="color:var(--tx4);"><span>' + t('rfqSpecsHint') + '</span><span id="spec-count" class="mono shrink-0">' + (r.specifications || '').length + ' / ' + MAX_SPECIFICATIONS + '</span></span>' +
-      '</label>',
-      'submitNewRfq()', state.postBusy ? t(editing ? 'rfqSaving' : 'rfqPosting') : t(editing ? 'saveChanges' : 'rfqPostSubmit'), state.postBusy);
+      // more details (collapsed unless something in it is filled in)
+      '<div class="flex flex-col gap-4">' +
+        '<button type="button" onclick="toggleRfqMore()" aria-expanded="' + more + '" class="flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-start" style="border-color:var(--bd2); color:var(--tx2);">' +
+          '<span class="min-w-0"><span class="block text-[13px] font-bold">' + t(more ? 'rfqLessDetails' : 'rfqMoreDetails') + '</span>' +
+          (more ? '' : '<span class="block truncate text-[11px] font-normal" style="color:var(--tx4);">' + t('rfqMoreHint') + '</span>') + '</span>' +
+          '<span class="shrink-0 text-[12px]" aria-hidden="true">' + (more ? '▲' : '▼') + '</span></button>' +
+        (more ?
+          field('brand', t('rfqBrand'), r.brand, t('rfqBrandPh')) +
+          '<div id="brand-toggle-container" class="flex gap-2" style="display:' + ((r.brand || '').trim() ? 'flex' : 'none') + ';">' +
+            '<button type="button" onclick="setExactBrandOnly(false)" class="flex-1 rounded-lg border px-3 py-2 text-[12px] font-bold" style="' + (!r.exactBrandOnly ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('rfqEquivalent') + '</button>' +
+            '<button type="button" onclick="setExactBrandOnly(true)" class="flex-1 rounded-lg border px-3 py-2 text-[12px] font-bold" style="' + (r.exactBrandOnly ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('rfqExactBrand') + '</button>' +
+          '</div>' +
+          field('budget', feeOn ? t('rfqBudget') + t('rfqBudgetFee').replace('{n}', bidFeePercent()) : t('rfqBudgetOpt'), r.budget, t('rfqBudgetPh')) +
+          '<label class="flex flex-col gap-1.5">' + label(t('rfqCategory')) +
+            '<select data-select="category" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + boxStyle + '">' +
+              ACTIVE_CATEGORIES.map(c => '<option value="' + esc(c) + '"' + (r.category===c?' selected':'') + '>' + esc(categoryOptionLabel(c)) + '</option>').join('') +
+              COMING_SOON_CATEGORIES.map(c => '<option value="' + esc(c) + '" disabled>' + esc(categoryOptionLabel(c)) + ' — ' + t('rfqComingSoon') + '</option>').join('') +
+            '</select></label>' +
+          '<label class="flex flex-col gap-1.5">' + label(t('rfqSpecs')) +
+            '<textarea data-field="specifications" rows="4" maxlength="' + MAX_SPECIFICATIONS + '" placeholder="' + t('rfqSpecsPh') + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + boxStyle + '">' + esc(r.specifications || '') + '</textarea>' +
+            '<span class="flex justify-between gap-3 text-[11px]" style="color:var(--tx4);"><span>' + t('rfqSpecsHint') + '</span><span id="spec-count" class="mono shrink-0">' + (r.specifications || '').length + ' / ' + MAX_SPECIFICATIONS + '</span></span>' +
+          '</label>'
+        : '') +
+      '</div>',
+      'submitNewRfq()', state.postBusy ? t(editing ? 'rfqSaving' : 'rfqPosting') : t(editing ? 'saveChanges' : 'rfqPostSubmit'), state.postBusy, true);
   }
   if (state.showPayModal) {
     const f = state.payForm;
@@ -3728,7 +3816,7 @@ function renderModals(){
     const feePercent = bidFeePercent();
     const fee = hasBudget && feePercent > 0 ? Number(rfqForQuote.budget) * (feePercent / 100) : 0;
     const costNotice = !hasBudget
-      ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--bad-soft); color:var(--bad);">This RFQ has no budget set by the buyer' + (feePercent > 0 ? ', so a bid fee can\'t be calculated' : '') + ' — you won\'t be able to submit a quote on it.</div>'
+      ? ''
       : feePercent > 0
       ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">Submitting a quote costs <b class="mono">' + fee.toFixed(3) + ' BHD</b> (' + feePercent + '% of this RFQ\'s ' + fmt(rfqForQuote.budget) + ' budget), deducted from your wallet.</div>'
       : '';
@@ -3754,7 +3842,7 @@ function renderModals(){
         '<span class="text-[11px]" style="color:var(--tx4);">Specs, certificates or photos: PDF, JPEG, PNG or WebP, up to 10 MB each. Only the buyer and Biddex admins can see them. You can change them until the buyer shortlists your quote or bidding closes.</span>' +
         (state.quoteUploadNote ? '<span class="text-[12px] font-semibold" style="color:var(--acc);">' + esc(state.quoteUploadNote) + '</span>' : '') +
       '</div>',
-      'submitQuote()', state.quoteBusy ? 'Submitting…' : 'Submit quote', state.quoteBusy || !hasBudget);
+      'submitQuote()', state.quoteBusy ? 'Submitting…' : 'Submit quote', state.quoteBusy);
   }
   if (state.attQuoteId) {
     const rfq = (state.rfqs || []).find(r => r.id === state.attRfqId) || {};
@@ -3842,13 +3930,16 @@ function renderModals(){
   return html;
 }
 
-function modalWrap(title, onClose, fieldsHtml, onSubmit, submitLabel, busy){
+// stickySubmit pins the button to the bottom of the (scrolling) dialog, so a long form on a phone never hides it
+function modalWrap(title, onClose, fieldsHtml, onSubmit, submitLabel, busy, stickySubmit){
   return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
     '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + title + '</h3>' +
       '<button onclick="' + onClose + '" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
       '<div class="mt-4 flex flex-col gap-4">' + fieldsHtml + '</div>' +
-      '<button onclick="' + onSubmit + '" ' + (busy?'disabled':'') + ' class="mt-6 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + submitLabel + '</button>' +
+      (stickySubmit ? '<div class="sticky bottom-0 -mx-6 mt-4 px-6 pb-1 pt-3" style="background:var(--panel);">' : '') +
+      '<button onclick="' + onSubmit + '" ' + (busy?'disabled':'') + ' class="' + (stickySubmit ? '' : 'mt-6 ') + 'w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + submitLabel + '</button>' +
+      (stickySubmit ? '</div>' : '') +
     '</div></div>';
 }
 
@@ -3857,12 +3948,12 @@ function bindEvents(){
     el.addEventListener('input', (e) => {
       const f = el.getAttribute('data-field');
       if (state.view === 'auth') { if (f === 'consent') state.authForm.consent = e.target.checked; else state.authForm[f] = e.target.value; }
-      else if (state.showPostRfq && ['title','quantity','unit','deadline','budget','specifications'].includes(f)) {
+      else if (state.showPostRfq && f === 'title') onRfqTitleInput(e);
+      else if (state.showPostRfq && ['quantity','deadline','budget','specifications'].includes(f)) {
         state.newRfq[f] = e.target.value;
         if (f === 'specifications') { const c = document.getElementById('spec-count'); if (c) c.textContent = e.target.value.length + ' / ' + MAX_SPECIFICATIONS; }
       }
       else if (state.showPostRfq && f === 'brand') { state.newRfq.brand = e.target.value; updateBrandToggleVisibility(); }
-      else if (state.showPostRfq && f === 'productSearch') { onProductSearchInput(e); }
       else if (state.submitQuoteRfqId && ['price','days','paymentTerms'].includes(f)) { state.quoteForm[f] = e.target.value; if (f === 'price') updateQuoteTotal(); }
       else if (state.showCatalogAdd && ['name','brand','price'].includes(f)) state.newProduct[f] = e.target.value;
       else if (state.showVerifyModal && f === 'fileUrl') state.verifyForm.fileUrl = e.target.value;
@@ -3879,6 +3970,7 @@ function bindEvents(){
       const f = el.getAttribute('data-select');
       if (state.showVerifyModal && f === 'docType') state.verifyForm.docType = e.target.value;
       else if (state.showPostRfq && f === 'category') state.newRfq.category = e.target.value;
+      else if (state.showPostRfq && f === 'unit') state.newRfq.unit = e.target.value;
       else if (state.showCatalogAdd && f === 'unit') state.newProduct.unit = e.target.value;
       else if (state.showStockAdd && f === 'stockUnit') state.stockForm.unit = e.target.value;
     });
