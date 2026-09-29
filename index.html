@@ -73,6 +73,9 @@
   html[dir=rtl] .eyebrow, html[dir=rtl] [class*="tracking-"], html[dir=rtl] table.dtable th { letter-spacing:0; text-transform:none; }
   html[dir=rtl] table.dtable th, html[dir=rtl] .text-left { text-align:right; }
   html[dir=rtl] .text-right { text-align:left; }
+  html[lang=ar] .mono, html[lang=ar] .eyebrow { font-family:"JetBrains Mono", "Inter", system-ui, sans-serif; }
+  html[dir=rtl] [data-dropdown=headerMenu] > div { right:auto !important; left:0 !important; }
+  @media (min-width:640px) { html[dir=rtl] [data-dropdown=notif] > div { right:auto !important; left:0 !important; } }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
@@ -723,7 +726,20 @@ const I18N = {
     cpUpdate:"Update password",
     cpFillBoth:"Fill in both fields.",
     cpDone:"Password updated. Other sessions have been signed out.",
-    toastEraseFields:"Enter the company name and your password."
+    toastEraseFields:"Enter the company name and your password.",
+    standardTerms:"Standard terms",
+    lpChipLicense:"🛡 Trade license or CR certificate",
+    lpChipChecked:"🛡 Checked by the Biddex team",
+    lpStep1Badge:"UPLOAD",
+    lpStep1Title:"Submit your documents",
+    lpStep1Body:"Upload your trade license or commercial registration (CR) certificate, as a PDF or an image.",
+    lpStep2Badge:"MANUAL",
+    lpStep2Title:"Review by the Biddex team",
+    lpStep2Body:"Our team checks the document by hand. Until then you can set up your profile, but not post RFQs or submit quotes.",
+    lpStep3Badge:"ON CHANGES",
+    lpStep3Title:"Re-check",
+    lpStep3Body:"If you change your company name or CR number, your company goes back to review.",
+    lpComingSoon:"(Coming soon)"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -1328,7 +1344,20 @@ const I18N = {
     cpUpdate:"تحديث كلمة المرور",
     cpFillBoth:"املأ الحقلين.",
     cpDone:"تم تحديث كلمة المرور. تم تسجيل الخروج من الجلسات الأخرى.",
-    toastEraseFields:"أدخل اسم الشركة وكلمة المرور."
+    toastEraseFields:"أدخل اسم الشركة وكلمة المرور.",
+    standardTerms:"الشروط القياسية",
+    lpChipLicense:"🛡 الرخصة التجارية أو شهادة السجل التجاري",
+    lpChipChecked:"🛡 يراجعها فريق Biddex",
+    lpStep1Badge:"الرفع",
+    lpStep1Title:"أرسل مستنداتك",
+    lpStep1Body:"ارفع رخصتك التجارية أو شهادة السجل التجاري (CR) بصيغة PDF أو صورة.",
+    lpStep2Badge:"مراجعة يدوية",
+    lpStep2Title:"مراجعة فريق Biddex",
+    lpStep2Body:"يراجع فريقنا المستند يدويًا. وحتى ذلك الحين يمكنك إعداد ملفك الشخصي، لكن لا يمكنك نشر طلبات التسعير أو تقديم العروض.",
+    lpStep3Badge:"عند التغيير",
+    lpStep3Title:"إعادة المراجعة",
+    lpStep3Body:"إذا غيّرت اسم شركتك أو رقم سجلها التجاري، تعود شركتك إلى المراجعة.",
+    lpComingSoon:"(قريبًا)"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -3187,14 +3216,14 @@ function renderLanding(){
       '<h2 class="text-[30px] font-extrabold leading-tight" style="color:var(--tx); letter-spacing:-0.01em;">' + t('verifyTitle') + '</h2>' +
       '<p class="mt-4 text-[14px] leading-relaxed max-w-[420px]" style="color:var(--tx3);">' + t('verifySubtitle') + '</p>' +
       '<div class="mt-5 flex flex-wrap gap-2">' +
-        '<span class="chip" style="cursor:default;">🛡 Trade license or CR certificate</span>' +
-        '<span class="chip" style="cursor:default;">🛡 Checked by the Biddex team</span>' +
+        '<span class="chip" style="cursor:default;">' + t('lpChipLicense') + '</span>' +
+        '<span class="chip" style="cursor:default;">' + t('lpChipChecked') + '</span>' +
       '</div>' +
     '</div>' +
     '<div class="grid gap-3">' +
-      verifyStep('01','UPLOAD','Submit your documents','Upload your trade license or commercial registration (CR) certificate, as a PDF or an image.') +
-      verifyStep('02','MANUAL','Review by the Biddex team','Our team checks the document by hand. Until then you can set up your profile, but not post RFQs or submit quotes.') +
-      verifyStep('03','ON CHANGES','Re-check','If you change your company name or CR number, your company goes back to review.') +
+      verifyStep('01', t('lpStep1Badge'), t('lpStep1Title'), t('lpStep1Body')) +
+      verifyStep('02', t('lpStep2Badge'), t('lpStep2Title'), t('lpStep2Body')) +
+      verifyStep('03', t('lpStep3Badge'), t('lpStep3Title'), t('lpStep3Body')) +
     '</div>' +
   '</section>' +
 
@@ -3203,7 +3232,7 @@ function renderLanding(){
       '<h2 class="text-[26px] font-extrabold mb-8" style="color:var(--tx); letter-spacing:-0.01em;">' + t('builtFor') + '</h2>' +
       '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">' +
         ACTIVE_CATEGORIES.map(n => ({ n, live: true })).concat(COMING_SOON_CATEGORIES.map(n => ({ n, live: false }))).map(c =>
-         '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--inset); opacity:' + (c.live?'1':'0.5') + ';"><div class="text-[13px] font-bold" style="color:var(--tx);">' + c.n + (c.live?'':' <span style=\'font-weight:400;font-size:11px;\'>(Coming soon)</span>') + '</div></div>'
+         '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--inset); opacity:' + (c.live?'1':'0.5') + ';"><div class="text-[13px] font-bold" style="color:var(--tx);">' + esc(categoryOptionLabel(c.n)) + (c.live?'':' <span style=\'font-weight:400;font-size:11px;\'>' + t('lpComingSoon') + '</span>') + '</div></div>'
         ).join('') +
       '</div>' +
     '</div>' +
@@ -4151,7 +4180,7 @@ function renderOrderDetail(){
       [t('rowLpo'), 'LPO-' + String(lpo.id || '').slice(-4).toUpperCase()],
       [t(isSupplier ? 'rowBuyer' : 'rowSupplier'), (isSupplier ? lpo.buyerCompany : lpo.supplierCompany)?.name || '—'],
       [t('rowAmount'), fmt(lpo.totalAmount)],
-      [t('rowTerms'), lpo.terms || '—'],
+      [t('rowTerms'), lpo.terms === 'Standard terms' ? t('standardTerms') : (lpo.terms || '—')],
       [t('rowPaymentTerms'), tpl('rowPaymentTermsVal', { n: lpo.paymentTermsDays != null ? lpo.paymentTermsDays : 30 })],
       // the LPO document stays ACCEPTED once taken; how the deal went is the order's status
       [t('rowStatus'), lpo.status ? tpl('rowStatusWithLpo', { status: orderStatusLabel(order.status), lpo: enumLabel(LPO_STATUS_KEYS, lpo.status) }) : orderStatusLabel(order.status)]
