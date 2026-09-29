@@ -436,7 +436,103 @@ const I18N = {
     toastStockRemoved:"Stock item removed.",
     stockNumberHint:"Enter a number, e.g. 12.5",
     toastStockCounted:"Stock count saved.",
-    toastAddedToStock:"Added to stock."
+    toastAddedToStock:"Added to stock.",
+    working:"Working…",
+    download:"Download",
+    oppShortlisted:"Shortlisted ★",
+    oppNotSelected:"Not selected",
+    oppQuoted:"Quoted ✓",
+    oppVerifiedBuyer:"Verified buyer",
+    oppYourQuote:"Your quote: {price}",
+    oppQuantity:"QUANTITY",
+    oppBudget:"BUDGET",
+    oppClosesIn:"CLOSES IN",
+    oppFiles:"Files ({n})",
+    oppSubmitQuote:"Submit quote",
+    oppTitle:"Opportunities",
+    chipComingSoon:"{name} · Coming soon",
+    comingSoon:"Coming soon",
+    oppEmptyTitle:"No open requests right now",
+    oppEmptyBody:"Check back soon — new RFQs appear here as buyers post them.",
+    specsShowMore:"Show more",
+    specsShowLess:"Show less",
+    catEyebrow:"MASTER DATA",
+    catTitle:"Product catalog",
+    catUploadExcel:"Upload Excel/CSV",
+    catBulkPhotos:"Bulk photos",
+    catAddItem:"+ Add item",
+    catAfterVerification:"Available after verification",
+    catNeedsVerification:"Catalog items can be added once the Biddex team has verified your company. Buyers only see products of verified suppliers.",
+    catFirstTitle:"Add your first products",
+    catFirstBody:"Buyers search your catalog when posting an RFQ — the more you list, the more requests find you.",
+    catAddManually:"Add manually",
+    catEmptyBody:"Add products so buyers can find you and post an RFQ.",
+    catColItem:"Item",
+    catColUnit:"Unit",
+    catColPrice:"List price",
+    catMobPrice:"Price",
+    btnDuplicate:"Duplicate",
+    catModalEdit:"Edit catalog item",
+    catModalAdd:"Add catalog item",
+    catPhotoOpt:"Product photo (optional)",
+    catRemovePhoto:"Remove photo",
+    catChoosePhoto:"Choose photo",
+    catNoPhoto:"No photo chosen",
+    catReadingPhoto:"Reading photo…",
+    catPhName:"e.g. A4 Paper Box",
+    catPhBrand:"e.g. Almarai",
+    catFieldPrice:"Price per unit ({cur})",
+    catAddItemBtn:"Add item",
+    toastPhotoTooBig:"Photo must be under 8MB.",
+    toastEnterNumber:"Enter a number, e.g. 2.5",
+    toastItemUpdated:"Item updated.",
+    toastItemAdded:"Item added to catalog.",
+    toastItemRemoved:"Item removed.",
+    toastAfterVerification:"Available after verification.",
+    copyName:"{name} (copy)",
+    imgReadFail:"Could not read image.",
+    biIntro:"Columns: name, brand (optional), unit, category (optional), description (optional), price. Name, unit and price are required — unit must be one of: {units}. Download the template to get the exact headers.",
+    biTemplate:"Download template (.xlsx)",
+    biFileLabel:"File (.xlsx or .csv)",
+    biSummary:"{file} · {rows} row(s), {n} will be saved.",
+    biNoName:"(no name)",
+    biError:"Error",
+    biDuplicate:"Duplicate",
+    biOk:"OK",
+    biSkipDup:"Skip duplicate",
+    biDupCatalog:"Already in your catalog (name + unit match)",
+    biDupFile:"Duplicate row in this file (name + unit match)",
+    biSaving:"Saving…",
+    biSave:"Save {n} item(s)",
+    biErrName:"Name is required",
+    biErrNameLong:"Name is too long",
+    biErrUnit:"Unit is required",
+    biErrUnitUnknown:"Unknown unit \"{unit}\" — must be one of: {units}",
+    biErrPrice:"Price is required",
+    biErrPriceBad:"Price is not a valid number",
+    biNoRows:"No rows to save — everything is either invalid or skipped.",
+    toastBulkAdded:"{ok} item(s) added to your catalog.",
+    toastBulkAddedFail:"{ok} item(s) added, {failed} failed.",
+    sheetJsFail:"Could not load the spreadsheet library. Check your connection and try again.",
+    bpTitle:"Bulk photo upload",
+    bpIntro:"Pick several photos at once — we match each one to a catalog item by its file name. Fix any that didn't match below.",
+    bpPhotos:"Photos",
+    bpChoose:"Choose files",
+    bpNone:"No files chosen",
+    bpOver8:"Over 8MB",
+    bpNotMatched:"— Not matched —",
+    bpUploading:"Uploading…",
+    bpUpload:"Upload {n} matched photo(s)",
+    toastBpNone:"Match at least one photo to an item first.",
+    toastBpDone:"{ok} photo(s) uploaded.",
+    toastBpFail:"{ok} photo(s) uploaded, {failed} failed.",
+    qfTitle:"Quote files",
+    qfNone:"No files attached.",
+    qfNoteEditable:"Up to {n} files, 10 MB each. Visible only to the buyer and Biddex admins. Files are frozen once the buyer shortlists your quote or bidding closes.",
+    qfNoteFrozen:"Files are frozen: the buyer evaluates your quote with the files above.",
+    qfAttached:"File attached.",
+    qfRemoved:"File removed.",
+    qfConfirmRemove:"Remove this file from your quote?"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -755,7 +851,103 @@ const I18N = {
     toastStockRemoved:"تم حذف الصنف من المخزون.",
     stockNumberHint:"أدخل رقمًا، مثال: 12.5",
     toastStockCounted:"تم حفظ الجرد.",
-    toastAddedToStock:"تمت الإضافة إلى المخزون."
+    toastAddedToStock:"تمت الإضافة إلى المخزون.",
+    working:"جارٍ التنفيذ…",
+    download:"تنزيل",
+    oppShortlisted:"في القائمة المختصرة ★",
+    oppNotSelected:"لم يتم اختياره",
+    oppQuoted:"تم تقديم العرض ✓",
+    oppVerifiedBuyer:"مشترٍ موثّق",
+    oppYourQuote:"عرضك: {price}",
+    oppQuantity:"الكمية",
+    oppBudget:"الميزانية",
+    oppClosesIn:"ينتهي خلال",
+    oppFiles:"الملفات ({n})",
+    oppSubmitQuote:"تقديم عرض",
+    oppTitle:"الفرص",
+    chipComingSoon:"{name} · قريبًا",
+    comingSoon:"قريبًا",
+    oppEmptyTitle:"لا توجد طلبات تسعير مفتوحة حاليًا",
+    oppEmptyBody:"عاود الزيارة قريبًا — تظهر هنا طلبات التسعير الجديدة فور نشرها من المشترين.",
+    specsShowMore:"عرض المزيد",
+    specsShowLess:"عرض أقل",
+    catEyebrow:"البيانات الأساسية",
+    catTitle:"كتالوج المنتجات",
+    catUploadExcel:"رفع ملف Excel/CSV",
+    catBulkPhotos:"رفع صور جماعي",
+    catAddItem:"+ إضافة منتج",
+    catAfterVerification:"متاح بعد التوثيق",
+    catNeedsVerification:"يمكنك إضافة منتجات الكتالوج بعد أن يوثّق فريق Biddex شركتك. لا يرى المشترون إلا منتجات الموردين الموثّقين.",
+    catFirstTitle:"أضف أول منتجاتك",
+    catFirstBody:"يبحث المشترون في كتالوجك عند نشر طلب تسعير — كلما أضفت منتجات أكثر، وصلتك طلبات أكثر.",
+    catAddManually:"إضافة يدويًا",
+    catEmptyBody:"أضف منتجاتك ليجدك المشترون وينشروا طلبات التسعير.",
+    catColItem:"المنتج",
+    catColUnit:"الوحدة",
+    catColPrice:"سعر القائمة",
+    catMobPrice:"السعر",
+    btnDuplicate:"تكرار",
+    catModalEdit:"تعديل منتج الكتالوج",
+    catModalAdd:"إضافة منتج إلى الكتالوج",
+    catPhotoOpt:"صورة المنتج (اختيارية)",
+    catRemovePhoto:"إزالة الصورة",
+    catChoosePhoto:"اختيار صورة",
+    catNoPhoto:"لم يتم اختيار صورة",
+    catReadingPhoto:"جارٍ قراءة الصورة…",
+    catPhName:"مثال: علبة ورق A4",
+    catPhBrand:"مثال: المراعي",
+    catFieldPrice:"سعر الوحدة ({cur})",
+    catAddItemBtn:"إضافة المنتج",
+    toastPhotoTooBig:"يجب أن يقل حجم الصورة عن 8 ميغابايت.",
+    toastEnterNumber:"أدخل رقمًا، مثال: 2.5",
+    toastItemUpdated:"تم تحديث المنتج.",
+    toastItemAdded:"تمت إضافة المنتج إلى الكتالوج.",
+    toastItemRemoved:"تم حذف المنتج.",
+    toastAfterVerification:"متاح بعد التوثيق.",
+    copyName:"{name} (نسخة)",
+    imgReadFail:"تعذّرت قراءة الصورة.",
+    biIntro:"الأعمدة: name وbrand (اختياري) وunit وcategory (اختياري) وdescription (اختياري) وprice. الحقول name وunit وprice مطلوبة، ويجب أن تكون قيمة unit إحدى: {units}. نزّل القالب للحصول على أسماء الأعمدة الصحيحة.",
+    biTemplate:"تنزيل القالب (.xlsx)",
+    biFileLabel:"الملف (.xlsx أو .csv)",
+    biSummary:"{file} · {rows} صف، سيتم حفظ {n}.",
+    biNoName:"(بدون اسم)",
+    biError:"خطأ",
+    biDuplicate:"مكرر",
+    biOk:"سليم",
+    biSkipDup:"تجاهل المكرر",
+    biDupCatalog:"موجود في كتالوجك (تطابق الاسم والوحدة)",
+    biDupFile:"صف مكرر في هذا الملف (تطابق الاسم والوحدة)",
+    biSaving:"جارٍ الحفظ…",
+    biSave:"حفظ {n} منتج",
+    biErrName:"الاسم مطلوب",
+    biErrNameLong:"الاسم طويل جدًا",
+    biErrUnit:"الوحدة مطلوبة",
+    biErrUnitUnknown:"وحدة غير معروفة \"{unit}\" — يجب أن تكون إحدى: {units}",
+    biErrPrice:"السعر مطلوب",
+    biErrPriceBad:"السعر ليس رقمًا صحيحًا",
+    biNoRows:"لا توجد صفوف للحفظ — كل الصفوف إما غير صالحة أو متجاهلة.",
+    toastBulkAdded:"تمت إضافة {ok} منتج إلى كتالوجك.",
+    toastBulkAddedFail:"تمت إضافة {ok} منتج، وتعذّرت إضافة {failed}.",
+    sheetJsFail:"تعذّر تحميل مكتبة الجداول. تحقّق من اتصالك وحاول مرة أخرى.",
+    bpTitle:"رفع صور جماعي",
+    bpIntro:"اختر عدة صور دفعة واحدة — سنطابق كل صورة مع منتج في الكتالوج حسب اسم الملف. صحّح ما لم يُطابَق أدناه.",
+    bpPhotos:"الصور",
+    bpChoose:"اختيار ملفات",
+    bpNone:"لم يتم اختيار ملفات",
+    bpOver8:"أكبر من 8 ميغابايت",
+    bpNotMatched:"— غير مطابق —",
+    bpUploading:"جارٍ الرفع…",
+    bpUpload:"رفع {n} صورة مطابقة",
+    toastBpNone:"طابق صورة واحدة على الأقل مع منتج أولًا.",
+    toastBpDone:"تم رفع {ok} صورة.",
+    toastBpFail:"تم رفع {ok} صورة، وتعذّر رفع {failed}.",
+    qfTitle:"ملفات العرض",
+    qfNone:"لا توجد ملفات مرفقة.",
+    qfNoteEditable:"حتى {n} ملفات، 10 ميغابايت لكل ملف. لا يراها إلا المشتري ومسؤولو Biddex. تُثبَّت الملفات عندما يُدرج المشتري عرضك في القائمة المختصرة أو يُغلق باب العروض.",
+    qfNoteFrozen:"الملفات مثبّتة: يقيّم المشتري عرضك بالملفات أعلاه.",
+    qfAttached:"تم إرفاق الملف.",
+    qfRemoved:"تمت إزالة الملف.",
+    qfConfirmRemove:"هل تريد إزالة هذا الملف من عرضك؟"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -1556,13 +1748,13 @@ async function onAttFileChange(e){
   setState({ attUploading: true });
   const err = await uploadQuoteFile(state.attQuoteId, file);
   setState({ attUploading: false });
-  showToast(err || 'File attached.');
+  showToast(err || t('qfAttached'));
   refreshAttachments();
 }
 async function removeAttachment(id){
-  if (!confirm('Remove this file from your quote?')) return;
+  if (!confirm(t('qfConfirmRemove'))) return;
   setState({ docBusyId: id });
-  try { await api('/api/quote-attachments/' + id, { method:'DELETE' }); showToast('File removed.'); }
+  try { await api('/api/quote-attachments/' + id, { method:'DELETE' }); showToast(t('qfRemoved')); }
   catch(e) { showToast(e.message); }
   setState({ docBusyId: null });
   refreshAttachments();
@@ -1575,8 +1767,8 @@ function attachmentRowHtml(a, canRemove){
     '<div class="min-w-0"><div class="truncate font-semibold" style="color:var(--tx);">' + esc(a.fileName) + '</div>' +
     '<div class="mono text-[11px]" style="color:var(--tx4);">' + fmtBytes(a.sizeBytes) + '</div></div>' +
     '<div class="flex gap-2 shrink-0">' +
-      (canRemove ? '<button onclick="' + (busy ? '' : "removeAttachment('" + a.id + "')") + '" class="rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
-      '<button onclick="' + (busy ? '' : "downloadAttachment('" + a.id + "')") + '" class="rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? '…' : 'Download') + '</button>' +
+      (canRemove ? '<button onclick="' + (busy ? '' : "removeAttachment('" + a.id + "')") + '" class="rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">' + t('btnRemove') + '</button>' : '') +
+      '<button onclick="' + (busy ? '' : "downloadAttachment('" + a.id + "')") + '" class="rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? '…' : t('download')) + '</button>' +
     '</div></div>';
 }
 
@@ -1895,7 +2087,7 @@ async function refreshStock(){
 }
 
 async function deleteProduct(id){
-  try { await api('/api/catalog/' + id, { method:'DELETE' }); showToast('Item removed.'); refreshMyCatalog(); }
+  try { await api('/api/catalog/' + id, { method:'DELETE' }); showToast(t('toastItemRemoved')); refreshMyCatalog(); }
   catch(e) { showToast(e.message); }
 }
 
@@ -1950,7 +2142,7 @@ function specsHtml(text, id){
   const long = text.length > 160;
   return '<div class="mt-1.5 text-[12.5px] leading-relaxed" style="color:var(--tx3); white-space:pre-wrap; overflow-wrap:anywhere;">' +
     esc(long && !open ? text.slice(0, 160) + '…' : text) +
-    (long ? ' <button onclick="toggleSpecs(\'' + id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + (open ? 'Show less' : 'Show more') + '</button>' : '') +
+    (long ? ' <button onclick="toggleSpecs(\'' + id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t(open ? 'specsShowLess' : 'specsShowMore') + '</button>' : '') +
   '</div>';
 }
 
@@ -2267,10 +2459,10 @@ function renderLightbox(){
   '</div>';
 }
 
-function openCatalogAdd(){ if (!companyVerified()) { showToast('Available after verification.'); return; } openCatalogAddModal(); }
+function openCatalogAdd(){ if (!companyVerified()) { showToast(t('toastAfterVerification')); return; } openCatalogAddModal(); }
 function openCatalogAddModal(){ setState({ showCatalogAdd:true, editCatalogId:null, duplicateFromId:null, catalogPhotoTouched:false, newProduct:{ name:'', brand:'', price:'', unit:'kg', imageUrl:'' }, catalogPhotoName:'' }); }
 function openCatalogEdit(id){
-  if (!companyVerified()) { showToast('Available after verification.'); return; }
+  if (!companyVerified()) { showToast(t('toastAfterVerification')); return; }
   const it = (state.myCatalog || []).find(x => x.id === id);
   if (!it) return;
   // imageUrl here is the current photo's link, only for the preview; it is sent back only if replaced or removed
@@ -2280,11 +2472,11 @@ function openCatalogEdit(id){
 // Pre-fills the add form from an existing item, as a new item; its photo is copied server-side (no
 // re-upload) unless the supplier picks a different one before saving.
 function duplicateProduct(id){
-  if (!companyVerified()) { showToast('Available after verification.'); return; }
+  if (!companyVerified()) { showToast(t('toastAfterVerification')); return; }
   const it = (state.myCatalog || []).find(x => x.id === id);
   if (!it) return;
   setState({ showCatalogAdd:true, editCatalogId:null, duplicateFromId:id, catalogPhotoTouched:false, catalogPhotoName:'',
-    newProduct:{ name: (it.name || '') + ' (copy)', brand: it.brand || '', price: String(Number(it.price)), unit: it.unit || 'pcs', imageUrl: it.imageUrl || '' } });
+    newProduct:{ name: tpl('copyName', { name: it.name || '' }), brand: it.brand || '', price: String(Number(it.price)), unit: it.unit || 'pcs', imageUrl: it.imageUrl || '' } });
 }
 function closeCatalogAdd(){ setState({ showCatalogAdd:false }); }
 function onProductField(field, e){ state.newProduct[field] = e.target.value; }
@@ -2305,10 +2497,10 @@ function resizeImageFile(file, maxDim, quality){
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         resolve(canvas.toDataURL('image/jpeg', quality));
       };
-      img.onerror = () => reject(new Error('Could not read image.'));
+      img.onerror = () => reject(new Error(t('imgReadFail')));
       img.src = reader.result;
     };
-    reader.onerror = () => reject(new Error('Could not read file.'));
+    reader.onerror = () => reject(new Error(t('fileReadFail')));
     reader.readAsDataURL(file);
   });
 }
@@ -2316,7 +2508,7 @@ function resizeImageFile(file, maxDim, quality){
 async function onCatalogPhotoChange(e){
   const file = e.target.files && e.target.files[0];
   if (!file) return;
-  if (file.size > 8 * 1024 * 1024) { showToast('Photo must be under 8MB.'); e.target.value = ''; return; }
+  if (file.size > 8 * 1024 * 1024) { showToast(t('toastPhotoTooBig')); e.target.value = ''; return; }
   setState({ catalogPhotoBusy: true });
   try {
     const dataUrl = await resizeImageFile(file, 1024, 0.82);
@@ -2330,14 +2522,14 @@ async function addProduct(){
   const p = state.newProduct;
   if (!p.name || !p.price) return;
   const price = parseMoneyInput(p.price);
-  if (price == null || price <= 0) { showToast('Enter a number, e.g. 2.5'); return; }
+  if (price == null || price <= 0) { showToast(t('toastEnterNumber')); return; }
   try {
     if (state.editCatalogId) {
       const body = { name: p.name, brand: p.brand || '', price, unit: p.unit || 'pcs' };
       if (state.catalogPhotoTouched) body.imageUrl = p.imageUrl || null; // new photo, or removed
       await api('/api/catalog/' + state.editCatalogId, { method:'PATCH', body: JSON.stringify(body) });
       setState({ showCatalogAdd:false, editCatalogId:null });
-      showToast('Item updated.');
+      showToast(t('toastItemUpdated'));
       refreshMyCatalog();
       return;
     }
@@ -2347,7 +2539,7 @@ async function addProduct(){
     else if (state.duplicateFromId) body.duplicateFromId = state.duplicateFromId;
     await api('/api/catalog', { method:'POST', body: JSON.stringify(body) });
     setState({ showCatalogAdd:false, duplicateFromId:null });
-    showToast('Item added to catalog.');
+    showToast(t('toastItemAdded'));
     refreshMyCatalog();
   } catch(e) { showToast(e.message); }
 }
@@ -2363,7 +2555,7 @@ function loadSheetJS(){
     const s = document.createElement('script');
     s.src = SHEETJS_URL;
     s.onload = () => resolve(window.XLSX);
-    s.onerror = () => { sheetJsPromise = null; reject(new Error('Could not load the spreadsheet library. Check your connection and try again.')); };
+    s.onerror = () => { sheetJsPromise = null; reject(new Error(t('sheetJsFail'))); };
     document.head.appendChild(s);
   });
   return sheetJsPromise;
@@ -2415,12 +2607,12 @@ async function onBulkImportFileChange(e){
         price: String(pick(r, 'price')).trim(),
       };
       let error = '';
-      if (!row.name) error = 'Name is required';
-      else if (row.name.length > 200) error = 'Name is too long';
-      else if (!row.unit) error = 'Unit is required';
-      else if (!CATALOG_UNITS.includes(row.unit.toLowerCase())) error = 'Unknown unit "' + row.unit + '" — must be one of: ' + CATALOG_UNITS.join(', ');
-      else if (!row.price) error = 'Price is required';
-      else if (parseMoneyInput(row.price) == null) error = 'Price is not a valid number';
+      if (!row.name) error = t('biErrName');
+      else if (row.name.length > 200) error = t('biErrNameLong');
+      else if (!row.unit) error = t('biErrUnit');
+      else if (!CATALOG_UNITS.includes(row.unit.toLowerCase())) error = tpl('biErrUnitUnknown', { unit: row.unit, units: CATALOG_UNITS.join(', ') });
+      else if (!row.price) error = t('biErrPrice');
+      else if (parseMoneyInput(row.price) == null) error = t('biErrPriceBad');
       const key = dupKey(row);
       const dupCatalog = !error && existingKeys.has(key);
       const dupFile = !error && seenInFile.has(key);
@@ -2428,7 +2620,7 @@ async function onBulkImportFileChange(e){
       return { ...row, _error: error, _dupCatalog: dupCatalog, _dupFile: dupFile, _skip: !error && (dupCatalog || dupFile) };
     });
     setState({ bulkImportRows: rows, bulkImportStep:'preview', bulkImportBusy:false, bulkImportFileName: file.name });
-  } catch (e) { setState({ bulkImportBusy:false }); showToast(e.message || 'Could not read that file.'); }
+  } catch (e) { setState({ bulkImportBusy:false }); showToast(e.message || t('fileReadFail')); }
 }
 
 function toggleBulkImportRowSkip(i){
@@ -2441,14 +2633,14 @@ async function submitBulkImport(){
   const items = state.bulkImportRows
     .filter((r) => !r._error && !r._skip)
     .map((r) => ({ name: r.name, brand: r.brand || undefined, unit: r.unit || undefined, category: r.category || undefined, description: r.description || undefined, price: r.price || undefined }));
-  if (!items.length) { showToast('No rows to save — everything is either invalid or skipped.'); return; }
+  if (!items.length) { showToast(t('biNoRows')); return; }
   setState({ bulkImportBusy:true });
   try {
     const data = await api('/api/catalog/bulk', { method:'POST', body: JSON.stringify({ items }) });
     const ok = data.results.filter((r) => r.ok).length;
     const failed = data.results.length - ok;
     setState({ showBulkImport:false, bulkImportBusy:false });
-    showToast(failed ? ok + ' item(s) added, ' + failed + ' failed.' : ok + ' item(s) added to your catalog.');
+    showToast(failed ? tpl('toastBulkAddedFail', { ok, failed }) : tpl('toastBulkAdded', { ok }));
     refreshMyCatalog();
   } catch (e) { setState({ bulkImportBusy:false }); showToast(e.message); }
 }
@@ -2477,7 +2669,7 @@ async function onBulkPhotoFilesChange(e){
   setState({ bulkPhotoBusy:true });
   const entries = [];
   for (const file of picked) {
-    if (file.size > 8 * 1024 * 1024) { entries.push({ name:file.name, error:'Over 8MB' }); continue; }
+    if (file.size > 8 * 1024 * 1024) { entries.push({ name:file.name, error:t('bpOver8') }); continue; }
     try {
       const dataUrl = await resizeImageFile(file, 1024, 0.82);
       entries.push({ name: file.name, dataUrl, matchedItemId: bestCatalogMatch(file.name) });
@@ -2499,7 +2691,7 @@ function removeBulkPhotoFile(i){
 
 async function submitBulkPhotos(){
   const matched = state.bulkPhotoFiles.filter((f) => f.dataUrl && f.matchedItemId);
-  if (!matched.length) { showToast('Match at least one photo to an item first.'); return; }
+  if (!matched.length) { showToast(t('toastBpNone')); return; }
   setState({ bulkPhotoBusy:true });
   let ok = 0, failed = 0;
   for (const f of matched) {
@@ -2507,7 +2699,7 @@ async function submitBulkPhotos(){
     catch (e) { failed++; }
   }
   setState({ showBulkPhoto:false, bulkPhotoBusy:false });
-  showToast(failed ? ok + ' photo(s) uploaded, ' + failed + ' failed.' : ok + ' photo(s) uploaded.');
+  showToast(failed ? tpl('toastBpFail', { ok, failed }) : tpl('toastBpDone', { ok }));
   refreshMyCatalog();
 }
 
@@ -2996,7 +3188,7 @@ function renderSupplierHub(){
   '<p class="mb-6 text-[13.5px] max-w-[560px]" style="color:var(--tx3);">' + t('dashSubSupplier') + '</p>' +
   statsBar([[t('statOpenRequests'), rfqs.length], [t('statCatalogItems'), myCatalog.length], [t('statActiveOrders'), activeOrders]]) +
   '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('opportunityFeed') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
-  (rfqs.length === 0 ? emptyState('No open requests right now', 'Check back soon — new RFQs appear here as buyers post them.') :
+  (rfqs.length === 0 ? emptyState(t('oppEmptyTitle'), t('oppEmptyBody')) :
     '<div class="flex flex-col gap-3 mb-4">' + rfqs.slice(0,3).map(opportunityCard).join('') + '</div>') +
   '<div class="flex items-center justify-between mb-4 mt-8"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('ordersInProgress') + '</h2><button onclick="setSection(\'lpos\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
   renderOrdersList(true, 3);
@@ -3008,41 +3200,41 @@ function opportunityCard(r){
   const ownQuote = (r.quotes || []).find(q => q.status !== 'WITHDRAWN');
   const quoted = !!ownQuote;
   const quotedLabel = !ownQuote ? '' : ({
-    SHORTLISTED: ['Shortlisted ★', 'background:var(--info-soft); color:var(--info);'],
-    REJECTED: ['Not selected', 'background:var(--bad-soft); color:var(--bad);'],
-    AWARDED: ['Awarded', 'background:var(--ok-soft); color:var(--ok);'],
-  })[ownQuote.status] || ['Quoted ✓', 'background:var(--sunken); color:var(--tx4);'];
+    SHORTLISTED: [t('oppShortlisted'), 'background:var(--info-soft); color:var(--info);'],
+    REJECTED: [t('oppNotSelected'), 'background:var(--bad-soft); color:var(--bad);'],
+    AWARDED: [t('stAwarded'), 'background:var(--ok-soft); color:var(--ok);'],
+  })[ownQuote.status] || [t('oppQuoted'), 'background:var(--sunken); color:var(--tx4);'];
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-center gap-4">' +
       (r.imageUrl ? '<img src="' + esc(r.imageUrl) + '" class="h-10 w-10 shrink-0 rounded-xl object-cover border" style="border-color:var(--bd);" />' : avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40)) +
       '<div class="flex-1 min-w-[200px]">' +
         '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; Verified buyer &middot; ' + esc(categoryLabel(r.category)) + '</div>' +
+        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + t('oppVerifiedBuyer') + ' &middot; ' + esc(categoryLabel(r.category)) + '</div>' +
         (r.brand ? '<div class="mt-1 flex items-center gap-1.5 text-[11.5px]" style="color:var(--tx3);"><span class="font-semibold">' + esc(r.brand) + '</span>' +
-          '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (r.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + (r.exactBrandOnly ? 'Exact brand only' : 'Equivalent accepted') + '</span>' + hint('exact') + '</div>' : '') +
-        (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">Your quote: ' + quotePriceText(ownQuote) + '</div>' : '') +
+          '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (r.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + t(r.exactBrandOnly ? 'brandExact' : 'brandEquivalent') + '</span>' + hint('exact') + '</div>' : '') +
+        (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">' + tpl('oppYourQuote', { price: quotePriceText(ownQuote) }) + '</div>' : '') +
         specsHtml(r.specifications, r.id) +
       '</div>' +
-      '<div><div class="eyebrow" style="color:var(--tx4);">QUANTITY</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + esc(r.quantity||'—') + ' ' + esc(r.unit||'') + '</div></div>' +
-      '<div><div class="eyebrow" style="color:var(--tx4);">BUDGET</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '<span class="text-[12px] font-semibold" style="color:var(--tx4);">' + t('budgetNotSpecified') + '</span>') + '</div></div>' +
-      '<div><div class="eyebrow" style="color:var(--tx4);">CLOSES IN</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">' + t('oppQuantity') + '</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + esc(r.quantity||'—') + ' ' + esc(unitLabel(r.unit||'')) + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">' + t('oppBudget') + '</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '<span class="text-[12px] font-semibold" style="color:var(--tx4);">' + t('budgetNotSpecified') + '</span>') + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">' + t('oppClosesIn') + '</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
       (quoted
-        ? '<div class="flex items-center gap-2 shrink-0"><button onclick="openAttachments(\'' + r.id + '\')" class="rounded-lg border px-3 py-2 text-[12px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">Files (' + ((ownQuote._count && ownQuote._count.attachments) || 0) + ')</button>' +
+        ? '<div class="flex items-center gap-2 shrink-0"><button onclick="openAttachments(\'' + r.id + '\')" class="rounded-lg border px-3 py-2 text-[12px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">' + tpl('oppFiles', { n: (ownQuote._count && ownQuote._count.attachments) || 0 }) + '</button>' +
           '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold" style="' + quotedLabel[1] + '">' + quotedLabel[0] + '</span></div>'
         : tl.past
-        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">Closed</span>'
-        : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit quote</button>') +
+        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">' + t('stClosed') + '</span>'
+        : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('oppSubmitQuote') + '</button>') +
     '</div>' +
   '</div>';
 }
 
 function renderOpportunityFeedPage(){
   const rfqs = state.rfqs || [];
-  return '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Opportunities</h1>' +
+  return '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">' + t('oppTitle') + '</h1>' +
   '<div class="flex gap-2 overflow-x-auto pb-1 mb-5">' +
-    ACTIVE_CATEGORIES.map(c => '<span onclick="setOppCategory(' + jsAttr(c) + ')" class="chip' + (state.opportunityCategory===c?' active':'') + '">' + esc(c) + '</span>').join('') +
-    COMING_SOON_CATEGORIES.map(c => '<span class="chip" title="Coming soon" style="opacity:0.45; cursor:not-allowed;">' + esc(c) + ' · Coming soon</span>').join('') + '</div>' +
-  (rfqs.length === 0 ? emptyState('No open requests right now', 'Check back soon — new RFQs appear here as buyers post them.') :
+    ACTIVE_CATEGORIES.map(c => '<span onclick="setOppCategory(' + jsAttr(c) + ')" class="chip' + (state.opportunityCategory===c?' active':'') + '">' + esc(categoryOptionLabel(c)) + '</span>').join('') +
+    COMING_SOON_CATEGORIES.map(c => '<span class="chip" title="' + t('comingSoon') + '" style="opacity:0.45; cursor:not-allowed;">' + tpl('chipComingSoon', { name: esc(categoryOptionLabel(c)) }) + '</span>').join('') + '</div>' +
+  (rfqs.length === 0 ? emptyState(t('oppEmptyTitle'), t('oppEmptyBody')) :
     '<div class="flex flex-col gap-3">' + rfqs.filter(r => !state.opportunityCategory || categoryLabel(r.category) === state.opportunityCategory).map(opportunityCard).join('') + '</div>');
 }
 
@@ -3051,25 +3243,25 @@ function companyVerified(){ return !!state.company && state.company.verification
 
 function renderSupplierCatalogPage(){
   const myCatalog = state.myCatalog || [];
-  return '<div class="eyebrow mb-1.5">MASTER DATA</div>' +
-  '<div class="flex flex-wrap items-center justify-between gap-3 mb-5"><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Product catalog</h1>' +
+  return '<div class="eyebrow mb-1.5">' + t('catEyebrow') + '</div>' +
+  '<div class="flex flex-wrap items-center justify-between gap-3 mb-5"><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('catTitle') + '</h1>' +
     (companyVerified()
       ? '<div class="flex flex-wrap gap-2">' +
-          '<button onclick="openBulkImport()" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Upload Excel/CSV</button>' +
-          '<button onclick="openBulkPhoto()" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Bulk photos</button>' +
-          '<button onclick="openCatalogAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">+ Add item</button>' +
+          '<button onclick="openBulkImport()" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('catUploadExcel') + '</button>' +
+          '<button onclick="openBulkPhoto()" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('catBulkPhotos') + '</button>' +
+          '<button onclick="openCatalogAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('catAddItem') + '</button>' +
         '</div></div>'
-      : '<div class="flex items-center gap-3"><span class="text-[12px]" style="color:var(--tx4);">Available after verification</span><button disabled class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:0.45; cursor:not-allowed;">+ Add item</button></div></div>' +
-        '<div class="mb-5 rounded-xl border px-4 py-3 text-[13px]" style="border-color:var(--bd); background:var(--acc-soft2); color:var(--tx2);">Catalog items can be added once the Biddex team has verified your company. Buyers only see products of verified suppliers.</div>') +
+      : '<div class="flex items-center gap-3"><span class="text-[12px]" style="color:var(--tx4);">' + t('catAfterVerification') + '</span><button disabled class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:0.45; cursor:not-allowed;">' + t('catAddItem') + '</button></div></div>' +
+        '<div class="mb-5 rounded-xl border px-4 py-3 text-[13px]" style="border-color:var(--bd); background:var(--acc-soft2); color:var(--tx2);">' + t('catNeedsVerification') + '</div>') +
   (myCatalog.length === 0 ? (companyVerified()
       ? '<div class="rounded-xl border border-dashed p-10 text-center" style="border-color:var(--bd2);">' +
-          '<div class="font-semibold" style="color:var(--tx);">Add your first products</div>' +
-          '<div class="mt-1 text-[13px]" style="color:var(--tx4);">Buyers search your catalog when posting an RFQ — the more you list, the more requests find you.</div>' +
+          '<div class="font-semibold" style="color:var(--tx);">' + t('catFirstTitle') + '</div>' +
+          '<div class="mt-1 text-[13px]" style="color:var(--tx4);">' + t('catFirstBody') + '</div>' +
           '<div class="mt-4 flex flex-wrap justify-center gap-2">' +
-            '<button onclick="openBulkImport()" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Upload Excel/CSV</button>' +
-            '<button onclick="openCatalogAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">Add manually</button>' +
+            '<button onclick="openBulkImport()" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('catUploadExcel') + '</button>' +
+            '<button onclick="openCatalogAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('catAddManually') + '</button>' +
           '</div></div>'
-      : emptyState('No catalog items yet', 'Add products so buyers can find you and post an RFQ.')) :
+      : emptyState(t('netEmptyTitle'), t('catEmptyBody'))) :
     catalogItemsList(myCatalog));
 }
 
@@ -3077,17 +3269,17 @@ function renderSupplierCatalogPage(){
 // without a horizontal scroll the row gives no hint of (see the mobile audit notes).
 function catalogItemsList(items){
   const actionsFor = (p) =>
-    (companyVerified() ? '<button onclick="openCatalogEdit(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">Edit</button>' : '') +
-    (companyVerified() ? '<button onclick="duplicateProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx3);">Duplicate</button>' : '') +
-    '<button onclick="deleteProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">Remove</button>';
+    (companyVerified() ? '<button onclick="openCatalogEdit(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('btnEdit') + '</button>' : '') +
+    (companyVerified() ? '<button onclick="duplicateProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx3);">' + t('btnDuplicate') + '</button>' : '') +
+    '<button onclick="deleteProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">' + t('btnRemove') + '</button>';
 
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
-    '<thead><tr><th>Item</th><th>Unit</th><th>List price</th><th></th></tr></thead><tbody>' +
+    '<thead><tr><th>' + t('catColItem') + '</th><th>' + t('catColUnit') + '</th><th>' + t('catColPrice') + '</th><th></th></tr></thead><tbody>' +
     items.map(p => '<tr><td><div class="flex items-center gap-2.5">' +
       (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : avatarHtml(p.name, 36)) +
       '<div><span class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</span>' +
       (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div></div></td>' +
-      '<td style="color:var(--tx3);">' + esc(p.unit || 'pcs') + '</td>' +
+      '<td style="color:var(--tx3);">' + esc(unitLabel(p.unit || 'pcs')) + '</td>' +
       '<td class="mono" style="color:var(--tx2);">' + fmt(p.price) + '</td>' +
       '<td class="text-right"><div class="flex flex-wrap justify-end gap-3">' + actionsFor(p) + '</div></td></tr>').join('') +
     '</tbody></table></div>';
@@ -3101,8 +3293,8 @@ function catalogItemsList(items){
           (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div>' +
         '</div>' +
         '<div class="mt-2.5 flex items-center gap-4 text-[12px]">' +
-          '<div><span style="color:var(--tx4);">Unit</span> <span style="color:var(--tx3);">' + esc(p.unit || 'pcs') + '</span></div>' +
-          '<div><span style="color:var(--tx4);">Price</span> <span class="mono font-semibold" style="color:var(--tx2);">' + fmt(p.price) + '</span></div>' +
+          '<div><span style="color:var(--tx4);">' + t('catColUnit') + '</span> <span style="color:var(--tx3);">' + esc(unitLabel(p.unit || 'pcs')) + '</span></div>' +
+          '<div><span style="color:var(--tx4);">' + t('catMobPrice') + '</span> <span class="mono font-semibold" style="color:var(--tx2);">' + fmt(p.price) + '</span></div>' +
         '</div>' +
         '<div class="mt-3 flex flex-wrap gap-4">' + actionsFor(p) + '</div>' +
       '</div>'
@@ -4012,7 +4204,7 @@ function renderCreditModal(){
       '<div class="mono mt-3 rounded-lg border p-3 text-center text-[14px] font-bold" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + bal.toFixed(3) + ' &rarr; ' + (bal + amount).toFixed(3) + '</div>' +
       '<p class="mt-2 text-[11.5px]" style="color:var(--tx4);">Recorded in the company\'s wallet history as "Admin credit".</p>' +
       '<div class="mt-5 flex gap-2">' +
-        '<button onclick="setState({ creditStep:\'form\' })" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Back</button>' +
+        '<button onclick="setState({ creditStep:\'form\' })" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t('back') + '</button>' +
         '<button onclick="' + (state.creditBusy ? '' : 'confirmCredit()') + '" ' + (state.creditBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.creditBusy?'0.6':'1') + ';">' + (state.creditBusy ? 'Adding…' : 'Confirm') + '</button>' +
       '</div>');
   }
@@ -4121,12 +4313,12 @@ function renderBulkImportModal(){
   const validCount = rows.filter((r) => !r._error && !r._skip).length;
   return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
     '<div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
-      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Upload Excel/CSV</h3>' +
-      '<button onclick="closeBulkImport()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('catUploadExcel') + '</h3>' +
+      '<button onclick="closeBulkImport()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
       (state.bulkImportStep === 'upload'
-        ? '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Columns: name, brand (optional), unit, category (optional), description (optional), price. Name, unit and price are required — unit must be one of: ' + CATALOG_UNITS.join(', ') + '. Download the template to get the exact headers.</p>' +
-          '<button onclick="downloadImportTemplate()" class="mt-3 rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Download template (.xlsx)</button>' +
-          '<label class="mt-4 flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">File (.xlsx or .csv)</span>' +
+        ? '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + tpl('biIntro', { units: CATALOG_UNITS.join(', ') }) + '</p>' +
+          '<button onclick="downloadImportTemplate()" class="mt-3 rounded-lg border px-3.5 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('biTemplate') + '</button>' +
+          '<label class="mt-4 flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('biFileLabel') + '</span>' +
             // the native file input is visually hidden (sr-only) — its browser-drawn "Choose File" control
             // doesn't shrink below its own content width and was pushing this modal wider than the screen
             // on mobile; the label (a) triggers the input by the usual implicit label-for-input association.
@@ -4135,36 +4327,36 @@ function renderBulkImportModal(){
               '<span class="min-w-0 truncate" style="color:var(--tx4);">' + t('noFileChosen') + '</span>' +
             '</span>' +
             '<input data-bulk-import-file type="file" accept=".xlsx,.xls,.csv" class="sr-only" /></label>' +
-          (state.bulkImportBusy ? '<div class="mt-3 text-[12px]" style="color:var(--tx4);">Reading file…</div>' : '')
-        : '<p class="mt-3 text-[12.5px]" style="color:var(--tx3);">' + esc(state.bulkImportFileName) + ' &middot; ' + rows.length + ' row(s), ' + validCount + ' will be saved.</p>' +
+          (state.bulkImportBusy ? '<div class="mt-3 text-[12px]" style="color:var(--tx4);">' + t('readingFile') + '</div>' : '')
+        : '<p class="mt-3 text-[12.5px]" style="color:var(--tx3);">' + tpl('biSummary', { file: esc(state.bulkImportFileName), rows: rows.length, n: validCount }) + '</p>' +
           '<div class="mt-2 flex max-h-[360px] flex-col gap-1.5 overflow-y-auto bx-scroll pr-1">' +
             rows.map((r, i) => {
               const bad = !!r._error;
               const dup = !bad && (r._dupCatalog || r._dupFile);
               const style = bad ? 'border-color:var(--bad); background:var(--bad-soft);' : (dup && r._skip) ? 'border-color:var(--warn); background:var(--warn-soft);' : 'border-color:var(--bd); background:var(--inset);';
               const badge = bad
-                ? '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--bad-soft); color:var(--bad);">Error</span>'
+                ? '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--bad-soft); color:var(--bad);">' + t('biError') + '</span>'
                 : dup
-                  ? '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--warn-soft); color:var(--warn);">Duplicate</span>'
-                  : '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--ok-soft); color:var(--ok);">OK</span>';
+                  ? '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--warn-soft); color:var(--warn);">' + t('biDuplicate') + '</span>'
+                  : '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]" style="background:var(--ok-soft); color:var(--ok);">' + t('biOk') + '</span>';
               return '<div class="rounded-lg border p-2.5 text-[12px]" style="' + style + '">' +
                 '<div class="flex items-center justify-between gap-2">' +
-                  '<div class="min-w-0 flex-1"><span class="font-semibold truncate" style="color:var(--tx);">' + esc(r.name || '(no name)') + '</span>' +
+                  '<div class="min-w-0 flex-1"><span class="font-semibold truncate" style="color:var(--tx);">' + esc(r.name || t('biNoName')) + '</span>' +
                     (r.brand ? ' <span style="color:var(--tx4);">&middot; ' + esc(r.brand) + '</span>' : '') +
                     (r.unit ? ' <span style="color:var(--tx4);">&middot; ' + esc(r.unit) + '</span>' : '') + '</div>' +
                   badge +
-                  (dup ? '<label class="flex shrink-0 items-center gap-1.5 text-[11px] font-semibold" style="color:var(--warn);"><input type="checkbox" ' + (r._skip ? 'checked' : '') + ' onchange="toggleBulkImportRowSkip(' + i + ')" /> Skip duplicate</label>' : '') +
+                  (dup ? '<label class="flex shrink-0 items-center gap-1.5 text-[11px] font-semibold" style="color:var(--warn);"><input type="checkbox" ' + (r._skip ? 'checked' : '') + ' onchange="toggleBulkImportRowSkip(' + i + ')" /> ' + t('biSkipDup') + '</label>' : '') +
                 '</div>' +
                 (bad ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--bad);">' + esc(r._error) + '</div>' : '') +
-                (dup ? '<div class="mt-1 text-[11px]" style="color:var(--tx4);">' + (r._dupCatalog ? 'Already in your catalog' : 'Duplicate row in this file') + ' (name + unit match)</div>' : '') +
+                (dup ? '<div class="mt-1 text-[11px]" style="color:var(--tx4);">' + t(r._dupCatalog ? 'biDupCatalog' : 'biDupFile') + '</div>' : '') +
               '</div>';
             }).join('') +
           '</div>'
       ) +
       '<div class="mt-5 flex flex-wrap justify-end gap-2">' +
-        (state.bulkImportStep === 'preview' ? '<button onclick="setState({bulkImportStep:\'upload\'})" class="rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Back</button>' : '') +
+        (state.bulkImportStep === 'preview' ? '<button onclick="setState({bulkImportStep:\'upload\'})" class="rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t('back') + '</button>' : '') +
         (state.bulkImportStep === 'preview'
-          ? '<button onclick="' + (state.bulkImportBusy ? '' : 'submitBulkImport()') + '" class="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkImportBusy?'0.6':'1') + ';">' + (state.bulkImportBusy ? 'Saving…' : 'Save ' + validCount + ' item(s)') + '</button>'
+          ? '<button onclick="' + (state.bulkImportBusy ? '' : 'submitBulkImport()') + '" class="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkImportBusy?'0.6':'1') + ';">' + (state.bulkImportBusy ? t('biSaving') : tpl('biSave', { n: validCount })) + '</button>'
           : '') +
       '</div>' +
     '</div></div>';
@@ -4175,16 +4367,16 @@ function renderBulkPhotoModal(){
   const matched = files.filter((f) => f.matchedItemId).length;
   return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
     '<div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
-      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Bulk photo upload</h3>' +
-      '<button onclick="closeBulkPhoto()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
-      '<p class="mt-3 text-[12.5px]" style="color:var(--tx3);">Pick several photos at once — we match each one to a catalog item by its file name. Fix any that didn\'t match below.</p>' +
-      '<label class="mt-3 flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Photos</span>' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('bpTitle') + '</h3>' +
+      '<button onclick="closeBulkPhoto()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
+      '<p class="mt-3 text-[12.5px]" style="color:var(--tx3);">' + t('bpIntro') + '</p>' +
+      '<label class="mt-3 flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('bpPhotos') + '</span>' +
         '<span class="flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2.5 text-sm cursor-pointer" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-          '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Choose files</span>' +
-          '<span class="min-w-0 truncate" style="color:var(--tx4);">No files chosen</span>' +
+          '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('bpChoose') + '</span>' +
+          '<span class="min-w-0 truncate" style="color:var(--tx4);">' + t('bpNone') + '</span>' +
         '</span>' +
         '<input data-bulk-photo-files type="file" accept="image/*" multiple class="sr-only" /></label>' +
-      (state.bulkPhotoBusy ? '<div class="mt-3 text-[12px]" style="color:var(--tx4);">Working…</div>' : '') +
+      (state.bulkPhotoBusy ? '<div class="mt-3 text-[12px]" style="color:var(--tx4);">' + t('working') + '</div>' : '') +
       (files.length ? '<div class="mt-3 flex flex-col gap-2 max-h-[320px] overflow-y-auto bx-scroll pr-1">' +
         files.map((f, i) => f.error
           ? '<div class="flex items-center justify-between gap-2 rounded-lg border p-2 text-[12px]" style="border-color:var(--bad); background:var(--bad-soft); color:var(--bad);"><span class="truncate">' + esc(f.name) + ' — ' + esc(f.error) + '</span><button onclick="removeBulkPhotoFile(' + i + ')" style="color:var(--bad);">&times;</button></div>'
@@ -4192,14 +4384,14 @@ function renderBulkPhotoModal(){
               '<img src="' + esc(f.dataUrl) + '" class="h-10 w-10 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' +
               '<div class="min-w-0 flex-1"><div class="truncate text-[11.5px]" style="color:var(--tx4);">' + esc(f.name) + '</div>' +
                 '<select onchange="setBulkPhotoMatch(' + i + ', this.value)" class="mt-0.5 w-full rounded-lg border px-2 py-1 text-[12px] outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-                  '<option value="">— Not matched —</option>' +
+                  '<option value="">' + t('bpNotMatched') + '</option>' +
                   (state.myCatalog || []).map((it) => '<option value="' + it.id + '"' + (f.matchedItemId === it.id ? ' selected' : '') + '>' + esc(it.name) + '</option>').join('') +
                 '</select></div>' +
-              '<button onclick="removeBulkPhotoFile(' + i + ')" class="shrink-0 text-[12px] font-semibold" style="color:var(--tx4);">Remove</button>' +
+              '<button onclick="removeBulkPhotoFile(' + i + ')" class="shrink-0 text-[12px] font-semibold" style="color:var(--tx4);">' + t('btnRemove') + '</button>' +
             '</div>'
         ).join('') + '</div>' : '') +
       '<div class="mt-5 flex flex-wrap justify-end gap-2">' +
-        '<button onclick="' + (state.bulkPhotoBusy ? '' : 'submitBulkPhotos()') + '" class="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkPhotoBusy?'0.6':'1') + ';">' + (state.bulkPhotoBusy ? 'Uploading…' : 'Upload ' + matched + ' matched photo(s)') + '</button>' +
+        '<button onclick="' + (state.bulkPhotoBusy ? '' : 'submitBulkPhotos()') + '" class="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkPhotoBusy?'0.6':'1') + ';">' + (state.bulkPhotoBusy ? t('bpUploading') : tpl('bpUpload', { n: matched })) + '</button>' +
       '</div>' +
     '</div></div>';
 }
@@ -4422,40 +4614,40 @@ function renderModals(){
     const list = state.attList || [];
     html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
       '<div class="bx-rise bx-modal bx-scroll w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quote files</h3>' +
-        '<button onclick="closeAttachments()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('qfTitle') + '</h3>' +
+        '<button onclick="closeAttachments()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
         '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + esc(rfq.title || '') + '</div>' +
-        '<div class="mt-4 flex flex-col gap-2">' + (list.length ? list.map(a => attachmentRowHtml(a, editable)).join('') : '<div class="text-[12px]" style="color:var(--tx4);">No files attached.</div>') + '</div>' +
+        '<div class="mt-4 flex flex-col gap-2">' + (list.length ? list.map(a => attachmentRowHtml(a, editable)).join('') : '<div class="text-[12px]" style="color:var(--tx4);">' + t('qfNone') + '</div>') + '</div>' +
         (editable && list.length < MAX_QUOTE_FILES
-          ? '<label class="mt-4 inline-block rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); cursor:pointer; opacity:' + (state.attUploading?'0.6':'1') + ';">' + (state.attUploading ? 'Uploading…' : 'Add file') +
+          ? '<label class="mt-4 inline-block rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); cursor:pointer; opacity:' + (state.attUploading?'0.6':'1') + ';">' + t(state.attUploading ? 'bpUploading' : 'bidAddFile') +
             '<input data-attfile type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" class="hidden"' + (state.attUploading ? ' disabled' : '') + ' /></label>'
           : '') +
         '<p class="mt-3 text-[11px]" style="color:var(--tx4);">' + (editable
-          ? 'Up to ' + MAX_QUOTE_FILES + ' files, 10 MB each. Visible only to the buyer and Biddex admins. Files are frozen once the buyer shortlists your quote or bidding closes.'
-          : 'Files are frozen: the buyer evaluates your quote with the files above.') + '</p>' +
+          ? tpl('qfNoteEditable', { n: MAX_QUOTE_FILES })
+          : t('qfNoteFrozen')) + '</p>' +
       '</div></div>';
   }
   if (state.showCatalogAdd) {
     const p = state.newProduct;
-    html += modalWrap(state.editCatalogId ? 'Edit catalog item' : 'Add catalog item', 'closeCatalogAdd()',
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Product photo (optional)</span>' +
+    html += modalWrap(t(state.editCatalogId ? 'catModalEdit' : 'catModalAdd'), 'closeCatalogAdd()',
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('catPhotoOpt') + '</span>' +
       (p.imageUrl
-        ? '<div class="flex items-center gap-3"><img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-16 w-16 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" /><div class="flex-1 min-w-0"><div class="text-[12px] font-semibold truncate" style="color:var(--tx);">' + esc(state.catalogPhotoName) + '</div><button onclick="removeCatalogPhoto()" class="text-[11px] font-semibold" style="color:var(--tx4);">Remove photo</button></div></div>'
+        ? '<div class="flex items-center gap-3"><img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-16 w-16 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" /><div class="flex-1 min-w-0"><div class="text-[12px] font-semibold truncate" style="color:var(--tx);">' + esc(state.catalogPhotoName) + '</div><button onclick="removeCatalogPhoto()" class="text-[11px] font-semibold" style="color:var(--tx4);">' + t('catRemovePhoto') + '</button></div></div>'
         : '<label class="flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2.5 text-sm cursor-pointer" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-            '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Choose photo</span>' +
-            '<span class="min-w-0 truncate" style="color:var(--tx4);">No photo chosen</span>' +
+            '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('catChoosePhoto') + '</span>' +
+            '<span class="min-w-0 truncate" style="color:var(--tx4);">' + t('catNoPhoto') + '</span>' +
             '<input data-catalog-photo type="file" accept="image/*" capture="environment" class="sr-only" />' +
           '</label>') +
-      (state.catalogPhotoBusy ? '<span class="text-[12px]" style="color:var(--tx4);">Reading photo…</span>' : '') +
+      (state.catalogPhotoBusy ? '<span class="text-[12px]" style="color:var(--tx4);">' + t('catReadingPhoto') + '</span>' : '') +
       '</label>' +
-      field('name','Item name', p.name, 'e.g. A4 Paper Box') +
-      field('brand','Brand (optional)', p.brand, 'e.g. Almarai') +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Unit</span>' +
+      field('name', t('stockFieldName'), p.name, t('catPhName')) +
+      field('brand', t('stockFieldBrand'), p.brand, t('catPhBrand')) +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('stockFieldUnit') + '</span>' +
       '<select data-select="unit" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-        CATALOG_UNITS.concat(CATALOG_UNITS.includes(p.unit) ? [] : [p.unit]).map(u => '<option value="' + u + '"' + (p.unit===u?' selected':'') + '>' + u + '</option>').join('') +
+        CATALOG_UNITS.concat(CATALOG_UNITS.includes(p.unit) ? [] : [p.unit]).map(u => '<option value="' + u + '"' + (p.unit===u?' selected':'') + '>' + unitLabel(u) + '</option>').join('') +
       '</select></label>' +
-      field('price','Price per unit (BHD)', p.price, '3.500'),
-      'addProduct()', state.editCatalogId ? 'Save changes' : 'Add item', false);
+      field('price', tpl('catFieldPrice', { cur: t('bhd') }), p.price, '3.500'),
+      'addProduct()', t(state.editCatalogId ? 'saveChanges' : 'catAddItemBtn'), false);
   }
   if (state.showBulkImport) html += renderBulkImportModal();
   if (state.showBulkPhoto) html += renderBulkPhotoModal();
