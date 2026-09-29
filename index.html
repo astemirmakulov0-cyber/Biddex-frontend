@@ -151,7 +151,16 @@ const I18N = {
     deleteAccountCreditsWarning:'Remaining credits ({amount} BHD) will be lost.',
     deleteAccountConfirmCompanyLabel:'Type your company name to confirm', deleteAccountConfirmPasswordLabel:'Your password',
     deleteAccountCancelButton:'Cancel', deleteAccountConfirmButton:'Yes, delete my account',
-    deleteAccountSuccessToast:'Your account has been deleted.'
+    deleteAccountSuccessToast:'Your account has been deleted.',
+    navStock:'Stock', stockEyebrow:'INVENTORY', stockTitle:'Stock',
+    stockSubtitle:'Track what you have on hand, get a low-stock alert before you run out, and re-order in one click.',
+    addStockItem:'+ Add item', editStockItem:'Edit stock item',
+    stockEmptyTitle:'No stock items yet', stockEmptyBody:'Add what you keep on hand, or confirm a delivery and add it from there.',
+    lowStockBadge:'Low stock', inStockBadge:'In stock',
+    stockItemCol:'Item', stockQuantityCol:'Quantity', stockThresholdCol:'Low-stock at', stockStatusCol:'Status',
+    lowStockHint:'0 = never alert', recount:'Recount', reorder:'Re-order', actualQuantity:'Actual quantity on hand',
+    recountIntro:'Currently on record: {qty} {unit}. Enter what you actually counted.',
+    saveChanges:'Save changes', addToStock:'Add to stock'
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -199,7 +208,16 @@ const I18N = {
     deleteAccountCreditsWarning:'سيتم فقدان الرصيد المتبقي ({amount} د.ب).',
     deleteAccountConfirmCompanyLabel:'اكتب اسم شركتك للتأكيد', deleteAccountConfirmPasswordLabel:'كلمة المرور',
     deleteAccountCancelButton:'إلغاء', deleteAccountConfirmButton:'نعم، احذف حسابي',
-    deleteAccountSuccessToast:'تم حذف حسابك.'
+    deleteAccountSuccessToast:'تم حذف حسابك.',
+    navStock:'المخزون', stockEyebrow:'المخزون', stockTitle:'المخزون',
+    stockSubtitle:'تابع ما لديك في المخزون، واحصل على تنبيه قبل نفاده، وأعد الطلب بنقرة واحدة.',
+    addStockItem:'+ إضافة عنصر', editStockItem:'تعديل عنصر المخزون',
+    stockEmptyTitle:'لا توجد عناصر في المخزون بعد', stockEmptyBody:'أضف ما تحتفظ به، أو أكّد استلام طلب وأضفه من هناك.',
+    lowStockBadge:'مخزون منخفض', inStockBadge:'متوفر',
+    stockItemCol:'العنصر', stockQuantityCol:'الكمية', stockThresholdCol:'حد التنبيه', stockStatusCol:'الحالة',
+    lowStockHint:'0 = بدون تنبيه', recount:'إعادة الجرد', reorder:'إعادة الطلب', actualQuantity:'الكمية الفعلية المتوفرة',
+    recountIntro:'المسجّل حاليًا: {qty} {unit}. أدخل ما قمت بجرده فعليًا.',
+    saveChanges:'حفظ التغييرات', addToStock:'أضف إلى المخزون'
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -256,8 +274,11 @@ let state = {
 
   token: null, user: null, company: null, wallet: null,
 
-  rfqs: [], catalog: [], myCatalog: [],
+  rfqs: [], catalog: [], myCatalog: [], stock: [],
   loading: false,
+
+  showStockAdd: false, editStockId: null, stockForm: { name:'', brand:'', unit:'kg', quantity:'', threshold:'' },
+  showStockCount: null, stockCountValue: '', stockBusy: false,
 
   showPostRfq: false, editRfqId: null, // editRfqId set -> the post modal edits that RFQ instead of creating one
   cancelRfqId: null, cancelBusy: false,
@@ -552,11 +573,11 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], stock:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 async function refreshAll(){
-  await Promise.all([ refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications() ]);
+  await Promise.all([ refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications() ]);
 }
 
 // ---------- Background refresh errors ----------
@@ -1307,6 +1328,11 @@ async function refreshMyCatalog(){
   if (!state.token || !state.company) return;
   try { const data = await api('/api/catalog?supplierCompanyId=' + state.company.id); setIfChanged('myCatalog', data); syncOk('myCatalog'); }
   catch(e) { syncFailed('myCatalog', e); }
+}
+async function refreshStock(){
+  if (!state.token || !state.company || state.company.type !== 'BUYER') return;
+  try { const data = await api('/api/stock'); setIfChanged('stock', data); syncOk('stock'); }
+  catch(e) { syncFailed('stock', e); }
 }
 
 async function deleteProduct(id){
@@ -2098,6 +2124,7 @@ function renderDashboard(role){
     : state.section === 'catalog' ? (isBuyer ? renderNetwork() : renderSupplierCatalogPage())
     : state.section === 'rfqs' ? (isBuyer ? renderBuyerRfqsPage() : renderOpportunityFeedPage())
     : state.section === 'lpos' ? renderLpoManagement(isBuyer)
+    : state.section === 'stock' ? (isBuyer ? renderStockPage() : renderSupplierHub())
     : (isBuyer ? renderBuyerHub() : renderSupplierHub());
 
   return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + suspensionBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
@@ -2117,7 +2144,7 @@ function suspensionBanner(){
 function navBar(role){
   const isBuyer = role === 'buyer';
   const tabs = isBuyer
-    ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['catalog',t('navNetwork')], ['profile',t('navSettings')] ]
+    ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['stock',t('navStock')], ['catalog',t('navNetwork')], ['profile',t('navSettings')] ]
     : [ ['main',t('navSupplierHub')], ['rfqs',t('navOpportunities')], ['catalog',t('navCatalog')], ['lpos',t('navOrdersLpos')], ['profile',t('navSettings')] ];
   const activeKey = state.section === 'orderDetail' ? 'lpos' : state.section;
   return '<div class="border-b" style="border-color:var(--bd); background:var(--panel);">' +
@@ -2288,6 +2315,7 @@ function lpoTrackerRow(o, isBuyer){
         '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">' + idLabel + (counterpartyCompany ? ' · ' + companyLabel(counterpartyCompany) : '') + '</div></div>' +
       '<div class="flex-1 min-w-[180px]">' + orderProgressHtml(o, 'mt-1.5 text-[11.5px] font-semibold') + '</div>' +
       '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
+      (isBuyer && o.status === 'COMPLETED' ? '<button onclick="reorderFromOrder(\'' + o.id + '\')" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold shrink-0" style="border-color:var(--bd2); color:var(--tx2);">' + t('reorder') + '</button>' : '') +
       '<button onclick="openOrderDetail(\'' + o.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Open order</button>' +
     '</div>' +
   '</div>';
@@ -2470,6 +2498,179 @@ function catalogItemsList(items){
   '</div>';
 
   return table + cards;
+}
+
+// ---------- Buyer: Stock ----------
+
+function fmtQty(n){
+  const num = Number(n) || 0;
+  return Number.isInteger(num) ? String(num) : num.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+}
+function isLowStock(item){ return Number(item.threshold) > 0 && Number(item.quantity) <= Number(item.threshold); }
+
+function renderStockPage(){
+  const items = state.stock || [];
+  return '<div class="eyebrow mb-1.5">' + t('stockEyebrow') + '</div>' +
+  '<div class="flex flex-wrap items-center justify-between gap-3 mb-5"><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('stockTitle') + '</h1>' +
+    '<button onclick="openStockAdd()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('addStockItem') + '</button>' +
+  '</div>' +
+  '<p class="mb-5 text-[13.5px] max-w-[620px]" style="color:var(--tx3);">' + t('stockSubtitle') + '</p>' +
+  (items.length === 0 ? emptyState(t('stockEmptyTitle'), t('stockEmptyBody')) : stockItemsList(items));
+}
+
+function stockBadge(item){
+  return isLowStock(item)
+    ? '<span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">' + t('lowStockBadge') + '</span>'
+    : '<span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--ok-soft); color:var(--ok);">' + t('inStockBadge') + '</span>';
+}
+
+// Table on sm: and up; a stack of cards below 640px (same pattern as rfqTable/catalogItemsList).
+function stockItemsList(items){
+  const actionsFor = (it) =>
+    '<button onclick="openStockCount(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('recount') + '</button>' +
+    '<button onclick="reorderFromStock(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx2);">' + t('reorder') + '</button>' +
+    '<button onclick="openStockEdit(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx3);">Edit</button>' +
+    '<button onclick="deleteStockItemUi(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">Remove</button>';
+
+  const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
+    '<thead><tr><th>' + t('stockItemCol') + '</th><th>' + t('stockQuantityCol') + '</th><th>' + t('stockThresholdCol') + '</th><th>' + t('stockStatusCol') + '</th><th></th></tr></thead><tbody>' +
+    items.map((it) => '<tr><td><div class="flex items-center gap-2.5">' + avatarHtml(it.name, 32) +
+      '<div><span class="font-semibold" style="color:var(--tx);">' + esc(it.name) + '</span>' +
+      (it.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(it.brand) + '</div>' : '') + '</div></div></td>' +
+      '<td class="mono" style="color:var(--tx2);">' + fmtQty(it.quantity) + ' ' + esc(it.unit) + '</td>' +
+      '<td class="mono" style="color:var(--tx3);">' + fmtQty(it.threshold) + '</td>' +
+      '<td>' + stockBadge(it) + '</td>' +
+      '<td class="text-right"><div class="flex flex-wrap justify-end gap-3">' + actionsFor(it) + '</div></td></tr>').join('') +
+    '</tbody></table></div>';
+
+  const cards = '<div class="sm:hidden flex flex-col gap-3">' +
+    items.map((it) =>
+      '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="flex items-center gap-2.5">' + avatarHtml(it.name, 40) +
+          '<div class="min-w-0 flex-1"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(it.name) + '</div>' +
+          (it.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(it.brand) + '</div>' : '') + '</div>' +
+          stockBadge(it) +
+        '</div>' +
+        '<div class="mt-2.5 flex items-center gap-4 text-[12px]">' +
+          '<div><span style="color:var(--tx4);">' + t('stockQuantityCol') + '</span> <span class="mono font-semibold" style="color:var(--tx2);">' + fmtQty(it.quantity) + ' ' + esc(it.unit) + '</span></div>' +
+          '<div><span style="color:var(--tx4);">' + t('stockThresholdCol') + '</span> <span class="mono" style="color:var(--tx3);">' + fmtQty(it.threshold) + '</span></div>' +
+        '</div>' +
+        '<div class="mt-3 flex flex-wrap gap-4">' + actionsFor(it) + '</div>' +
+      '</div>'
+    ).join('') +
+  '</div>';
+
+  return table + cards;
+}
+
+function openStockAdd(){
+  setState({ showStockAdd:true, editStockId:null, stockForm:{ name:'', brand:'', unit:'kg', quantity:'0', threshold:'0' } });
+}
+function openStockEdit(id){
+  const it = (state.stock || []).find(s => s.id === id);
+  if (!it) return;
+  setState({ showStockAdd:true, editStockId:id, stockForm:{ name: it.name, brand: it.brand||'', unit: it.unit, quantity: String(Number(it.quantity)), threshold: String(Number(it.threshold)) } });
+}
+function closeStockAdd(){ setState({ showStockAdd:false, editStockId:null }); }
+function onStockField(field, e){ state.stockForm[field] = e.target.value; }
+
+async function saveStockItem(){
+  const f = state.stockForm;
+  if (!f.name.trim()) { showToast('Name is required.'); return; }
+  setState({ stockBusy:true });
+  try {
+    if (state.editStockId) {
+      await api('/api/stock/' + state.editStockId, { method:'PATCH', body: JSON.stringify({ name: f.name, brand: f.brand || null, unit: f.unit, threshold: parseMoneyInput(f.threshold) || 0 }) });
+      showToast('Stock item updated.');
+    } else {
+      await api('/api/stock', { method:'POST', body: JSON.stringify({ name: f.name, brand: f.brand || null, unit: f.unit, quantity: parseMoneyInput(f.quantity) || 0, threshold: parseMoneyInput(f.threshold) || 0 }) });
+      showToast('Stock item added.');
+    }
+    setState({ showStockAdd:false, editStockId:null, stockBusy:false });
+    refreshStock();
+  } catch(e) { setState({ stockBusy:false }); showToast(e.message); }
+}
+
+async function deleteStockItemUi(id){
+  if (!confirm('Remove this stock item? Its history goes with it.')) return;
+  try { await api('/api/stock/' + id, { method:'DELETE' }); showToast('Stock item removed.'); refreshStock(); }
+  catch(e) { showToast(e.message); }
+}
+
+function openStockCount(id){ setState({ showStockCount:id, stockCountValue: String(Number((state.stock||[]).find(s=>s.id===id)?.quantity || 0)) }); }
+function closeStockCount(){ setState({ showStockCount:null }); }
+function onStockCountField(e){ state.stockCountValue = e.target.value; }
+async function submitStockCount(){
+  const id = state.showStockCount;
+  const qty = parseMoneyInput(state.stockCountValue);
+  if (qty == null || qty < 0) { showToast('Enter a number, e.g. 12.5'); return; }
+  setState({ stockBusy:true });
+  try {
+    await api('/api/stock/' + id + '/count', { method:'POST', body: JSON.stringify({ quantity: qty }) });
+    setState({ showStockCount:null, stockBusy:false });
+    showToast('Stock count saved.');
+    refreshStock();
+  } catch(e) { setState({ stockBusy:false }); showToast(e.message); }
+}
+
+// Opens "Post an RFQ" prefilled from a known product (a stock item or a past order) — the buyer still
+// reviews and publishes normally, nothing is submitted on their behalf.
+function openReorder({ title, unit, brand, category, quantity, productId }){
+  productSearchResults = [];
+  setState({ showPostRfq:true, editRfqId:null, newRfq:{
+    title: title || '', quantity: quantity != null ? String(quantity) : '', unit: unit || 'pcs',
+    deadline: '', category: ACTIVE_CATEGORIES.includes(category) ? category : ACTIVE_CATEGORIES[0], budget: '',
+    specifications: '', brand: brand || '', exactBrandOnly: false, productId: productId || undefined, productImageUrl: null, productSearchQuery: ''
+  } });
+}
+function reorderFromStock(id){
+  const it = (state.stock || []).find(s => s.id === id);
+  if (!it) return;
+  openReorder({ title: it.name, unit: it.unit, brand: it.brand, quantity: it.quantity, productId: it.catalogItemId });
+}
+function reorderFromOrder(orderId){
+  const o = (state.orders || []).find(x => x.id === orderId);
+  const rfq = o && o.lpo && o.lpo.rfq;
+  if (!rfq) return;
+  openReorder({ title: rfq.title, unit: rfq.unit, brand: rfq.brand, quantity: rfq.quantity, productId: rfq.productId, category: categoryLabel(rfq.category) });
+}
+
+// The action behind a STOCK_RECEIPT_UNMATCHED notification bell item: creates the stock item from that
+// order and closes the dropdown; a toast confirms instead of navigating away from wherever the buyer was.
+async function createStockFromNotification(orderId){
+  try {
+    await api('/api/stock/from-order/' + orderId, { method:'POST' });
+    showToast('Added to stock.');
+    refreshStock();
+    setState({ showNotifDropdown:false });
+  } catch(e) { showToast(e.message); }
+}
+
+function renderStockAddModal(){
+  if (!state.showStockAdd) return '';
+  const f = state.stockForm;
+  const editing = !!state.editStockId;
+  return modalWrap(editing ? t('editStockItem') : t('addStockItem'), 'closeStockAdd()',
+    field('name','Item name', f.name, 'e.g. Basmati Rice 25kg') +
+    field('brand','Brand (optional)', f.brand, 'e.g. India Gate') +
+    '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Unit</span>' +
+    '<select data-select="stockUnit" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
+      CATALOG_UNITS.map(u => '<option value="' + u + '"' + (f.unit===u?' selected':'') + '>' + u + '</option>').join('') +
+    '</select></label>' +
+    (editing ? '' : field('quantity', t('stockQuantityCol') + ' (optional)', f.quantity, '0')) +
+    field('threshold', t('stockThresholdCol') + ' — ' + t('lowStockHint'), f.threshold, '0'),
+    'saveStockItem()', state.stockBusy ? t('pleaseWait') : t('saveChanges'), state.stockBusy);
+}
+
+function renderStockCountModal(){
+  if (!state.showStockCount) return '';
+  const it = (state.stock || []).find(s => s.id === state.showStockCount);
+  if (!it) return '';
+  return modalWrap(t('recount') + ': ' + it.name, 'closeStockCount()',
+    '<p class="text-[13px]" style="color:var(--tx3);">' + t('recountIntro').replace('{qty}', fmtQty(it.quantity)).replace('{unit}', esc(it.unit)) + '</p>' +
+    '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('actualQuantity') + '</span>' +
+      '<input data-stockcount type="text" inputmode="decimal" value="' + esc(state.stockCountValue) + '" placeholder="0" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
+    'submitStockCount()', state.stockBusy ? t('pleaseWait') : t('saveChanges'), state.stockBusy);
 }
 
 // ---------- Wallet modal ----------
@@ -2749,6 +2950,7 @@ function notifBell(){
           list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + '">' +
             '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
             (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
+            (n.type === 'STOCK_RECEIPT_UNMATCHED' && n.relatedOrderId ? '<button onclick="createStockFromNotification(\'' + n.relatedOrderId + '\')" class="mt-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('addToStock') + '</button>' : '') +
             '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + new Date(n.createdAt).toLocaleString() + '</div>' +
           '</div>').join('')) +
       '</div>' : '') +
@@ -3506,6 +3708,8 @@ function renderModals(){
   }
   if (state.showBulkImport) html += renderBulkImportModal();
   if (state.showBulkPhoto) html += renderBulkPhotoModal();
+  if (state.showStockAdd) html += renderStockAddModal();
+  if (state.showStockCount) html += renderStockCountModal();
   if (state.showVerifyModal) {
     const v = state.verifyForm;
     html += modalWrap('Submit verification document', 'closeVerifyModal()',
@@ -3570,8 +3774,11 @@ function bindEvents(){
       else if (state.submitQuoteRfqId && ['price','days','paymentTerms'].includes(f)) { state.quoteForm[f] = e.target.value; if (f === 'price') updateQuoteTotal(); }
       else if (state.showCatalogAdd && ['name','brand','price'].includes(f)) state.newProduct[f] = e.target.value;
       else if (state.showVerifyModal && f === 'fileUrl') state.verifyForm.fileUrl = e.target.value;
+      else if (state.showStockAdd && ['name','brand','quantity','threshold'].includes(f)) state.stockForm[f] = e.target.value;
     });
   });
+  const stockCountInput = document.querySelector('[data-stockcount]');
+  if (stockCountInput) stockCountInput.addEventListener('input', onStockCountField);
   document.querySelectorAll('[data-profile]').forEach(el => {
     el.addEventListener('input', (e) => { state.profileForm[el.getAttribute('data-profile')] = e.target.value; });
   });
@@ -3581,6 +3788,7 @@ function bindEvents(){
       if (state.showVerifyModal && f === 'docType') state.verifyForm.docType = e.target.value;
       else if (state.showPostRfq && f === 'category') state.newRfq.category = e.target.value;
       else if (state.showCatalogAdd && f === 'unit') state.newProduct.unit = e.target.value;
+      else if (state.showStockAdd && f === 'stockUnit') state.stockForm.unit = e.target.value;
     });
   });
   const catalogPhotoInput = document.querySelector('[data-catalog-photo]');
