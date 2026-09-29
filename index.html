@@ -109,6 +109,7 @@ const UNIT_AR = { kg: 'كجم', pcs: 'قطعة', box: 'صندوق', carton: 'ك�
 const unitLabel = (u) => (state.lang === 'ar' && UNIT_AR[u]) || u;
 const categoryOptionLabel = (c) => (state.lang === 'ar' && CATEGORY_AR[c]) || c;
 const categoryLabel = (c) => c === 'Restaurant Groceries' ? 'Restaurants & Cafés' : (c || '—');
+const categoryDisplay = (c) => categoryOptionLabel(categoryLabel(c));
 // Catalog units — the same fixed list the server accepts (src/controllers/catalog.controller.js CATALOG_UNITS)
 const CATALOG_UNITS = ['kg', 'pcs', 'box', 'carton', 'litre', 'ton'];
 const AVATAR_PALETTE = [
@@ -1332,7 +1333,7 @@ const I18N = {
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
 // t() with {name} placeholders filled from vars (never build sentences by concatenation: word order differs in Arabic)
-function tpl(key, vars){ return t(key).replace(/{(w+)}/g, (m, k) => vars && vars[k] != null ? vars[k] : m); }
+function tpl(key, vars){ return t(key).replace(/\{(\w+)\}/g, (m, k) => vars && vars[k] != null ? vars[k] : m); }
 // Numbers stay Latin in Arabic (as in the wallet); dates use ar-BH with Latin digits, English keeps the browser default
 const dateLocale = () => state.lang === 'ar' ? 'ar-BH-u-nu-latn' : undefined;
 function fmtDateTime(d){ return new Date(d).toLocaleString(dateLocale()); }
@@ -3402,7 +3403,7 @@ function rfqTable(rfqs){
     '<thead><tr><th>' + esc(t('thRfqTitleId')) + '</th><th>' + t('thCategory') + '</th><th>' + t('thBids') + '</th><th>' + t('thClosingIn') + '</th><th>' + t('thStatus') + '</th><th></th></tr></thead><tbody>' +
     rows.map(({r,tl,actions}) => '<tr>' +
       '<td><div class="flex items-center gap-2.5">' + avatarHtml(r.title, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</div></div></div></td>' +
-      '<td style="color:var(--tx3);">' + esc(categoryLabel(r.category)) + '</td>' +
+      '<td style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</td>' +
       '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
       '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' +
       '<td>' + statusPill(r.status) + '</td>' +
@@ -3419,7 +3420,7 @@ function rfqTable(rfqs){
           '<div class="shrink-0">' + statusPill(r.status) + '</div>' +
         '</div>' +
         '<div class="mt-3 grid grid-cols-3 gap-2 text-[12px]">' +
-          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobCategory') + '</div><div class="mt-0.5" style="color:var(--tx3);">' + esc(categoryLabel(r.category)) + '</div></div>' +
+          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobCategory') + '</div><div class="mt-0.5" style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</div></div>' +
           '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobBids') + '</div><div class="mono mt-0.5 font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</div></div>' +
           '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobClosing') + '</div><div class="mono mt-0.5" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</div></div>' +
         '</div>' +
@@ -3599,7 +3600,7 @@ function opportunityCard(r){
       (r.imageUrl ? '<img src="' + esc(r.imageUrl) + '" class="h-10 w-10 shrink-0 rounded-xl object-cover border" style="border-color:var(--bd);" />' : avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40)) +
       '<div class="flex-1 min-w-[200px]">' +
         '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + t('oppVerifiedBuyer') + ' &middot; ' + esc(categoryLabel(r.category)) + '</div>' +
+        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + t('oppVerifiedBuyer') + ' &middot; ' + esc(categoryDisplay(r.category)) + '</div>' +
         (r.brand ? '<div class="mt-1 flex items-center gap-1.5 text-[11.5px]" style="color:var(--tx3);"><span class="font-semibold">' + esc(r.brand) + '</span>' +
           '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (r.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + t(r.exactBrandOnly ? 'brandExact' : 'brandEquivalent') + '</span>' + hint('exact') + '</div>' : '') +
         (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">' + tpl('oppYourQuote', { price: quotePriceText(ownQuote) }) + '</div>' : '') +
