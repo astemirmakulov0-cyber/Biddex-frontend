@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Verify Email - Biddex</title>
 <style>
   body { font-family: Arial, sans-serif; background: #1a1a4e; color: white; text-align: center; padding: 60px 20px; }
@@ -21,8 +22,9 @@
   <p><a id="homeLink" href="index.html"></a></p>
 </div>
 
+<script src="server-errors.js?v=1"></script>
 <script>
-const T = {
+const I18N = {
   en: {
     title: 'Verify Email - Biddex', verifying: 'Verifying your email...', missingToken: 'Missing token',
     verified: 'Email verified!', canLogIn: 'You can now log in to Biddex.',
@@ -36,23 +38,26 @@ const T = {
 };
 
 // Same key as index.html; fall back to the browser language for people opening the email link elsewhere.
+// t() / tpl() as in index.html
+function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
+function tpl(key, vars) { return t(key).replace(/\{(\w+)\}/g, (m, k) => vars && vars[k] != null ? vars[k] : m); }
+
 let lang;
 try { lang = localStorage.getItem('biddex_lang'); } catch(e) {}
 if (lang !== 'ar' && lang !== 'en') lang = (navigator.language || '').toLowerCase().startsWith('ar') ? 'ar' : 'en';
 
-// status/message hold translation keys; `raw` is a backend error shown as-is.
+// status/message hold translation keys; `raw` is a backend error text, shown translated when server-errors.js knows it.
 const view = { status: 'verifying', cls: '', message: null, raw: '' };
 
 function render() {
-  const t = T[lang];
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  document.title = t.title;
+  document.title = t('title');
   document.getElementById('langBtn').textContent = lang === 'ar' ? 'EN' : 'العربية';
-  document.getElementById('homeLink').textContent = t.home;
-  document.getElementById('status').textContent = t[view.status];
+  document.getElementById('homeLink').textContent = t('home');
+  document.getElementById('status').textContent = t(view.status);
   document.getElementById('status').className = view.cls;
-  document.getElementById('message').textContent = view.message ? t[view.message] : view.raw;
+  document.getElementById('message').textContent = view.message ? t(view.message) : serverError(view.raw, lang);
 }
 function show(patch) { Object.assign(view, patch); render(); }
 
@@ -71,12 +76,14 @@ if (!token) {
   show({ status: 'missingToken', cls: 'error' });
 } else {
   fetch(API_URL + '/api/auth/verify?token=' + encodeURIComponent(token))
-    .then(res => res.json())
-    .then(data => {
-      if (data.ok) {
+    .then(res => res.ok
+      ? res.json().then(data => ({ ok: !!data.ok, error: data.error || '' }))
+      : readServerError(res).then(error => ({ ok: false, error, status: res.status })))
+    .then(result => {
+      if (result.ok) {
         show({ status: 'verified', cls: 'success', message: 'canLogIn' });
       } else {
-        show({ status: 'failed', cls: 'error', message: null, raw: data.error || '' });
+        show({ status: result.error ? 'failed' : 'wentWrong', cls: 'error', message: null, raw: result.error }); // no readable text (HTML error page, empty body): the generic heading
       }
     })
     .catch(() => {
