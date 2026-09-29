@@ -361,7 +361,41 @@ const I18N = {
     quoteTotalWord:"total",
     quoteUnitNotRecorded:"(unit price not recorded)",
     fileTooBig:"{name}: must be at most 10 MB",
-    fileBadType:"{name}: only PDF, JPEG, PNG or WebP"
+    fileBadType:"{name}: only PDF, JPEG, PNG or WebP",
+    emptyRfqsTitle:"No RFQs yet",
+    emptyRfqsBody:"Post your first request and suppliers will start quoting.",
+    thRfqTitleId:"RFQ title & ID",
+    thCategory:"Category",
+    thBids:"Bids received",
+    thClosingIn:"Closing in",
+    thStatus:"Status",
+    mobCategory:"CATEGORY",
+    mobBids:"BIDS",
+    mobClosing:"CLOSING IN",
+    btnEdit:"Edit",
+    btnCloseBidding:"Close bidding",
+    btnCancel:"Cancel",
+    btnCompare:"Compare bids",
+    rfqsAllRequests:"ALL REQUESTS",
+    rfqsPageTitle:"Your RFQs",
+    rfqsCreateNew:"+ Create new RFQ",
+    closeBiddingTitle:"Close bidding",
+    closeBiddingBody:"Close bidding on {title} now? Suppliers will no longer be able to submit quotes.",
+    closeBiddingHave:"You can still compare and award the {n} quote(s) you received.",
+    closeBiddingNone:"No quotes have been submitted yet.",
+    closeBiddingUndo:"This can't be undone.",
+    closeBiddingBusy:"Closing…",
+    closeBiddingYes:"Yes, close bidding",
+    toastBiddingClosed:"Bidding closed. You can still compare and award the quotes you received.",
+    cancelRfqTitle:"Cancel RFQ",
+    cancelRfqBody:"Cancel {title}? Suppliers will no longer be able to quote, and it can't be reopened or awarded.",
+    cancelRfqBidsRefund:"{n} supplier(s) have quoted — their bid fees will be refunded and they will be notified.",
+    cancelRfqBidsNotify:"{n} supplier(s) have quoted — they will be notified.",
+    cancelRfqKeep:"Keep RFQ",
+    cancelRfqBusy:"Cancelling…",
+    cancelRfqYes:"Yes, cancel RFQ",
+    toastRfqCancelled:"RFQ cancelled.",
+    toastRfqCancelledRefund:"RFQ cancelled. Bid fees refunded to {n} supplier(s)."
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -605,7 +639,41 @@ const I18N = {
     quoteTotalWord:"الإجمالي",
     quoteUnitNotRecorded:"(سعر الوحدة غير مسجّل)",
     fileTooBig:"{name}: الحد الأقصى 10 ميغابايت",
-    fileBadType:"{name}: يُسمح بـ PDF أو JPEG أو PNG أو WebP فقط"
+    fileBadType:"{name}: يُسمح بـ PDF أو JPEG أو PNG أو WebP فقط",
+    emptyRfqsTitle:"لا توجد طلبات تسعير بعد",
+    emptyRfqsBody:"انشر أول طلب وسيبدأ الموردون بتقديم عروضهم.",
+    thRfqTitleId:"عنوان الطلب ورقمه",
+    thCategory:"الفئة",
+    thBids:"العروض المستلمة",
+    thClosingIn:"ينتهي خلال",
+    thStatus:"الحالة",
+    mobCategory:"الفئة",
+    mobBids:"العروض",
+    mobClosing:"ينتهي خلال",
+    btnEdit:"تعديل",
+    btnCloseBidding:"إغلاق باب العروض",
+    btnCancel:"إلغاء",
+    btnCompare:"مقارنة العروض",
+    rfqsAllRequests:"كل الطلبات",
+    rfqsPageTitle:"طلبات التسعير الخاصة بك",
+    rfqsCreateNew:"+ طلب تسعير جديد",
+    closeBiddingTitle:"إغلاق باب العروض",
+    closeBiddingBody:"هل تريد إغلاق باب العروض على {title} الآن؟ لن يتمكن الموردون من تقديم عروض بعد ذلك.",
+    closeBiddingHave:"يمكنك مع ذلك مقارنة العروض التي استلمتها ({n}) وترسية أحدها.",
+    closeBiddingNone:"لم يُقدَّم أي عرض بعد.",
+    closeBiddingUndo:"لا يمكن التراجع عن هذا الإجراء.",
+    closeBiddingBusy:"جارٍ الإغلاق…",
+    closeBiddingYes:"نعم، أغلق باب العروض",
+    toastBiddingClosed:"تم إغلاق باب العروض. يمكنك مقارنة العروض التي استلمتها وترسية أحدها.",
+    cancelRfqTitle:"إلغاء طلب التسعير",
+    cancelRfqBody:"هل تريد إلغاء {title}؟ لن يتمكن الموردون من تقديم عروض، ولا يمكن إعادة فتح الطلب أو ترسيته.",
+    cancelRfqBidsRefund:"قدّم موردون عروضهم على هذا الطلب (عددهم {n}) — سيُعاد إليهم رسم العرض وسيتم إشعارهم.",
+    cancelRfqBidsNotify:"قدّم موردون عروضهم على هذا الطلب (عددهم {n}) — سيتم إشعارهم.",
+    cancelRfqKeep:"الإبقاء على الطلب",
+    cancelRfqBusy:"جارٍ الإلغاء…",
+    cancelRfqYes:"نعم، ألغِ الطلب",
+    toastRfqCancelled:"تم إلغاء طلب التسعير.",
+    toastRfqCancelledRefund:"تم إلغاء طلب التسعير. أُعيدت رسوم العروض إلى {n} من الموردين."
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -1961,7 +2029,7 @@ async function confirmCloseBidding(){
   try {
     await api('/api/rfqs/' + rfqId, { method:'PATCH', body: JSON.stringify({ status: 'QUOTING_CLOSED' }) });
     setState({ closeBiddingRfqId: null, closeBiddingBusy: false });
-    showToast('Bidding closed. You can still compare and award the quotes you received.');
+    showToast(t('toastBiddingClosed'));
     refreshRfqs();
   } catch(e) { setState({ closeBiddingBusy: false }); showToast(e.message); }
 }
@@ -1974,7 +2042,7 @@ async function confirmCancelRfq(){
     const data = await api('/api/rfqs/' + rfqId + '/cancel', { method:'POST' });
     const n = (data.refunds || []).filter(x => Number(x.amount) > 0).length; // none when bidding is free
     setState({ cancelBusy:false, cancelRfqId:null });
-    showToast('RFQ cancelled.' + (n ? ' Bid fees refunded to ' + n + ' supplier(s).' : ''));
+    showToast(n ? tpl('toastRfqCancelledRefund', { n }) : t('toastRfqCancelled'));
     refreshRfqs();
   } catch(e) { setState({ cancelBusy:false }); showToast(e.message); refreshRfqs(); }
 }
@@ -2651,7 +2719,7 @@ function renderBuyerHub(){
   '</div>' +
   statsBar([[t('statActiveRfqs'), active], [t('statTotalQuotes'), totalQuotes], [t('statAwarded'), awarded], [t('statOpenOrders'), openOrders]]) +
   '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentRfqs') + hint('rfq') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
-  (rfqs.length === 0 ? emptyState('No RFQs yet', 'Post your first request and suppliers will start quoting.') : rfqTable(rfqs.slice(0,5))) +
+  (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTable(rfqs.slice(0,5))) +
   '<div class="flex items-center justify-between mb-4 mt-8"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentOrders') + '</h2><button onclick="setSection(\'lpos\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
   renderOrdersList(false, 3);
 }
@@ -2660,14 +2728,14 @@ function renderBuyerHub(){
 // see the mobile audit notes). Both read from the same per-row `actions`/`tl` so they never drift apart.
 function rfqTable(rfqs){
   const rows = rfqs.map(r => ({ r, tl: timeLeftLabel(r.deadline), actions:
-    (canEditRfq(r) ? '<button onclick="openEditRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Edit</button>' : '') +
-    (r.status === 'PUBLISHED' ? '<button onclick="openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Close bidding</button>' : '') +
-    (canCancelRfq(r) ? '<button onclick="openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">Cancel</button>' : '') +
-    '<button onclick="openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Compare bids</button>'
+    (canEditRfq(r) ? '<button onclick="openEditRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnEdit') + '</button>' : '') +
+    (r.status === 'PUBLISHED' ? '<button onclick="openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnCloseBidding') + '</button>' : '') +
+    (canCancelRfq(r) ? '<button onclick="openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">' + t('btnCancel') + '</button>' : '') +
+    '<button onclick="openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('btnCompare') + '</button>'
   }));
 
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
-    '<thead><tr><th>RFQ title &amp; ID</th><th>Category</th><th>Bids received</th><th>Closing in</th><th>Status</th><th></th></tr></thead><tbody>' +
+    '<thead><tr><th>' + esc(t('thRfqTitleId')) + '</th><th>' + t('thCategory') + '</th><th>' + t('thBids') + '</th><th>' + t('thClosingIn') + '</th><th>' + t('thStatus') + '</th><th></th></tr></thead><tbody>' +
     rows.map(({r,tl,actions}) => '<tr>' +
       '<td><div class="flex items-center gap-2.5">' + avatarHtml(r.title, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</div></div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(categoryLabel(r.category)) + '</td>' +
@@ -2687,9 +2755,9 @@ function rfqTable(rfqs){
           '<div class="shrink-0">' + statusPill(r.status) + '</div>' +
         '</div>' +
         '<div class="mt-3 grid grid-cols-3 gap-2 text-[12px]">' +
-          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">CATEGORY</div><div class="mt-0.5" style="color:var(--tx3);">' + esc(categoryLabel(r.category)) + '</div></div>' +
-          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">BIDS</div><div class="mono mt-0.5 font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</div></div>' +
-          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">CLOSING IN</div><div class="mono mt-0.5" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</div></div>' +
+          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobCategory') + '</div><div class="mt-0.5" style="color:var(--tx3);">' + esc(categoryLabel(r.category)) + '</div></div>' +
+          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobBids') + '</div><div class="mono mt-0.5 font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</div></div>' +
+          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobClosing') + '</div><div class="mono mt-0.5" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</div></div>' +
         '</div>' +
         '<div class="mt-3 flex flex-wrap gap-2">' + actions + '</div>' +
       '</div>'
@@ -2714,10 +2782,10 @@ function statusPill(status){
 function renderBuyerRfqsPage(){
   const rfqs = state.rfqs || [];
   return '<div class="flex items-center justify-between mb-6">' +
-    '<div><div class="eyebrow mb-1.5">ALL REQUESTS</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Your RFQs' + hint('rfq') + '</h1></div>' +
-    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc);">+ Create new RFQ</button>' +
+    '<div><div class="eyebrow mb-1.5">' + t('rfqsAllRequests') + '</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('rfqsPageTitle') + hint('rfq') + '</h1></div>' +
+    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc);">' + t('rfqsCreateNew') + '</button>' +
   '</div>' +
-  (rfqs.length === 0 ? emptyState('No RFQs yet', 'Post your first request and suppliers will start quoting.') : rfqTable(rfqs));
+  (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTable(rfqs));
 }
 
 // ---------- LPO Management (shared buyer/supplier, 6-stage tracker) ----------
@@ -4138,10 +4206,10 @@ function renderModals(){
   if (state.closeBiddingRfqId) {
     const cr = (state.rfqs || []).find(x => x.id === state.closeBiddingRfqId) || {};
     const n = cr._count ? cr._count.quotes : 0;
-    html += modalWrap('Close bidding', 'closeCloseBidding()',
-      '<p class="text-[13px]" style="color:var(--tx3);">Close bidding on <b style="color:var(--tx);">' + esc(cr.title || '') + '</b> now? Suppliers will no longer be able to submit quotes. ' +
-        (n ? 'You can still compare and award the ' + n + ' quote(s) you received.' : 'No quotes have been submitted yet.') + ' This can\'t be undone.</p>',
-      'confirmCloseBidding()', state.closeBiddingBusy ? 'Closing…' : 'Yes, close bidding', state.closeBiddingBusy);
+    html += modalWrap(t('closeBiddingTitle'), 'closeCloseBidding()',
+      '<p class="text-[13px]" style="color:var(--tx3);">' + tpl('closeBiddingBody', { title: '<b style="color:var(--tx);">' + esc(cr.title || '') + '</b>' }) + ' ' +
+        (n ? tpl('closeBiddingHave', { n }) : t('closeBiddingNone')) + ' ' + t('closeBiddingUndo') + '</p>',
+      'confirmCloseBidding()', t(state.closeBiddingBusy ? 'closeBiddingBusy' : 'closeBiddingYes'), state.closeBiddingBusy);
   }
   if (state.declineLpoId) {
     html += modalWrap('Decline purchase order', 'closeDeclineLpo()',
@@ -4155,13 +4223,13 @@ function renderModals(){
     const bids = r._count ? r._count.quotes : 0;
     html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
       '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Cancel RFQ</h3>' +
-        '<button onclick="closeCancelRfq()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
-        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Cancel <b style="color:var(--tx);">' + esc(r.title || '') + '</b>? Suppliers will no longer be able to quote, and it can\'t be reopened or awarded.</p>' +
-        (bids > 0 ? '<p class="mt-2 text-[13px]" style="color:var(--tx3);">' + bids + ' supplier(s) have quoted — ' + (bidFeePercent() > 0 ? 'their bid fees will be refunded and they will be notified.' : 'they will be notified.') + '</p>' : '') +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">' + t('cancelRfqTitle') + '</h3>' +
+        '<button onclick="closeCancelRfq()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
+        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + tpl('cancelRfqBody', { title: '<b style="color:var(--tx);">' + esc(r.title || '') + '</b>' }) + '</p>' +
+        (bids > 0 ? '<p class="mt-2 text-[13px]" style="color:var(--tx3);">' + tpl(bidFeePercent() > 0 ? 'cancelRfqBidsRefund' : 'cancelRfqBidsNotify', { n: bids }) + '</p>' : '') +
         '<div class="mt-5 flex gap-2">' +
-          '<button onclick="closeCancelRfq()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Keep RFQ</button>' +
-          '<button onclick="' + (state.cancelBusy ? '' : 'confirmCancelRfq()') + '" ' + (state.cancelBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.cancelBusy?'0.6':'1') + ';">' + (state.cancelBusy ? 'Cancelling…' : 'Yes, cancel RFQ') + '</button>' +
+          '<button onclick="closeCancelRfq()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t('cancelRfqKeep') + '</button>' +
+          '<button onclick="' + (state.cancelBusy ? '' : 'confirmCancelRfq()') + '" ' + (state.cancelBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.cancelBusy?'0.6':'1') + ';">' + t(state.cancelBusy ? 'cancelRfqBusy' : 'cancelRfqYes') + '</button>' +
         '</div>' +
       '</div></div>';
   }
