@@ -32,6 +32,14 @@
   a { color:var(--acc); text-decoration:none; }
   .mono { font-family:"JetBrains Mono", ui-monospace, monospace; letter-spacing:-0.01em; }
   input, select, textarea { font-family:inherit; }
+  /* iOS Safari zooms the page in on focus if the focused field renders below 16px — regardless of what
+     any individual field's own text-sm/text-[12px] class says. Scoped to mobile so desktop keeps the
+     smaller, denser sizes those classes were chosen for. */
+  @media (max-width: 639px) {
+    /* !important: a plain tag selector is weaker than any of the text-sm/text-[12px]/etc. utility
+       classes these fields carry, which would otherwise win regardless of source order. */
+    input, select, textarea { font-size: 16px !important; }
+  }
   @keyframes bxRise { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
   .bx-rise { animation:bxRise .25s cubic-bezier(.22,1,.36,1) both; }
   .bx-scroll::-webkit-scrollbar { width:8px; height:8px; }
@@ -54,6 +62,11 @@
   /* Modals: box never taller than the viewport, scrolls inside; page behind stays put while one is open. */
   .bx-overlay { overscroll-behavior:contain; }
   .bx-modal { max-height:90vh; max-height:90dvh; overflow-y:auto; overscroll-behavior:contain; }
+  /* Every modal's primary action button is its last child (see modalWrap() and the bulk import/photo
+     footers) — extra bottom padding, on top of the p-6 utility, keeps it clear of a phone's home-indicator
+     gesture bar. The doubled selector only raises specificity so this beats .p-6 regardless of which
+     Tailwind puts later in the cascade; it is not scoping anything narrower. */
+  .bx-modal.bx-modal { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); }
   body:has(.bx-overlay) { overflow:hidden; }
   ::-webkit-scrollbar { width:10px; }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
