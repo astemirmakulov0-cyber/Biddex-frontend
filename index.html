@@ -5,6 +5,7 @@
 <title>Biddex — Bahrain B2B Procurement</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
+<script src="server-errors.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
@@ -1556,7 +1557,9 @@ function parseMoneyInput(raw){
   if (!/^\d+(\.\d{1,3})?$/.test(s)) return null;
   return parseFloat(s);
 }
-function showToast(msg){ setState({ toast: msg }); setTimeout(()=>{ if(state.toast===msg) setState({toast:''}); }, 3200); }
+// server error texts are shown in Arabic when known (server-errors.js); the original text is never changed elsewhere
+function srvErr(msg){ return window.serverError ? window.serverError(msg, state.lang) : msg; }
+function showToast(msg){ msg = srvErr(msg); setState({ toast: msg }); setTimeout(()=>{ if(state.toast===msg) setState({toast:''}); }, 3200); }
 
 async function api(path, opts={}) {
   const isForm = typeof FormData !== 'undefined' && opts.body instanceof FormData;
@@ -1568,10 +1571,12 @@ async function api(path, opts={}) {
     // offline, DNS, CORS or the server not answering: fetch rejects without a status
     const err = new Error(t('networkError')); err.status = 0; throw err;
   }
-  let data = null;
-  try { data = await res.json(); } catch(e) {}
+  let data = null, raw = '';
+  try { raw = await res.text(); data = JSON.parse(raw); } catch(e) {}
   if (!res.ok) {
-    const err = new Error((data && data.error) || tpl('requestFailed', { status: res.status }));
+    // a JSON { error }, else a short plain-text body (no HTML pages), else the generic wording
+    const plain = !data && raw && raw.length <= 200 && raw.indexOf('<') === -1 ? raw.trim() : '';
+    const err = new Error((data && data.error) || plain || tpl('requestFailed', { status: res.status }));
     err.status = res.status;
     err.data = data;
     // A 401 from the auth middleware mid-session means the token expired or the account was deactivated:
@@ -1706,7 +1711,7 @@ async function submitAuth(){
   } catch (e) {
     // Remember the email that was actually submitted so "Resend" targets it even if the field is edited afterwards.
     const unverified = mode === 'login' && e.status === 403 && e.message === 'Please verify your email before logging in';
-    setState({ authBusy:false, authError: e.message, unverifiedEmail: unverified ? f.email : '' });
+    setState({ authBusy:false, authError: srvErr(e.message), unverifiedEmail: unverified ? f.email : '' });
   }
 }
 
@@ -2276,7 +2281,7 @@ async function submitChangePassword(){
     // the old token is now invalid everywhere; keep this session going with the fresh one
     if (data && data.token) { state.token = data.token; saveSession(); }
     setState({ changePwBusy:false, changePwForm:{ currentPassword:'', newPassword:'' }, changePwMsg:t('cpDone'), changePwOk:true });
-  } catch(e) { setState({ changePwBusy:false, changePwMsg: e.message, changePwOk:false }); }
+  } catch(e) { setState({ changePwBusy:false, changePwMsg: srvErr(e.message), changePwOk:false }); }
 }
 
 // ---------- PDPL: download my data / delete account ----------
