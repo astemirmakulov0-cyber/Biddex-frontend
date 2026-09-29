@@ -379,9 +379,19 @@ function setIfChanged(key, data){
   if (JSON.stringify(state[key]) !== JSON.stringify(data)) setState({ [key]: data });
 }
 function fmt(n){ return (Number(n)||0).toFixed(3) + ' BHD'; }
-// Platform-wide bid fee percent (from GET /api/companies/me; 5 is the backend's own default, used only
-// before the company has loaded). 0 is a supported value — callers check it and omit fee mentions entirely.
-function bidFeePercent(){ return (state.company && state.company.bidFeePercent != null) ? state.company.bidFeePercent : 5; }
+// Platform-wide bid fee percent: GET /api/config/public first, then the company fetched from the server.
+// null until one of them has answered (a stale copy in localStorage is never trusted, see loadSession), so
+// nothing mentions a fee before the real value is known. 0 is supported: callers check "> 0" and omit fee text.
+function bidFeePercent(){
+  if (state.bidFeePercent != null) return state.bidFeePercent;
+  return (state.company && state.company.bidFeePercent != null) ? state.company.bidFeePercent : null;
+}
+async function refreshConfig(){
+  try {
+    const data = await api('/api/config/public');
+    if (data && typeof data.bidFeePercent === 'number') setIfChanged('bidFeePercent', data.bidFeePercent);
+  } catch(e) { /* keep whatever is known; the company fetch also carries bidFeePercent */ }
+}
 // "Overdue N days" for an invoice past its due date (dueDate is only set once receipt is confirmed)
 function overdueDaysLabel(dueDate){
   if (!dueDate) return '';
@@ -432,12 +442,13 @@ function loadSession(){
     if (raw) {
       const s = JSON.parse(raw);
       state.token = s.token; state.user = s.user; state.company = s.company;
+      if (state.company) delete state.company.bidFeePercent; // server config, refreshed on start; a stored copy may be stale
       state.view = s.user && s.user.role === 'ADMIN' ? 'admin' : (s.company && s.company.type === 'SUPPLIER' ? 'supplier' : 'buyer');
     }
   } catch(e) {}
 }
 function saveSession(){
-  try { localStorage.setItem('biddex_session', JSON.stringify({ token: state.token, user: state.user, company: state.company })); } catch(e) {}
+  try { localStorage.setItem('biddex_session', JSON.stringify({ token: state.token, user: state.user, company: state.company ? { ...state.company, bidFeePercent: undefined } : state.company })); } catch(e) {}
 }
 function clearSession(){ try { localStorage.removeItem('biddex_session'); } catch(e) {} }
 
@@ -577,7 +588,7 @@ function logout(){
 }
 
 async function refreshAll(){
-  await Promise.all([ refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications() ]);
+  await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications() ]);
 }
 
 // ---------- Background refresh errors ----------
@@ -1510,7 +1521,7 @@ async function confirmCancelRfq(){
   setState({ cancelBusy:true });
   try {
     const data = await api('/api/rfqs/' + rfqId + '/cancel', { method:'POST' });
-    const n = (data.refunds || []).length;
+    const n = (data.refunds || []).filter(x => Number(x.amount) > 0).length; // none when bidding is free
     setState({ cancelBusy:false, cancelRfqId:null });
     showToast('RFQ cancelled.' + (n ? ' Bid fees refunded to ' + n + ' supplier(s).' : ''));
     refreshRfqs();
@@ -3325,7 +3336,7 @@ function renderDeleteModal(){
     '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Delete company</h3>' +
       '<button onclick="closeDeleteModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
-      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Are you sure you want to permanently delete <b style="color:var(--tx);">' + esc(state.deleteCompanyName) + '</b>? Its open RFQs are cancelled (bid fees refunded to suppliers) and its data is removed. If it has purchase orders with other companies, those orders, invoices and payments are kept for the counterparties and the company is anonymized instead. This cannot be undone.</p>' +
+      '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Are you sure you want to permanently delete <b style="color:var(--tx);">' + esc(state.deleteCompanyName) + '</b>? Its open RFQs are cancelled' + (bidFeePercent() > 0 ? ' (bid fees refunded to suppliers)' : '') + ' and its data is removed. If it has purchase orders with other companies, those orders, invoices and payments are kept for the counterparties and the company is anonymized instead. This cannot be undone.</p>' +
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="closeDeleteModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
         '<button onclick="confirmDeleteCompany()" ' + (state.deleteBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deleteBusy?'0.6':'1') + ';">' + (state.deleteBusy ? 'Deleting…' : 'Yes, delete') + '</button>' +
@@ -3544,7 +3555,7 @@ function renderModals(){
   }
   if (state.declineLpoId) {
     html += modalWrap('Decline purchase order', 'closeDeclineLpo()',
-      '<p class="text-[13px]" style="color:var(--tx3);">The buyer will be notified and can award the RFQ to another supplier. Your bid fee is not refunded.</p>' +
+      '<p class="text-[13px]" style="color:var(--tx3);">The buyer will be notified and can award the RFQ to another supplier. ' + (bidFeePercent() > 0 ? 'Your bid fee is not refunded.' : '') + '</p>' +
       '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reason for the buyer (optional)</span>' +
         '<textarea data-decline="reason" rows="3" maxlength="500" placeholder="e.g. Out of stock until next month" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(state.declineReason || '') + '</textarea></label>',
       'submitDeclineLpo()', state.declineBusy ? 'Declining…' : 'Decline purchase order', state.declineBusy);
@@ -3557,7 +3568,7 @@ function renderModals(){
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Cancel RFQ</h3>' +
         '<button onclick="closeCancelRfq()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
         '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Cancel <b style="color:var(--tx);">' + esc(r.title || '') + '</b>? Suppliers will no longer be able to quote, and it can\'t be reopened or awarded.</p>' +
-        (bids > 0 ? '<p class="mt-2 text-[13px]" style="color:var(--tx3);">' + bids + ' supplier(s) have quoted — their bid fees will be refunded and they will be notified.</p>' : '') +
+        (bids > 0 ? '<p class="mt-2 text-[13px]" style="color:var(--tx3);">' + bids + ' supplier(s) have quoted — ' + (bidFeePercent() > 0 ? 'their bid fees will be refunded and they will be notified.' : 'they will be notified.') + '</p>' : '') +
         '<div class="mt-5 flex gap-2">' +
           '<button onclick="closeCancelRfq()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Keep RFQ</button>' +
           '<button onclick="' + (state.cancelBusy ? '' : 'confirmCancelRfq()') + '" ' + (state.cancelBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.cancelBusy?'0.6':'1') + ';">' + (state.cancelBusy ? 'Cancelling…' : 'Yes, cancel RFQ') + '</button>' +
@@ -3938,6 +3949,7 @@ initTheme();
 initLang();
 loadSession();
 render();
+refreshConfig(); // public: also covers the login/register screens and admins
 if (state.token) { if (state.view === 'admin') refreshAdmin(); else refreshAll(); }
 
 // Tick countdown timers every second WITHOUT re-rendering the whole page (avoids flicker):
