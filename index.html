@@ -395,7 +395,31 @@ const I18N = {
     cancelRfqBusy:"Cancelling…",
     cancelRfqYes:"Yes, cancel RFQ",
     toastRfqCancelled:"RFQ cancelled.",
-    toastRfqCancelledRefund:"RFQ cancelled. Bid fees refunded to {n} supplier(s)."
+    toastRfqCancelledRefund:"RFQ cancelled. Bid fees refunded to {n} supplier(s).",
+    cmpTitle:"Quotes",
+    stWithdrawn:"Withdrawn",
+    stShortlisted:"Shortlisted",
+    stRejected:"Rejected",
+    btnShortlist:"Shortlist",
+    btnReject:"Reject",
+    btnAward:"Award",
+    brandExact:"Exact brand only",
+    brandEquivalent:"Equivalent accepted",
+    cmpLoading:"Loading…",
+    cmpNone:"No quotes yet.",
+    quoteMeta:"{days}d · {terms}-day terms",
+    cmpDeclined:"Declined the LPO",
+    cmpDeclinedReason:"Declined the LPO: {reason}",
+    confirmRejectQuote:"Reject this quote? The supplier will be notified. This cannot be undone.",
+    toastQuoteShortlisted:"Quote shortlisted.",
+    toastQuoteRejected:"Quote rejected.",
+    toastAwarded:"Supplier awarded — LPO created.",
+    netEyebrow:"SUPPLIER NETWORK",
+    netTitle:"Browse suppliers",
+    netEmptyTitle:"No catalog items yet",
+    netEmptyBody:"Suppliers will list products here as they join.",
+    btnRequestQuote:"Request quote",
+    pricePerUnit:"{price} / {unit}"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -673,7 +697,31 @@ const I18N = {
     cancelRfqBusy:"جارٍ الإلغاء…",
     cancelRfqYes:"نعم، ألغِ الطلب",
     toastRfqCancelled:"تم إلغاء طلب التسعير.",
-    toastRfqCancelledRefund:"تم إلغاء طلب التسعير. أُعيدت رسوم العروض إلى {n} من الموردين."
+    toastRfqCancelledRefund:"تم إلغاء طلب التسعير. أُعيدت رسوم العروض إلى {n} من الموردين.",
+    cmpTitle:"العروض",
+    stWithdrawn:"مسحوب",
+    stShortlisted:"في القائمة المختصرة",
+    stRejected:"مرفوض",
+    btnShortlist:"قائمة مختصرة",
+    btnReject:"رفض",
+    btnAward:"ترسية",
+    brandExact:"العلامة التجارية المحددة فقط",
+    brandEquivalent:"يُقبل البديل المكافئ",
+    cmpLoading:"جارٍ التحميل…",
+    cmpNone:"لا توجد عروض بعد.",
+    quoteMeta:"توصيل خلال {days} يوم · شروط الدفع {terms} يوم",
+    cmpDeclined:"رفض أمر الشراء (LPO)",
+    cmpDeclinedReason:"رفض أمر الشراء (LPO): {reason}",
+    confirmRejectQuote:"هل تريد رفض هذا العرض؟ سيتم إشعار المورد ولا يمكن التراجع عن ذلك.",
+    toastQuoteShortlisted:"تمت إضافة العرض إلى القائمة المختصرة.",
+    toastQuoteRejected:"تم رفض العرض.",
+    toastAwarded:"تمت الترسية على المورد — وأُنشئ أمر الشراء (LPO).",
+    netEyebrow:"شبكة الموردين",
+    netTitle:"تصفّح الموردين",
+    netEmptyTitle:"لا توجد منتجات في الكتالوج بعد",
+    netEmptyBody:"سيعرض الموردون منتجاتهم هنا فور انضمامهم.",
+    btnRequestQuote:"اطلب عرض سعر",
+    pricePerUnit:"{price} / {unit}"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -2066,11 +2114,11 @@ async function refreshCompareQuotes(){
 
 // action: 'shortlist' | 'reject'
 async function changeQuoteStatus(quoteId, action){
-  if (action === 'reject' && !confirm('Reject this quote? The supplier will be notified. This cannot be undone.')) return;
+  if (action === 'reject' && !confirm(t('confirmRejectQuote'))) return;
   setState({ compareBusyId: quoteId });
   try {
     await api('/api/quotes/' + quoteId + '/' + action, { method:'PATCH' });
-    showToast(action === 'shortlist' ? 'Quote shortlisted.' : 'Quote rejected.');
+    showToast(t(action === 'shortlist' ? 'toastQuoteShortlisted' : 'toastQuoteRejected'));
   } catch(e) { showToast(e.message); }
   setState({ compareBusyId: null });
   refreshCompareQuotes();
@@ -2079,7 +2127,7 @@ async function changeQuoteStatus(quoteId, action){
 async function acceptQuote(quoteId){
   try {
     await api('/api/quotes/' + quoteId + '/award', { method:'POST', body: JSON.stringify({ terms: 'Standard terms' }) });
-    showToast('Supplier awarded — LPO created.');
+    showToast(t('toastAwarded'));
     closeCompare();
     refreshRfqs();
   } catch(e) { showToast(e.message); }
@@ -2888,17 +2936,17 @@ function actionBtn(label, onclick, busy){
 
 function renderNetwork(){
   const items = state.catalog || [];
-  return '<div class="eyebrow mb-1.5">SUPPLIER NETWORK</div>' +
-  '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">Browse suppliers</h1>' +
-  (items.length === 0 ? emptyState('No catalog items yet', 'Suppliers will list products here as they join.') :
+  return '<div class="eyebrow mb-1.5">' + t('netEyebrow') + '</div>' +
+  '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">' + t('netTitle') + '</h1>' +
+  (items.length === 0 ? emptyState(t('netEmptyTitle'), t('netEmptyBody')) :
     '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">' + items.map(p =>
       '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
         (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : '') +
         '<div class="flex items-center gap-2 mb-2">' + avatarHtml(p.supplierCompany ? p.supplierCompany.name : '?', 28) +
         '<div class="min-w-0"><div class="text-[11px] font-semibold truncate" style="color:var(--tx3);">' + esc(p.supplierCompany ? p.supplierCompany.name : '') + '</div></div></div>' +
         '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +
-        '<div class="mono mt-1.5 text-[12px] font-semibold" style="color:var(--tx2);">' + fmt(p.price) + ' / ' + esc(p.unit||'pcs') + '</div>' +
-        '<button onclick="openPostRfq(' + jsAttr(p.name) + ')" class="mt-2.5 w-full rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-white" style="background:var(--acc);">Request quote</button>' +
+        '<div class="mono mt-1.5 text-[12px] font-semibold" style="color:var(--tx2);">' + tpl('pricePerUnit', { price: fmt(p.price), unit: esc(unitLabel(p.unit||'pcs')) }) + '</div>' +
+        '<button onclick="openPostRfq(' + jsAttr(p.name) + ')" class="mt-2.5 w-full rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('btnRequestQuote') + '</button>' +
       '</div>'
     ).join('') + '</div>');
 }
@@ -4260,37 +4308,37 @@ function renderModals(){
     const evaluating = !compareRfq || ['PUBLISHED', 'QUOTING_CLOSED'].includes(compareRfq.status);
     const pill = (txt, style) => '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + txt + '</span>';
     const quoteActions = (x) => {
-      if (x.status === 'AWARDED') return pill('Awarded', 'background:var(--ok-soft); color:var(--ok);');
-      if (x.status === 'REJECTED') return pill('Rejected', 'background:var(--bad-soft); color:var(--bad);');
-      if (x.status === 'WITHDRAWN') return pill('Withdrawn', 'background:var(--sunken); color:var(--tx4);');
+      if (x.status === 'AWARDED') return pill(t('stAwarded'), 'background:var(--ok-soft); color:var(--ok);');
+      if (x.status === 'REJECTED') return pill(t('stRejected'), 'background:var(--bad-soft); color:var(--bad);');
+      if (x.status === 'WITHDRAWN') return pill(t('stWithdrawn'), 'background:var(--sunken); color:var(--tx4);');
       const busy = state.compareBusyId === x.id;
-      const shortlisted = x.status === 'SHORTLISTED' ? pill('Shortlisted', 'background:var(--info-soft); color:var(--info);') : '';
+      const shortlisted = x.status === 'SHORTLISTED' ? pill(t('stShortlisted'), 'background:var(--info-soft); color:var(--info);') : '';
       if (!evaluating) return shortlisted;
       const btn = (label, fn, style) => '<button onclick="' + (busy || state.compareBusyId ? '' : fn) + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="' + style + ' opacity:' + (busy?'0.6':'1') + ';">' + label + '</button>';
       return shortlisted +
-        (x.status === 'SUBMITTED' ? btn('Shortlist', "changeQuoteStatus('" + x.id + "','shortlist')", 'border-color:var(--bd2); color:var(--tx);') : '') +
-        btn('Reject', "changeQuoteStatus('" + x.id + "','reject')", 'border-color:var(--bd2); color:var(--bad);') +
-        '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">Award</button>' + hint('award');
+        (x.status === 'SUBMITTED' ? btn(t('btnShortlist'), "changeQuoteStatus('" + x.id + "','shortlist')", 'border-color:var(--bd2); color:var(--tx);') : '') +
+        btn(t('btnReject'), "changeQuoteStatus('" + x.id + "','reject')", 'border-color:var(--bd2); color:var(--bad);') +
+        '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + t('btnAward') + '</button>' + hint('award');
     };
     html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
       '<div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quotes' + hint('quote') + '</h3>' +
-        '<button onclick="closeCompare()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('cmpTitle') + hint('quote') + '</h3>' +
+        '<button onclick="closeCompare()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
         (compareRfq && (compareRfq.imageUrl || compareRfq.brand)
           ? '<div class="mt-3 flex items-center gap-2.5 rounded-lg border p-2" style="border-color:var(--bd); background:var(--inset);">' +
               (compareRfq.imageUrl ? '<img src="' + esc(compareRfq.imageUrl) + '" class="h-9 w-9 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' : '') +
               (compareRfq.brand ? '<span class="text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(compareRfq.brand) + '</span>' +
-                '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (compareRfq.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + (compareRfq.exactBrandOnly ? 'Exact brand only' : 'Equivalent accepted') + '</span>' : '') +
+                '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (compareRfq.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + t(compareRfq.exactBrandOnly ? 'brandExact' : 'brandEquivalent') + '</span>' : '') +
             '</div>'
           : '') +
         '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
-        (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">Loading…</div>' :
-          q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">No quotes yet.</div>' :
+        (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">' + t('cmpLoading') + '</div>' :
+          q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">' + t('cmpNone') + '</div>' :
           q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') + '</div>' +
-            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + x.deliveryTimeDays + 'd &middot; ' + (x.paymentTermsDays != null ? x.paymentTermsDays : 30) + '-day terms</div>' +
-            (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">Declined the LPO' + (x.lpo.declineReason ? ': ' + esc(x.lpo.declineReason) : '') + '</div>' : '') +
+            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>' +
+            (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">' + (x.lpo.declineReason ? tpl('cmpDeclinedReason', { reason: esc(x.lpo.declineReason) }) : t('cmpDeclined')) + '</div>' : '') +
             '</div></div>' +
             '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div></div>' +
             ((x.attachments || []).length ? '<div class="mt-3 flex flex-col gap-1.5">' + x.attachments.map(a => attachmentRowHtml(a, false)).join('') + '</div>' : '')
