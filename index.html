@@ -419,7 +419,24 @@ const I18N = {
     netEmptyTitle:"No catalog items yet",
     netEmptyBody:"Suppliers will list products here as they join.",
     btnRequestQuote:"Request quote",
-    pricePerUnit:"{price} / {unit}"
+    pricePerUnit:"{price} / {unit}",
+    btnRemove:"Remove",
+    stockFieldName:"Item name",
+    stockFieldBrand:"Brand (optional)",
+    stockFieldUnit:"Unit",
+    stockFieldQtyOpt:"{col} (optional)",
+    stockThresholdField:"{col} — {hint}",
+    stockPhName:"e.g. Basmati Rice 25kg",
+    stockPhBrand:"e.g. India Gate",
+    stockRecountTitle:"Recount: {name}",
+    stockNameRequired:"Name is required.",
+    toastStockUpdated:"Stock item updated.",
+    toastStockAdded:"Stock item added.",
+    confirmRemoveStock:"Remove this stock item? Its history goes with it.",
+    toastStockRemoved:"Stock item removed.",
+    stockNumberHint:"Enter a number, e.g. 12.5",
+    toastStockCounted:"Stock count saved.",
+    toastAddedToStock:"Added to stock."
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -721,7 +738,24 @@ const I18N = {
     netEmptyTitle:"لا توجد منتجات في الكتالوج بعد",
     netEmptyBody:"سيعرض الموردون منتجاتهم هنا فور انضمامهم.",
     btnRequestQuote:"اطلب عرض سعر",
-    pricePerUnit:"{price} / {unit}"
+    pricePerUnit:"{price} / {unit}",
+    btnRemove:"حذف",
+    stockFieldName:"اسم الصنف",
+    stockFieldBrand:"العلامة التجارية (اختيارية)",
+    stockFieldUnit:"الوحدة",
+    stockFieldQtyOpt:"{col} (اختياري)",
+    stockThresholdField:"{col} — {hint}",
+    stockPhName:"مثال: أرز بسمتي 25 كجم",
+    stockPhBrand:"مثال: إنديا غيت",
+    stockRecountTitle:"إعادة الجرد: {name}",
+    stockNameRequired:"الاسم مطلوب.",
+    toastStockUpdated:"تم تحديث الصنف.",
+    toastStockAdded:"تمت إضافة الصنف.",
+    confirmRemoveStock:"هل تريد حذف هذا الصنف من المخزون؟ سيُحذف سجله أيضًا.",
+    toastStockRemoved:"تم حذف الصنف من المخزون.",
+    stockNumberHint:"أدخل رقمًا، مثال: 12.5",
+    toastStockCounted:"تم حفظ الجرد.",
+    toastAddedToStock:"تمت الإضافة إلى المخزون."
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -3107,15 +3141,15 @@ function stockItemsList(items){
   const actionsFor = (it) =>
     '<button onclick="openStockCount(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('recount') + '</button>' +
     '<button onclick="reorderFromStock(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx2);">' + t('reorder') + '</button>' +
-    '<button onclick="openStockEdit(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx3);">Edit</button>' +
-    '<button onclick="deleteStockItemUi(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">Remove</button>';
+    '<button onclick="openStockEdit(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx3);">' + t('btnEdit') + '</button>' +
+    '<button onclick="deleteStockItemUi(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">' + t('btnRemove') + '</button>';
 
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>' + t('stockItemCol') + '</th><th>' + t('stockQuantityCol') + '</th><th>' + t('stockThresholdCol') + hint('lowstock') + '</th><th>' + t('stockStatusCol') + '</th><th></th></tr></thead><tbody>' +
     items.map((it) => '<tr><td><div class="flex items-center gap-2.5">' + avatarHtml(it.name, 32) +
       '<div><span class="font-semibold" style="color:var(--tx);">' + esc(it.name) + '</span>' +
       (it.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(it.brand) + '</div>' : '') + '</div></div></td>' +
-      '<td class="mono" style="color:var(--tx2);">' + fmtQty(it.quantity) + ' ' + esc(it.unit) + '</td>' +
+      '<td class="mono" style="color:var(--tx2);">' + fmtQty(it.quantity) + ' ' + esc(unitLabel(it.unit)) + '</td>' +
       '<td class="mono" style="color:var(--tx3);">' + fmtQty(it.threshold) + '</td>' +
       '<td>' + stockBadge(it) + '</td>' +
       '<td class="text-right"><div class="flex flex-wrap justify-end gap-3">' + actionsFor(it) + '</div></td></tr>').join('') +
@@ -3130,7 +3164,7 @@ function stockItemsList(items){
           stockBadge(it) +
         '</div>' +
         '<div class="mt-2.5 flex items-center gap-4 text-[12px]">' +
-          '<div><span style="color:var(--tx4);">' + t('stockQuantityCol') + '</span> <span class="mono font-semibold" style="color:var(--tx2);">' + fmtQty(it.quantity) + ' ' + esc(it.unit) + '</span></div>' +
+          '<div><span style="color:var(--tx4);">' + t('stockQuantityCol') + '</span> <span class="mono font-semibold" style="color:var(--tx2);">' + fmtQty(it.quantity) + ' ' + esc(unitLabel(it.unit)) + '</span></div>' +
           '<div><span style="color:var(--tx4);">' + t('stockThresholdCol') + '</span> <span class="mono" style="color:var(--tx3);">' + fmtQty(it.threshold) + '</span></div>' +
         '</div>' +
         '<div class="mt-3 flex flex-wrap gap-4">' + actionsFor(it) + '</div>' +
@@ -3154,15 +3188,15 @@ function onStockField(field, e){ state.stockForm[field] = e.target.value; }
 
 async function saveStockItem(){
   const f = state.stockForm;
-  if (!f.name.trim()) { showToast('Name is required.'); return; }
+  if (!f.name.trim()) { showToast(t('stockNameRequired')); return; }
   setState({ stockBusy:true });
   try {
     if (state.editStockId) {
       await api('/api/stock/' + state.editStockId, { method:'PATCH', body: JSON.stringify({ name: f.name, brand: f.brand || null, unit: f.unit, threshold: parseMoneyInput(f.threshold) || 0 }) });
-      showToast('Stock item updated.');
+      showToast(t('toastStockUpdated'));
     } else {
       await api('/api/stock', { method:'POST', body: JSON.stringify({ name: f.name, brand: f.brand || null, unit: f.unit, quantity: parseMoneyInput(f.quantity) || 0, threshold: parseMoneyInput(f.threshold) || 0 }) });
-      showToast('Stock item added.');
+      showToast(t('toastStockAdded'));
     }
     setState({ showStockAdd:false, editStockId:null, stockBusy:false });
     refreshStock();
@@ -3170,8 +3204,8 @@ async function saveStockItem(){
 }
 
 async function deleteStockItemUi(id){
-  if (!confirm('Remove this stock item? Its history goes with it.')) return;
-  try { await api('/api/stock/' + id, { method:'DELETE' }); showToast('Stock item removed.'); refreshStock(); }
+  if (!confirm(t('confirmRemoveStock'))) return;
+  try { await api('/api/stock/' + id, { method:'DELETE' }); showToast(t('toastStockRemoved')); refreshStock(); }
   catch(e) { showToast(e.message); }
 }
 
@@ -3181,12 +3215,12 @@ function onStockCountField(e){ state.stockCountValue = e.target.value; }
 async function submitStockCount(){
   const id = state.showStockCount;
   const qty = parseMoneyInput(state.stockCountValue);
-  if (qty == null || qty < 0) { showToast('Enter a number, e.g. 12.5'); return; }
+  if (qty == null || qty < 0) { showToast(t('stockNumberHint')); return; }
   setState({ stockBusy:true });
   try {
     await api('/api/stock/' + id + '/count', { method:'POST', body: JSON.stringify({ quantity: qty }) });
     setState({ showStockCount:null, stockBusy:false });
-    showToast('Stock count saved.');
+    showToast(t('toastStockCounted'));
     refreshStock();
   } catch(e) { setState({ stockBusy:false }); showToast(e.message); }
 }
@@ -3218,7 +3252,7 @@ function reorderFromOrder(orderId){
 async function createStockFromNotification(orderId){
   try {
     await api('/api/stock/from-order/' + orderId, { method:'POST' });
-    showToast('Added to stock.');
+    showToast(t('toastAddedToStock'));
     refreshStock();
     setState({ showNotifDropdown:false });
   } catch(e) { showToast(e.message); }
@@ -3229,14 +3263,14 @@ function renderStockAddModal(){
   const f = state.stockForm;
   const editing = !!state.editStockId;
   return modalWrap(editing ? t('editStockItem') : t('addStockItem'), 'closeStockAdd()',
-    field('name','Item name', f.name, 'e.g. Basmati Rice 25kg') +
-    field('brand','Brand (optional)', f.brand, 'e.g. India Gate') +
-    '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Unit</span>' +
+    field('name', t('stockFieldName'), f.name, t('stockPhName')) +
+    field('brand', t('stockFieldBrand'), f.brand, t('stockPhBrand')) +
+    '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('stockFieldUnit') + '</span>' +
     '<select data-select="stockUnit" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-      CATALOG_UNITS.map(u => '<option value="' + u + '"' + (f.unit===u?' selected':'') + '>' + u + '</option>').join('') +
+      CATALOG_UNITS.map(u => '<option value="' + u + '"' + (f.unit===u?' selected':'') + '>' + unitLabel(u) + '</option>').join('') +
     '</select></label>' +
-    (editing ? '' : field('quantity', t('stockQuantityCol') + ' (optional)', f.quantity, '0')) +
-    field('threshold', t('stockThresholdCol') + ' — ' + t('lowStockHint') + hint('lowstock'), f.threshold, '0'),
+    (editing ? '' : field('quantity', tpl('stockFieldQtyOpt', { col: t('stockQuantityCol') }), f.quantity, '0')) +
+    field('threshold', tpl('stockThresholdField', { col: t('stockThresholdCol'), hint: t('lowStockHint') }) + hint('lowstock'), f.threshold, '0'),
     'saveStockItem()', state.stockBusy ? t('pleaseWait') : t('saveChanges'), state.stockBusy);
 }
 
@@ -3244,8 +3278,8 @@ function renderStockCountModal(){
   if (!state.showStockCount) return '';
   const it = (state.stock || []).find(s => s.id === state.showStockCount);
   if (!it) return '';
-  return modalWrap(t('recount') + ': ' + esc(it.name) + hint('recount'), 'closeStockCount()',
-    '<p class="text-[13px]" style="color:var(--tx3);">' + t('recountIntro').replace('{qty}', fmtQty(it.quantity)).replace('{unit}', esc(it.unit)) + '</p>' +
+  return modalWrap(tpl('stockRecountTitle', { name: esc(it.name) }) + hint('recount'), 'closeStockCount()',
+    '<p class="text-[13px]" style="color:var(--tx3);">' + tpl('recountIntro', { qty: fmtQty(it.quantity), unit: esc(unitLabel(it.unit)) }) + '</p>' +
     '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('actualQuantity') + '</span>' +
       '<input data-stockcount type="text" inputmode="decimal" value="' + esc(state.stockCountValue) + '" placeholder="0" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
     'submitStockCount()', state.stockBusy ? t('pleaseWait') : t('saveChanges'), state.stockBusy);
