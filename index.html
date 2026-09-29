@@ -69,6 +69,10 @@
   .bx-modal.bx-modal { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); }
   body:has(.bx-overlay) { overflow:hidden; }
   ::-webkit-scrollbar { width:10px; }
+  /* RTL: Arabic must not be letter-spaced (it breaks the joined letters); physical alignments flip */
+  html[dir=rtl] .eyebrow, html[dir=rtl] [class*="tracking-"], html[dir=rtl] table.dtable th { letter-spacing:0; text-transform:none; }
+  html[dir=rtl] table.dtable th, html[dir=rtl] .text-left { text-align:right; }
+  html[dir=rtl] .text-right { text-align:left; }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
@@ -264,6 +268,71 @@ const I18N = {
     walletTxRefund:"Refund",
     walletTxAdjust:"Adjustment",
     bhd:"BHD", sizeMb:"{n} MB", sizeKb:"{n} KB",
+    acctBuyer:"BUYER ACCOUNT",
+    acctSupplier:"SUPPLIER ACCOUNT",
+    themeLight:"☀️ Light mode",
+    themeDark:"🌙 Dark mode",
+    themeToggleTitle:"Toggle dark mode",
+    moreLabel:"More",
+    notifTitle:"Notifications",
+    notifMarkAll:"Mark all read",
+    notifEmpty:"Nothing yet.",
+    newVersionTitle:"A new version of Biddex is available.",
+    newVersionBody:"Reload to use it — some features may not work in this version.",
+    reload:"Reload",
+    suspendedTitle:"Account suspended",
+    suspendedBody:"You can still manage orders already in progress (delivery, receipt, payments, documents, messages, disputes), but cannot post or edit RFQs, submit quotes, or edit your catalog. Contact Biddex support to reactivate your account.",
+    verifyBannerRejected:"Your verification was rejected — submit a new document.",
+    verifyBannerGet:"Get verified: upload your trade license or CR certificate for review by the Biddex team.",
+    verifySubmitDoc:"Submit document",
+    verNotVerified:"Not verified",
+    verInReview:"In review",
+    verVerified:"Verified",
+    verRejected:"Rejected",
+    stLive:"Live",
+    stDraft:"Draft",
+    stAwarded:"Awarded",
+    stClosed:"Closed",
+    stCancelled:"Cancelled",
+    timeD:"{n}d",
+    timeH:"{n}h",
+    timeM:"{n}m",
+    timeS:"{n}s",
+    authFillAll:"Please fill in all required fields.",
+    authBadEmail:"Please enter a valid email address.",
+    authPwMin:"Password must be at least 8 characters.",
+    authConsentNeeded:"Please accept the Terms of Service and Privacy Policy.",
+    consentText:"I agree to the {terms} and {privacy}",
+    termsLink:"Terms of Service",
+    privacyLink:"Privacy Policy",
+    phCompany:"e.g. Gulf Traders WLL",
+    phCr:"e.g. 123456-1",
+    phCountry:"Bahrain",
+    roleBuyer:"Buyer",
+    roleSupplier:"Supplier",
+    registerSuccess:"Registration successful. Please check your email to verify your account.",
+    sessionExpired:"Your session has expired. Please log in again.",
+    accountDeactivated:"This account has been deactivated.",
+    verifyTitle2:"Submit verification document",
+    verifyStaysVerified:"Your company stays Verified. The new document is added for the Biddex team to review (e.g. a renewed trade license).",
+    verifyDocType:"Document type",
+    docTradeLicense:"Trade license",
+    docCr:"Commercial registration",
+    docOther:"Other",
+    verifyFileLabel:"File (PDF or image, max 2MB)",
+    verifyReady:"{name} ready to submit",
+    verifyChange:"Change file",
+    chooseFile:"Choose file",
+    noFileChosen:"No file chosen",
+    readingFile:"Reading file…",
+    verifySubmitting:"Submitting…",
+    verifySubmit:"Submit for review",
+    verifyDocSubmitted:"Document submitted for review.",
+    verifyFileTooBig:"File must be under 2MB.",
+    verifyFileBadType:"Please choose a PDF, PNG, JPEG, WebP or GIF file.",
+    fileReadFail:"Could not read file.",
+    requestFailed:"Request failed ({status})",
+    profileUpdated:"Profile updated.",
     bidTitle:"Submit quote",
     bidCost:"Submitting a quote costs <b class=\"mono\">{fee}</b> ({pct}% of this RFQ's {budget} budget), deducted from your wallet.",
     bidSpecs:"Buyer's specifications",
@@ -304,19 +373,19 @@ const I18N = {
     verifySubtitle:'لا حسابات مُعلَنة ذاتيًا. يراجع فريق Biddex يدويًا الرخصة التجارية أو شهادة السجل التجاري لكل شركة قبل أن تنشر طلبًا أو تقدّم عرضًا.',
     builtFor:'مصمم لفئات الشراء في البحرين',
     footerRights:'© 2026 بيدكس. جميع الحقوق محفوظة.', imBuyer:'أنا مشترٍ', imSupplier:'أنا مورّد',
-    navBuyerHub:'مركز المشتري', navRfqs:'طلبات التسعير', navLpo:'إدارة أوامر الشراء', navNetwork:'الشبكة', navSettings:'الإعدادات',
-    navSupplierHub:'مركز المورد', navOpportunities:'الفرص', navCatalog:'الكتالوج', navOrdersLpos:'الطلبات وأوامر الشراء',
+    navBuyerHub:'مركز المشتري', navRfqs:'طلبات التسعير', navLpo:'إدارة أوامر الشراء (LPO)', navNetwork:'الموردون', navSettings:'الإعدادات',
+    navSupplierHub:'مركز المورد', navOpportunities:'الفرص', navCatalog:'الكتالوج', navOrdersLpos:'الطلبيات وأوامر الشراء (LPO)',
     back:'رجوع', logIn:'تسجيل الدخول', register:'إنشاء حساب', createAccount:'إنشاء الحساب', pleaseWait:'يرجى الانتظار…',
     companyName:'اسم الشركة', crNumber:'رقم السجل التجاري', country:'الدولة (اختياري)', email:'البريد الإلكتروني', password:'كلمة المرور',
     createBuyerAcct:'أنشئ حساب مشترٍ', createSupplierAcct:'أنشئ حساب مورّد',
     dashTitleBuyer:'لوحة المشتريات الاستراتيجية',
-    dashSubBuyer:'أدر طلبات التسعير النشطة، وقيّم العروض، وتابع الطلبات عبر شبكة الموردين الموثّقين.',
+    dashSubBuyer:'أدر طلبات التسعير النشطة، وقيّم العروض، وتابع الطلبيات عبر شبكة الموردين الموثّقين.',
     dashTitleSupplier:'قناة طلبات التسعير الحيّة',
     dashSubSupplier:'طلبات التسعير المفتوحة من مشترين موثّقين وعروضك النشطة. قدّم عروضك وتابع التنفيذ.',
     createRfq:'+ طلب تسعير جديد',
-    statActiveRfqs:'طلبات نشطة', statTotalQuotes:'إجمالي العروض', statAwarded:'تم الترسية', statOpenOrders:'طلبات مفتوحة',
-    statOpenRequests:'طلبات مفتوحة', statCatalogItems:'عناصر الكتالوج', statActiveOrders:'طلبات نشطة',
-    recentRfqs:'أحدث طلبات التسعير', viewAll:'عرض الكل ←', recentOrders:'أحدث الطلبات', ordersInProgress:'طلبات قيد التنفيذ',
+    statActiveRfqs:'طلبات تسعير نشطة', statTotalQuotes:'إجمالي العروض', statAwarded:'تمت الترسية', statOpenOrders:'طلبيات مفتوحة',
+    statOpenRequests:'طلبات تسعير مفتوحة', statCatalogItems:'عناصر الكتالوج', statActiveOrders:'طلبيات نشطة',
+    recentRfqs:'أحدث طلبات التسعير', viewAll:'عرض الكل ←', recentOrders:'أحدث الطلبيات', ordersInProgress:'طلبات قيد التنفيذ',
     opportunityFeed:'قائمة الفرص',
     toastResendVerification:'إذا كان حسابك بحاجة إلى التحقق، فقد تم إرسال بريد إلكتروني جديد.',
     toastEnterEmail:'يرجى إدخال بريدك الإلكتروني.',
@@ -350,8 +419,8 @@ const I18N = {
     lowStockHint:'0 = بدون تنبيه', recount:'إعادة الجرد', reorder:'إعادة الطلب', actualQuantity:'الكمية الفعلية المتوفرة',
     recountIntro:'المسجّل حاليًا: {qty} {unit}. أدخل ما قمت بجرده فعليًا.',
     saveChanges:'حفظ التغييرات', addToStock:'أضف إلى المخزون',
-    rfqModalPost:"نشر طلب عرض سعر",
-    rfqModalEdit:"تعديل طلب عرض السعر",
+    rfqModalPost:"نشر طلب تسعير",
+    rfqModalEdit:"تعديل طلب التسعير",
     rfqChange:"تغيير",
     rfqSearching:"جارٍ البحث…",
     rfqNoMatches:"لا توجد نتائج — صِف الطلب يدويًا أدناه.",
@@ -398,7 +467,7 @@ const I18N = {
     hint_rfq:"طلب التسعير (RFQ) هو طلبك إلى الموردين: ما تحتاجه وبأي كمية ومتى. يرد الموردون بأسعارهم.",
     hint_quote:"العرض (أو المزايدة) هو سعر يقدّمه المورد على طلب التسعير مع مدة التوصيل وشروط الدفع. يقارن المشتري العروض ويختار أحدها.",
     hint_award:"الترسية تعني اختيار العرض الفائز. بعدها يستلم المورد أمر شراء (LPO) ليقبله.",
-    hint_lpo:"أمر الشراء المحلي (LPO) هو الطلب الرسمي الذي يصل إلى المورد بعد ترسية العرض. عندما يقبله المورد يبدأ تنفيذ الطلب.",
+    hint_lpo:"أمر الشراء المحلي (LPO) هو الطلب الرسمي الذي يصل إلى المورد بعد ترسية العرض. عندما يقبله المورد يبدأ تنفيذ الطلبية.",
     hint_exact:"يُقبل ما يعادله: يمكن للموردين عرض منتج مماثل من علامة تجارية أخرى. العلامة نفسها فقط: تُقبل العلامة التي ذكرتها فقط.",
     hint_verification:"يراجع فريق Biddex رخصتك التجارية أو شهادة السجل التجاري يدويًا. الشركات الموثّقة فقط يمكنها نشر الطلبات وتقديم العروض.",
     hint_wallet:"الرصيد هو مبلغك المدفوع مسبقًا في Biddex. يُخصم منه رسم تقديم العروض عندما يكون هناك رسم. تتولى Biddex شحنه لك.",
@@ -423,8 +492,8 @@ const I18N = {
     obd_firstRfq:"أخبر الموردين بما تحتاجه ومتى.",
     ob_award:"اختر عرضًا (ترسية)",
     obd_award:"قارن العروض ورسِّ الطلب على الأفضل.",
-    ob_receipt:"أكّد استلام طلب",
-    obd_receipt:"عند وصول البضاعة أكّد الاستلام في صفحة الطلب.",
+    ob_receipt:"أكّد استلام طلبية",
+    obd_receipt:"عند وصول البضاعة أكّد الاستلام في صفحة الطلبية.",
     ob_stock:"تابع صنفًا في المخزون",
     obd_stock:"تنبيهات نقص المخزون وإعادة الطلب بنقرة واحدة.",
     ob_catalog:"أضف منتجاتك",
@@ -443,6 +512,71 @@ const I18N = {
     walletTxRefund:"استرداد",
     walletTxAdjust:"تعديل",
     bhd:"د.ب", sizeMb:"{n} ميغابايت", sizeKb:"{n} كيلوبايت",
+    acctBuyer:"حساب مشترٍ",
+    acctSupplier:"حساب مورّد",
+    themeLight:"☀️ الوضع الفاتح",
+    themeDark:"🌙 الوضع الداكن",
+    themeToggleTitle:"تبديل الوضع الداكن",
+    moreLabel:"المزيد",
+    notifTitle:"الإشعارات",
+    notifMarkAll:"تحديد الكل كمقروء",
+    notifEmpty:"لا يوجد شيء بعد.",
+    newVersionTitle:"يتوفر إصدار جديد من Biddex.",
+    newVersionBody:"أعد تحميل الصفحة لاستخدامه — قد لا تعمل بعض الميزات في هذا الإصدار.",
+    reload:"إعادة التحميل",
+    suspendedTitle:"الحساب موقوف",
+    suspendedBody:"يمكنك متابعة الطلبيات الجارية (التوصيل والاستلام والدفعات والمستندات والرسائل والنزاعات)، لكن لا يمكنك نشر طلبات التسعير أو تعديلها، ولا تقديم العروض، ولا تعديل الكتالوج. تواصل مع دعم Biddex لإعادة تفعيل حسابك.",
+    verifyBannerRejected:"تم رفض توثيقك — أرسل مستندًا جديدًا.",
+    verifyBannerGet:"وثّق شركتك: ارفع رخصتك التجارية أو شهادة السجل التجاري ليراجعها فريق Biddex.",
+    verifySubmitDoc:"إرسال مستند",
+    verNotVerified:"غير موثّق",
+    verInReview:"قيد المراجعة",
+    verVerified:"موثّق",
+    verRejected:"مرفوض",
+    stLive:"نشط",
+    stDraft:"مسودة",
+    stAwarded:"تمت الترسية",
+    stClosed:"مغلق",
+    stCancelled:"ملغى",
+    timeD:"{n}ي",
+    timeH:"{n}س",
+    timeM:"{n}د",
+    timeS:"{n}ث",
+    authFillAll:"يرجى تعبئة جميع الحقول المطلوبة.",
+    authBadEmail:"يرجى إدخال بريد إلكتروني صحيح.",
+    authPwMin:"يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+    authConsentNeeded:"يرجى الموافقة على شروط الخدمة وسياسة الخصوصية.",
+    consentText:"أوافق على {terms} و{privacy}",
+    termsLink:"شروط الخدمة",
+    privacyLink:"سياسة الخصوصية",
+    phCompany:"مثال: شركة الخليج للتجارة ذ.م.م",
+    phCr:"مثال: 123456-1",
+    phCountry:"البحرين",
+    roleBuyer:"مشترٍ",
+    roleSupplier:"مورّد",
+    registerSuccess:"تم إنشاء الحساب. تحقّق من بريدك الإلكتروني لتفعيل حسابك.",
+    sessionExpired:"انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
+    accountDeactivated:"تم تعطيل هذا الحساب.",
+    verifyTitle2:"إرسال مستند التوثيق",
+    verifyStaysVerified:"تبقى شركتك موثّقة. سيُضاف المستند الجديد ليراجعه فريق Biddex (مثل رخصة تجارية مجدَّدة).",
+    verifyDocType:"نوع المستند",
+    docTradeLicense:"الرخصة التجارية",
+    docCr:"السجل التجاري",
+    docOther:"أخرى",
+    verifyFileLabel:"الملف (PDF أو صورة، حتى 2 ميغابايت)",
+    verifyReady:"{name} — جاهز للإرسال",
+    verifyChange:"تغيير الملف",
+    chooseFile:"اختيار ملف",
+    noFileChosen:"لم يتم اختيار ملف",
+    readingFile:"جارٍ قراءة الملف…",
+    verifySubmitting:"جارٍ الإرسال…",
+    verifySubmit:"إرسال للمراجعة",
+    verifyDocSubmitted:"تم إرسال المستند للمراجعة.",
+    verifyFileTooBig:"يجب أن يقل حجم الملف عن 2 ميغابايت.",
+    verifyFileBadType:"يرجى اختيار ملف PDF أو PNG أو JPEG أو WebP أو GIF.",
+    fileReadFail:"تعذّرت قراءة الملف.",
+    requestFailed:"فشل الطلب ({status})",
+    profileUpdated:"تم تحديث الملف الشخصي.",
     bidTitle:"تقديم عرض",
     bidCost:"تقديم العرض يكلّف <b class=\"mono\">{fee}</b> ({pct}% من ميزانية هذا الطلب البالغة {budget})، وتُخصم من محفظتك.",
     bidSpecs:"مواصفات المشتري",
@@ -502,7 +636,7 @@ function toggleTheme(){
   render();
 }
 function themeToggleBtn(){
-  return '<button onclick="toggleTheme()" class="rounded-lg border px-2.5 py-1.5 text-[13px]" style="border-color:var(--bd2); color:var(--tx2);" title="Toggle dark mode">' + (isDarkNow() ? '☀️' : '🌙') + '</button>';
+  return '<button onclick="toggleTheme()" class="rounded-lg border px-2.5 py-1.5 text-[13px]" style="border-color:var(--bd2); color:var(--tx2);" title="' + t('themeToggleTitle') + '">' + (isDarkNow() ? '☀️' : '🌙') + '</button>';
 }
 
 function initLang(){
@@ -683,7 +817,7 @@ async function api(path, opts={}) {
   let data = null;
   try { data = await res.json(); } catch(e) {}
   if (!res.ok) {
-    const err = new Error((data && data.error) || ('Request failed (' + res.status + ')'));
+    const err = new Error((data && data.error) || tpl('requestFailed', { status: res.status }));
     err.status = res.status;
     err.data = data;
     // A 401 from the auth middleware mid-session means the token expired or the account was deactivated:
@@ -692,7 +826,7 @@ async function api(path, opts={}) {
     const SESSION_ERRORS = ['Invalid or expired token', 'Account deactivated', 'Missing or invalid Authorization header'];
     if (res.status === 401 && state.token && SESSION_ERRORS.includes(err.message)) {
       logout();
-      showToast(err.message === 'Account deactivated' ? 'This account has been deactivated.' : 'Your session has expired. Please log in again.');
+      showToast(t(err.message === 'Account deactivated' ? 'accountDeactivated' : 'sessionExpired'));
     }
     throw err;
   }
@@ -753,14 +887,14 @@ function timeLeft(dateStr){
 function timeLeftLabel(dateStr){
   const diff = timeLeft(dateStr);
   if (diff == null) return { label:'—', urgent:false, past:false };
-  if (diff <= 0) return { label:'Closed', urgent:false, past:true };
+  if (diff <= 0) return { label:t('stClosed'), urgent:false, past:true };
   const s = Math.floor(diff/1000);
   const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60), sec = s%60;
   const urgent = diff < 24*3600*1000;
   let label;
-  if (d > 0) label = d + 'd ' + h + 'h ' + m + 'm';
-  else if (urgent) label = String(h).padStart(2,'0') + 'h ' + String(m).padStart(2,'0') + 'm ' + String(sec).padStart(2,'0') + 's';
-  else label = h + 'h ' + m + 'm';
+  if (d > 0) label = [tpl('timeD',{n:d}), tpl('timeH',{n:h}), tpl('timeM',{n:m})].join(' ');
+  else if (urgent) label = [tpl('timeH',{n:String(h).padStart(2,'0')}), tpl('timeM',{n:String(m).padStart(2,'0')}), tpl('timeS',{n:String(sec).padStart(2,'0')})].join(' ');
+  else label = [tpl('timeH',{n:h}), tpl('timeM',{n:m})].join(' ');
   return { label, urgent, past:false };
 }
 
@@ -774,16 +908,16 @@ function onAuthField(field, e){ state.authForm[field] = e.target.value; }
 async function submitAuth(){
   const f = state.authForm;
   if (!f.email || !f.password || (state.authMode === 'register' && (!f.companyName || !f.registrationNumber))) {
-    setState({ authError: 'Please fill in all required fields.' }); return;
+    setState({ authError: t('authFillAll') }); return;
   }
   if (state.authMode === 'register' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) {
-    setState({ authError: 'Please enter a valid email address.' }); return;
+    setState({ authError: t('authBadEmail') }); return;
   }
   if (state.authMode === 'register' && f.password.length < 8) {
-    setState({ authError: 'Password must be at least 8 characters.' }); return;
+    setState({ authError: t('authPwMin') }); return;
   }
   if (state.authMode === 'register' && !f.consent) {
-    setState({ authError: 'Please accept the Terms of Service and Privacy Policy.' }); return;
+    setState({ authError: t('authConsentNeeded') }); return;
   }
   // Capture the mode now — if the user switches the Login/Register tab while
   // this request is in flight, state.authMode could change before the
@@ -805,7 +939,7 @@ async function submitAuth(){
     }
     if (mode === 'register') {
   setState({ authBusy: false, authError: '' });
-  alert(data.message || 'Registration successful. Please check your email to verify your account.');
+  alert(state.lang === 'ar' ? t('registerSuccess') : (data.message || t('registerSuccess')));
   state.authMode = 'login';
   render();
   return;
@@ -890,8 +1024,8 @@ async function checkForNewVersion(){
 function newVersionBanner(){
   if (!state.newVersionAvailable) return '';
   return '<div role="status" class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2.5 text-[12.5px]" style="border-color:var(--info); background:var(--info-soft); color:var(--info);">' +
-    '<span><b>A new version of Biddex is available.</b> Reload to use it — some features may not work in this version.</span>' +
-    '<button onclick="location.reload()" class="shrink-0 rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--info); color:var(--info);">Reload</button>' +
+    '<span><b>' + t('newVersionTitle') + '</b> ' + t('newVersionBody') + '</span>' +
+    '<button onclick="location.reload()" class="shrink-0 rounded-lg border px-2.5 py-1 text-[12px] font-bold" style="border-color:var(--info); color:var(--info);">' + t('reload') + '</button>' +
   '</div>';
 }
 
@@ -920,7 +1054,7 @@ async function submitVerifyDoc(){
   try {
     await api('/api/companies/me/documents', { method:'POST', body: JSON.stringify({ fileUrl: f.fileUrl, docType: f.docType }) });
     setState({ showVerifyModal:false, verifyBusy:false });
-    showToast('Document submitted for review.');
+    showToast(t('verifyDocSubmitted'));
     refreshCompanyInfo();
   } catch(e) { setState({ verifyBusy:false }); showToast(e.message); }
 }
@@ -1072,7 +1206,7 @@ async function saveProfile(){
   try {
     const data = await api('/api/companies/me', { method:'PATCH', body: JSON.stringify({ name: f.name, country: f.country, phone: f.phone, registrationNumber: f.registrationNumber }) });
     setState({ profileBusy:false });
-    showToast(data && data.reverificationRequired ? t('reverifyToast') : 'Profile updated.');
+    showToast(data && data.reverificationRequired ? t('reverifyToast') : t('profileUpdated'));
     refreshCompanyInfo();
   } catch(e) { setState({ profileBusy:false }); showToast(e.message); }
 }
@@ -2379,13 +2513,13 @@ function renderAuth(){
     '</div>' +
     (isReg ? roleTabs() : '') +
     '<div class="mt-4 flex flex-col gap-3">' +
-      (isReg ? field('companyName',t('companyName'), f.companyName, 'e.g. Gulf Traders WLL') : '') +
-      (isReg ? field('registrationNumber',t('crNumber'), f.registrationNumber, 'e.g. 123456-1') : '') +
-      (isReg ? field('country',t('country'), f.country, 'Bahrain') : '') +
+      (isReg ? field('companyName',t('companyName'), f.companyName, t('phCompany')) : '') +
+      (isReg ? field('registrationNumber',t('crNumber'), f.registrationNumber, t('phCr')) : '') +
+      (isReg ? field('country',t('country'), f.country, t('phCountry')) : '') +
       field('email',t('email'), f.email, 'you@company.com') +
       field('password',t('password'), f.password, isReg ? t('passwordMin') : '••••••••', 'password') +
       (!isReg ? '<button onclick="openForgotModal()" class="self-end -mt-1 text-[12px] font-semibold" style="color:var(--acc);">' + t('forgotPassword') + '</button>' : '') +
-      (isReg ? '<label class="flex items-start gap-2 mt-1"><input type="checkbox" data-field="consent" ' + (f.consent?'checked':'') + ' style="margin-top:3px;" /><span class="text-[12px]" style="color:var(--tx4);">I agree to the <a href="terms.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Terms of Service</a> and <a href="privacy.html" target="_blank" style="color:var(--acc);text-decoration:underline;">Privacy Policy</a></span></label>' : '') +
+      (isReg ? '<label class="flex items-start gap-2 mt-1"><input type="checkbox" data-field="consent" ' + (f.consent?'checked':'') + ' style="margin-top:3px;" /><span class="text-[12px]" style="color:var(--tx4);">' + tpl('consentText', { terms: '<a href="terms.html" target="_blank" style="color:var(--acc);text-decoration:underline;">' + t('termsLink') + '</a>', privacy: '<a href="privacy.html" target="_blank" style="color:var(--acc);text-decoration:underline;">' + t('privacyLink') + '</a>' }) + '</span></label>' : '') +
     '</div>' +
     (state.authError ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12px] font-semibold" style="background:var(--acc-soft); color:var(--acc);">' + esc(state.authError) + '</div>' : '') +
     (!isReg && state.unverifiedEmail ? '<button onclick="resendVerification()" ' + (state.resendBusy?'disabled':'') + ' class="mt-2 w-full rounded-xl border px-4 py-2.5 text-[13px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (state.resendBusy?'0.6':'1') + ';">' + (state.resendBusy ? t('pleaseWait') : t('resendVerification')) + '</button>' : '') +
@@ -2411,8 +2545,8 @@ function tab(mode, label){
 
 function roleTabs(){
   return '<div class="mt-3 flex rounded-lg p-1" style="background:var(--inset);">' +
-    '<button onclick="setAuthRole(\'BUYER\')" class="flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold" style="' + (state.authRole==='BUYER' ? 'background:var(--panel); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.08);' : 'color:var(--tx4);') + '">Buyer</button>' +
-    '<button onclick="setAuthRole(\'SUPPLIER\')" class="flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold" style="' + (state.authRole==='SUPPLIER' ? 'background:var(--panel); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.08);' : 'color:var(--tx4);') + '">Supplier</button>' +
+    '<button onclick="setAuthRole(\'BUYER\')" class="flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold" style="' + (state.authRole==='BUYER' ? 'background:var(--panel); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.08);' : 'color:var(--tx4);') + '">' + t('roleBuyer') + '</button>' +
+    '<button onclick="setAuthRole(\'SUPPLIER\')" class="flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold" style="' + (state.authRole==='SUPPLIER' ? 'background:var(--panel); color:var(--tx); box-shadow:0 1px 2px rgba(0,0,0,.08);' : 'color:var(--tx4);') + '">' + t('roleSupplier') + '</button>' +
   '</div>';
 }
 function setAuthRole(role){ setState({ authRole: role }); }
@@ -2430,7 +2564,7 @@ function renderDashboard(role){
   const isBuyer = role === 'buyer';
   const walletLabel = (state.wallet ? Number(state.wallet.balance).toFixed(3) : '—') + ' ' + t('walletCredits');
   const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
-    '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo(isBuyer ? 'BUYER ACCOUNT' : 'SUPPLIER ACCOUNT') +
+    '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo(t(isBuyer ? 'acctBuyer' : 'acctSupplier')) +
     '<div class="relative flex items-center gap-1.5 sm:gap-2.5">' +
       '<span class="hidden sm:contents"><div class="text-[13px] font-semibold mr-1" style="color:var(--tx3);">' + esc(state.company ? state.company.name : '') + '</div></span>' +
       verificationBadge() +
@@ -2442,7 +2576,7 @@ function renderDashboard(role){
       headerMenu([
         !isBuyer ? menuItemBtn('openWalletModal()', walletLabel) : '',
         menuItemBtn('toggleLang()', state.lang === 'ar' ? 'EN' : 'العربية'),
-        menuItemBtn('toggleTheme()', isDarkNow() ? (state.lang === 'ar' ? '☀️ الوضع الفاتح' : '☀️ Light mode') : (state.lang === 'ar' ? '🌙 الوضع الداكن' : '🌙 Dark mode')),
+        menuItemBtn('toggleTheme()', t(isDarkNow() ? 'themeLight' : 'themeDark')),
         menuItemBtn('logout()', t('signOut')),
       ].filter(Boolean).join('')) +
     '</div></div></header>' +
@@ -2465,8 +2599,8 @@ function renderDashboard(role){
 function suspensionBanner(){
   if (!state.company || !state.company.suspendedAt) return '';
   return '<div class="mb-6 rounded-xl border p-4" style="border-color:var(--bad); background:var(--bad-soft);">' +
-    '<div class="text-[13px] font-bold" style="color:var(--bad);">Account suspended' + (state.company.suspensionReason ? ': ' + esc(state.company.suspensionReason) : '') + '</div>' +
-    '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);">You can still manage orders already in progress (delivery, receipt, payments, documents, messages, disputes), but cannot post or edit RFQs, submit quotes, or edit your catalog. Contact Biddex support to reactivate your account.</div>' +
+    '<div class="text-[13px] font-bold" style="color:var(--bad);">' + t('suspendedTitle') + (state.company.suspensionReason ? ': ' + esc(state.company.suspensionReason) : '') + '</div>' +
+    '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);">' + t('suspendedBody') + '</div>' +
   '</div>';
 }
 
@@ -2567,11 +2701,11 @@ function rfqTable(rfqs){
 
 function statusPill(status){
   const map = {
-    PUBLISHED: ['background:var(--info-soft); color:var(--info);','Live'],
-    DRAFT: ['background:var(--sunken); color:var(--tx3);','Draft'],
-    AWARDED: ['background:var(--ok-soft); color:var(--ok);','Awarded'],
-    QUOTING_CLOSED: ['background:var(--sunken); color:var(--tx4);','Closed'],
-    CANCELLED: ['background:var(--bad-soft); color:var(--bad);','Cancelled']
+    PUBLISHED: ['background:var(--info-soft); color:var(--info);',t('stLive')],
+    DRAFT: ['background:var(--sunken); color:var(--tx3);',t('stDraft')],
+    AWARDED: ['background:var(--ok-soft); color:var(--ok);',t('stAwarded')],
+    QUOTING_CLOSED: ['background:var(--sunken); color:var(--tx4);',t('stClosed')],
+    CANCELLED: ['background:var(--bad-soft); color:var(--bad);',t('stCancelled')]
   };
   const [style,label] = map[status] || ['background:var(--sunken); color:var(--tx3);', status];
   return '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + label + '</span>';
@@ -3387,10 +3521,10 @@ function notifBell(){
       // mobile (<640px): fixed, full width under the sticky header, own scroll, own left/right margins;
       // sm and up: the original small panel anchored under the bell
       '<div class="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-11 z-40 w-auto sm:w-80 max-h-[70vh] sm:max-h-96 overflow-y-auto rounded-xl border shadow-xl bx-scroll" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center justify-between border-b px-3.5 py-2.5" style="border-color:var(--bd);"><span class="text-[13px] font-bold" style="color:var(--tx);">Notifications</span>' +
-        (state.notifUnread > 0 ? '<button onclick="markAllNotifRead()" class="text-[11px] font-semibold" style="color:var(--acc);">Mark all read</button>' : '') +
+        '<div class="flex items-center justify-between border-b px-3.5 py-2.5" style="border-color:var(--bd);"><span class="text-[13px] font-bold" style="color:var(--tx);">' + t('notifTitle') + '</span>' +
+        (state.notifUnread > 0 ? '<button onclick="markAllNotifRead()" class="text-[11px] font-semibold" style="color:var(--acc);">' + t('notifMarkAll') + '</button>' : '') +
         '</div>' +
-        (list.length === 0 ? '<div class="px-3.5 py-8 text-center text-[12px]" style="color:var(--tx4);">Nothing yet.</div>' :
+        (list.length === 0 ? '<div class="px-3.5 py-8 text-center text-[12px]" style="color:var(--tx4);">' + t('notifEmpty') + '</div>' :
           list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + '">' +
             '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
             (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
@@ -3410,7 +3544,7 @@ function menuItemBtn(onclick, label){
 }
 function headerMenu(itemsHtml){
   return '<div class="relative sm:hidden" data-dropdown="headerMenu">' +
-    '<button onclick="toggleHeaderMenu()" class="rounded-lg border px-2.5 py-1.5 text-[15px] font-bold leading-none" style="border-color:var(--bd2); color:var(--tx2);" aria-label="More">⋯</button>' +
+    '<button onclick="toggleHeaderMenu()" class="rounded-lg border px-2.5 py-1.5 text-[15px] font-bold leading-none" style="border-color:var(--bd2); color:var(--tx2);" aria-label="' + t('moreLabel') + '">⋯</button>' +
     (state.showHeaderMenu ?
       '<div class="absolute right-0 top-11 z-40 w-56 rounded-xl border p-1.5 shadow-xl flex flex-col" style="border-color:var(--bd); background:var(--panel);">' + itemsHtml + '</div>'
       : '') +
@@ -3426,7 +3560,7 @@ function verificationBadge(){
     VERIFIED: 'background:var(--ok-soft); color:var(--ok);',
     REJECTED: 'background:var(--bad-soft); color:var(--bad);'
   };
-  const labels = { PENDING:'Not verified', IN_REVIEW:'In review', VERIFIED:'Verified', REJECTED:'Rejected' };
+  const labels = { PENDING:t('verNotVerified'), IN_REVIEW:t('verInReview'), VERIFIED:t('verVerified'), REJECTED:t('verRejected') };
   return '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + (styles[st]||'') + '">' + (labels[st]||st) + '</span>';
 }
 
@@ -3434,8 +3568,8 @@ function verificationBanner(){
   const st = state.company ? state.company.verificationStatus : null;
   if (!st || st === 'VERIFIED' || st === 'IN_REVIEW') return '';
   return '<div class="mb-6 flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
-    '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + (st === 'REJECTED' ? 'Your verification was rejected — submit a new document.' : 'Get verified: upload your trade license or CR certificate for review by the Biddex team.') + hint('verification') + '</div>' +
-    '<button onclick="openVerifyModal()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit document</button>' +
+    '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + t(st === 'REJECTED' ? 'verifyBannerRejected' : 'verifyBannerGet') + hint('verification') + '</div>' +
+    '<button onclick="openVerifyModal()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('verifySubmitDoc') + '</button>' +
   '</div>';
 }
 
@@ -3451,7 +3585,7 @@ function renderAdmin(){
       '</span>' +
       headerMenu(
         menuItemBtn('toggleLang()', state.lang === 'ar' ? 'EN' : 'العربية') +
-        menuItemBtn('toggleTheme()', isDarkNow() ? (state.lang === 'ar' ? '☀️ الوضع الفاتح' : '☀️ Light mode') : (state.lang === 'ar' ? '🌙 الوضع الداكن' : '🌙 Dark mode')) +
+        menuItemBtn('toggleTheme()', t(isDarkNow() ? 'themeLight' : 'themeDark')) +
         menuItemBtn('logout()', t('signOut'))
       ) +
     '</div></div></header>';
@@ -3847,8 +3981,8 @@ function renderBulkImportModal(){
             // doesn't shrink below its own content width and was pushing this modal wider than the screen
             // on mobile; the label (a) triggers the input by the usual implicit label-for-input association.
             '<span class="flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2.5 text-sm cursor-pointer" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-              '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Choose file</span>' +
-              '<span class="min-w-0 truncate" style="color:var(--tx4);">No file chosen</span>' +
+              '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('chooseFile') + '</span>' +
+              '<span class="min-w-0 truncate" style="color:var(--tx4);">' + t('noFileChosen') + '</span>' +
             '</span>' +
             '<input data-bulk-import-file type="file" accept=".xlsx,.xls,.csv" class="sr-only" /></label>' +
           (state.bulkImportBusy ? '<div class="mt-3 text-[12px]" style="color:var(--tx4);">Reading file…</div>' : '')
@@ -4179,33 +4313,33 @@ function renderModals(){
   if (state.showStockCount) html += renderStockCountModal();
   if (state.showVerifyModal) {
     const v = state.verifyForm;
-    html += modalWrap('Submit verification document', 'closeVerifyModal()',
+    html += modalWrap(t('verifyTitle2'), 'closeVerifyModal()',
       (state.company && state.company.verificationStatus === 'VERIFIED'
-        ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--ok-soft); color:var(--ok);">Your company stays Verified. The new document is added for the Biddex team to review (e.g. a renewed trade license).</div>'
+        ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--ok-soft); color:var(--ok);">' + t('verifyStaysVerified') + '</div>'
         : '') +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Document type</span>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('verifyDocType') + '</span>' +
       '<select data-select="docType" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-        '<option value="TRADE_LICENSE"' + (v.docType==='TRADE_LICENSE'?' selected':'') + '>Trade license</option>' +
-        '<option value="CR_CERTIFICATE"' + (v.docType==='CR_CERTIFICATE'?' selected':'') + '>Commercial registration</option>' +
-        '<option value="OTHER"' + (v.docType==='OTHER'?' selected':'') + '>Other</option>' +
+        '<option value="TRADE_LICENSE"' + (v.docType==='TRADE_LICENSE'?' selected':'') + '>' + t('docTradeLicense') + '</option>' +
+        '<option value="CR_CERTIFICATE"' + (v.docType==='CR_CERTIFICATE'?' selected':'') + '>' + t('docCr') + '</option>' +
+        '<option value="OTHER"' + (v.docType==='OTHER'?' selected':'') + '>' + t('docOther') + '</option>' +
       '</select></label>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">File (PDF or image, max 2MB)</span>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('verifyFileLabel') + '</span>' +
       // once a file is read, the (re-rendered, hence empty) native input would say "No file chosen" next to
       // the ready line: show only the ready line, with a hidden input behind "Change file"
       (v.fileUrl && state.verifyFileName
         ? '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5" style="border-color:var(--ok); background:var(--ok-soft);">' +
-            '<span class="min-w-0 text-[12.5px] font-semibold" style="color:var(--ok); overflow-wrap:anywhere;">✓ ' + esc(state.verifyFileName) + ' ready to submit</span>' +
-            '<span class="shrink-0 text-[12px] font-semibold underline" style="color:var(--tx3); cursor:pointer;">Change file</span>' +
+            '<span class="min-w-0 text-[12.5px] font-semibold" style="color:var(--ok); overflow-wrap:anywhere;">✓ ' + tpl('verifyReady', { name: esc(state.verifyFileName) }) + '</span>' +
+            '<span class="shrink-0 text-[12px] font-semibold underline" style="color:var(--tx3); cursor:pointer;">' + t('verifyChange') + '</span>' +
             '<input data-verify-file type="file" accept="application/pdf,image/*" class="hidden" />' +
           '</div>'
         : '<label class="flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2.5 text-sm cursor-pointer" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-            '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Choose file</span>' +
-            '<span class="min-w-0 truncate" style="color:var(--tx4);">No file chosen</span>' +
+            '<span class="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('chooseFile') + '</span>' +
+            '<span class="min-w-0 truncate" style="color:var(--tx4);">' + t('noFileChosen') + '</span>' +
             '<input data-verify-file type="file" accept="application/pdf,image/*" class="sr-only" />' +
           '</label>') +
-      (state.verifyFileBusy ? '<span class="text-[12px]" style="color:var(--tx4);">Reading file…</span>' : '') +
+      (state.verifyFileBusy ? '<span class="text-[12px]" style="color:var(--tx4);">' + t('readingFile') + '</span>' : '') +
       '</label>',
-      'submitVerifyDoc()', state.verifyBusy ? 'Submitting…' : 'Submit for review', state.verifyBusy || state.verifyFileBusy || !v.fileUrl);
+      'submitVerifyDoc()', t(state.verifyBusy ? 'verifySubmitting' : 'verifySubmit'), state.verifyBusy || state.verifyFileBusy || !v.fileUrl);
   }
   if (state.showDeliveryFailModal) {
     html += modalWrap('Delivery failed',
@@ -4390,9 +4524,9 @@ function renderDocsModal(){
 async function onVerifyFileChange(e){
   const file = e.target.files && e.target.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { showToast('File must be under 2MB.'); e.target.value = ''; return; }
+  if (file.size > 2 * 1024 * 1024) { showToast(t('verifyFileTooBig')); e.target.value = ''; return; }
   if (!['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type)) {
-    showToast('Please choose a PDF, PNG, JPEG, WebP or GIF file.'); e.target.value = ''; return;
+    showToast(t('verifyFileBadType')); e.target.value = ''; return;
   }
   setState({ verifyFileBusy: true });
   const reader = new FileReader();
@@ -4400,7 +4534,7 @@ async function onVerifyFileChange(e){
     state.verifyForm.fileUrl = reader.result;
     setState({ verifyFileName: file.name, verifyFileBusy: false });
   };
-  reader.onerror = () => { setState({ verifyFileBusy: false }); showToast('Could not read file.'); };
+  reader.onerror = () => { setState({ verifyFileBusy: false }); showToast(t('fileReadFail')); };
   reader.readAsDataURL(file);
 }
 
