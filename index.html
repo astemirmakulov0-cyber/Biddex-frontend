@@ -263,7 +263,7 @@ const I18N = {
     walletTxTopup:"Top-up",
     walletTxRefund:"Refund",
     walletTxAdjust:"Adjustment",
-    bhd:"BHD",
+    bhd:"BHD", sizeMb:"{n} MB", sizeKb:"{n} KB",
     bidTitle:"Submit quote",
     bidCost:"Submitting a quote costs <b class=\"mono\">{fee}</b> ({pct}% of this RFQ's {budget} budget), deducted from your wallet.",
     bidSpecs:"Buyer's specifications",
@@ -442,7 +442,7 @@ const I18N = {
     walletTxTopup:"شحن رصيد",
     walletTxRefund:"استرداد",
     walletTxAdjust:"تعديل",
-    bhd:"د.ب",
+    bhd:"د.ب", sizeMb:"{n} ميغابايت", sizeKb:"{n} كيلوبايت",
     bidTitle:"تقديم عرض",
     bidCost:"تقديم العرض يكلّف <b class=\"mono\">{fee}</b> ({pct}% من ميزانية هذا الطلب البالغة {budget})، وتُخصم من محفظتك.",
     bidSpecs:"مواصفات المشتري",
@@ -475,6 +475,15 @@ const I18N = {
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
+// t() with {name} placeholders filled from vars (never build sentences by concatenation: word order differs in Arabic)
+function tpl(key, vars){ return t(key).replace(/{(w+)}/g, (m, k) => vars && vars[k] != null ? vars[k] : m); }
+// Numbers stay Latin in Arabic (as in the wallet); dates use ar-BH with Latin digits, English keeps the browser default
+const dateLocale = () => state.lang === 'ar' ? 'ar-BH-u-nu-latn' : undefined;
+function fmtDateTime(d){ return new Date(d).toLocaleString(dateLocale()); }
+function fmtDate(d){ return new Date(d).toLocaleDateString(dateLocale()); }
+function fmtNum(n, digits){ return (Number(n) || 0).toFixed(digits == null ? 3 : digits); }
+// Amount with the currency label: '12.000 BHD' / '12.000 د.ب'
+function bhdMoney(n){ return fmtNum(n, 3) + ' ' + t('bhd'); }
 
 function initTheme(){
   try {
@@ -632,7 +641,7 @@ function setState(patch){ Object.assign(state, patch); render(); }
 function setIfChanged(key, data){
   if (JSON.stringify(state[key]) !== JSON.stringify(data)) setState({ [key]: data });
 }
-function fmt(n){ return (Number(n)||0).toFixed(3) + ' BHD'; }
+const fmt = bhdMoney;
 // Platform-wide bid fee percent: GET /api/config/public first, then the company fetched from the server.
 // null until one of them has answered (a stale copy in localStorage is never trusted, see loadSession), so
 // nothing mentions a fee before the real value is known. 0 is supported: callers check "> 0" and omit fee text.
@@ -1164,7 +1173,7 @@ async function deleteDoc(docId){
   if (orderId) refreshOrderDocs(orderId);
 }
 
-function fmtBytes(n){ return n >= 1024 * 1024 ? (n / 1024 / 1024).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+function fmtBytes(n){ return n >= 1024 * 1024 ? tpl('sizeMb', { n: (n / 1024 / 1024).toFixed(1) }) : tpl('sizeKb', { n: Math.max(1, Math.round(n / 1024)) }); }
 
 // Documents list; opts.canUpload / opts.isSupplier / opts.order for the order page, read-only for the admin
 function renderDocumentsPanel(opts){
@@ -1182,7 +1191,7 @@ function renderDocumentsPanel(opts){
           '<div class="min-w-0 flex-1">' +
             '<div class="flex items-center gap-2"><span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx3);">' + esc(DOC_KIND_LABELS[d.kind] || d.kind) + '</span>' +
             '<span class="truncate font-semibold" style="color:var(--tx);">' + esc(d.fileName) + '</span></div>' +
-            '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + companyLabel(d.uploadedByCompany) + ' &middot; ' + new Date(d.createdAt).toLocaleString() + '</div>' +
+            '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + companyLabel(d.uploadedByCompany) + ' &middot; ' + fmtDateTime(d.createdAt) + '</div>' +
           '</div>' +
           '<div class="flex gap-2 shrink-0">' +
             (opts.canUpload && mine && open && d.kind !== 'QUOTE_ATTACHMENT' ? '<button onclick="' + (busy ? '' : "deleteDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
@@ -1879,7 +1888,6 @@ function closeSubmitQuote(){ setState({ submitQuoteRfqId:null }); }
 function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
 
 // Quote total = unit price × the RFQ quantity, in fils (as the server computes it)
-function bhdMoney(n){ return (Number(n) || 0).toFixed(3) + ' ' + t('bhd'); }
 function quoteTotalHtml(rawPrice, rfq){
   const qty = rfq && rfq.quantity;
   const unit = parseMoneyInput(rawPrice);
@@ -3130,7 +3138,7 @@ function renderWalletModal(){
           const amt = Number(tx.amount);
           return '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[12px]" style="border-color:var(--bd);">' +
             '<div class="min-w-0"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(walletTxLabel(tx)) + '</div>' +
-            '<div class="mono text-[10.5px]" style="color:var(--tx4);">' + new Date(tx.createdAt).toLocaleString() + '</div></div>' +
+            '<div class="mono text-[10.5px]" style="color:var(--tx4);">' + fmtDateTime(tx.createdAt) + '</div></div>' +
             '<span class="mono font-bold shrink-0" style="color:' + (amt >= 0 ? 'var(--ok)' : 'var(--tx2)') + ';">' + (amt >= 0 ? '+' : '') + amt.toFixed(3) + '</span></div>';
         }).join('') + '</div>') +
     '</div></div>';
@@ -3168,7 +3176,7 @@ function renderSettings(){
     '</div>' +
     (docs.length === 0 ? emptyState('No documents submitted', 'Submit a trade license or CR certificate for review.') :
       '<div class="flex flex-col gap-2">' + docs.map(d =>
-        '<div class="flex items-center justify-between rounded-lg border p-3 text-[13px]" style="border-color:var(--bd); background:var(--panel);"><span style="color:var(--tx);">' + esc(d.docType) + '</span><span class="mono" style="color:var(--tx4);">' + new Date(d.uploadedAt).toLocaleDateString() + '</span></div>'
+        '<div class="flex items-center justify-between rounded-lg border p-3 text-[13px]" style="border-color:var(--bd); background:var(--panel);"><span style="color:var(--tx);">' + esc(d.docType) + '</span><span class="mono" style="color:var(--tx4);">' + fmtDate(d.uploadedAt) + '</span></div>'
       ).join('') + '</div>') +
   '</div>' +
   renderChangePassword() +
@@ -3269,7 +3277,7 @@ function renderOrderDetail(){
   '<div class="grid gap-4 sm:grid-cols-2">' +
     detailCard('Request', [
       ['Quantity', rfq ? (rfq.quantity || '—') + ' ' + (rfq.unit || '') : '—'],
-      ['Needed by', rfq && rfq.deadline ? new Date(rfq.deadline).toLocaleDateString() : '—'],
+      ['Needed by', rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—'],
       ['Description', rfq ? rfq.description : '—']
     ]) +
     detailCard('Purchase order', [
@@ -3284,14 +3292,14 @@ function renderOrderDetail(){
     detailCard('Delivery', [
       ['Status', delivery.status || '—'],
       ['Tracking', delivery.trackingInfo || '—'],
-      ['Dispatched', delivery.dispatchedAt ? new Date(delivery.dispatchedAt).toLocaleString() : '—'],
-      ['Delivered', delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleString() : '—'],
-      ['Receipt confirmed', order.receivedAt ? new Date(order.receivedAt).toLocaleString() : '—']
+      ['Dispatched', delivery.dispatchedAt ? fmtDateTime(delivery.dispatchedAt) : '—'],
+      ['Delivered', delivery.deliveredAt ? fmtDateTime(delivery.deliveredAt) : '—'],
+      ['Receipt confirmed', order.receivedAt ? fmtDateTime(order.receivedAt) : '—']
     ]) +
     detailCard('Invoice', [
       ['Amount', invoice.amount ? fmt(invoice.amount) : '—'],
       ['Status', (invoice.status || '—') + (invoice.status === 'OVERDUE' ? ' · ' + overdueDaysLabel(invoice.dueDate) : '')],
-      ['Due date', invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '—'],
+      ['Due date', invoice.dueDate ? fmtDate(invoice.dueDate) : '—'],
       ['Confirmed', fmt(totals.paid)],
       ['Awaiting confirmation', fmt(totals.pending)],
       ['Outstanding', fmt(totals.outstanding)]
@@ -3320,7 +3328,7 @@ function renderPaymentsPanel(invoice, isSupplier){
         return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd);">' +
           '<div class="min-w-0">' +
             '<div class="font-semibold mono" style="color:var(--tx);">' + fmt(p.amount) + ' <span class="font-normal" style="color:var(--tx3);">&middot; ' + esc(PAYMENT_METHOD_LABELS[p.method] || p.method || '—') + (p.reference ? ' &middot; ref ' + esc(p.reference) : '') + '</span></div>' +
-            '<div class="text-[11px] mt-0.5" style="color:var(--tx4);">Reported ' + new Date(p.createdAt).toLocaleString() + (p.status === 'FAILED' && p.rejectReason ? ' &middot; ' + esc(p.rejectReason) : '') + '</div>' +
+            '<div class="text-[11px] mt-0.5" style="color:var(--tx4);">Reported ' + fmtDateTime(p.createdAt) + (p.status === 'FAILED' && p.rejectReason ? ' &middot; ' + esc(p.rejectReason) : '') + '</div>' +
           '</div>' +
           '<div class="flex items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + txt + '</span>' + actions + '</div>' +
         '</div>';
@@ -3387,7 +3395,7 @@ function notifBell(){
             '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
             (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
             (n.type === 'STOCK_RECEIPT_UNMATCHED' && n.relatedOrderId ? '<button onclick="createStockFromNotification(\'' + n.relatedOrderId + '\')" class="mt-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('addToStock') + '</button>' : '') +
-            '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + new Date(n.createdAt).toLocaleString() + '</div>' +
+            '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + fmtDateTime(n.createdAt) + '</div>' +
           '</div>').join('')) +
       '</div>' : '') +
   '</div>';
@@ -3512,7 +3520,7 @@ function renderAdminDisputes(){
           '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">LPO-' + esc(String(lpo.id || '').slice(-4).toUpperCase()) + ' &middot; ' + fmt(lpo.totalAmount) +
             ' &middot; ' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + '</div>' +
           '<div class="mt-1.5 text-[12.5px]" style="color:var(--tx2);">' + (o.disputeReason ? '&ldquo;' + esc(o.disputeReason) + '&rdquo;' : '<span style="color:var(--tx4);">No reason given</span>') + '</div>' +
-          '<div class="mono mt-1 text-[11px]" style="color:var(--tx4);">Disputed ' + new Date(o.updatedAt).toLocaleString() + ' &middot; delivery ' + esc(o.delivery ? o.delivery.status : '—') + ' &middot; invoice ' + esc(o.invoice ? o.invoice.status : '—') + '</div>' +
+          '<div class="mono mt-1 text-[11px]" style="color:var(--tx4);">Disputed ' + fmtDateTime(o.updatedAt) + ' &middot; delivery ' + esc(o.delivery ? o.delivery.status : '—') + ' &middot; invoice ' + esc(o.invoice ? o.invoice.status : '—') + '</div>' +
         '</div>' +
         actionBtn('Review', "openAdminDispute('" + o.id + "')", false) +
       '</div>';
@@ -3557,7 +3565,7 @@ function renderAdminRfqs(){
         '<div class="min-w-[220px] flex-1">' +
           '<div class="font-semibold" style="color:var(--tx);">' + esc(r.title) +
             (r.buyerCompany && r.buyerCompany.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
-          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + esc(r.buyerCompany ? r.buyerCompany.name : '—') + ' &middot; ' + (r._count ? r._count.quotes : 0) + ' quote(s) &middot; ' + new Date(r.createdAt).toLocaleDateString() + '</div>' +
+          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + esc(r.buyerCompany ? r.buyerCompany.name : '—') + ' &middot; ' + (r._count ? r._count.quotes : 0) + ' quote(s) &middot; ' + fmtDate(r.createdAt) + '</div>' +
         '</div>' +
         '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + (RFQ_STATUS_LABELS[r.status] || r.status) + '</span>' +
       '</div>').join('') + '</div>') +
@@ -4368,7 +4376,7 @@ function renderDocsModal(){
       '<div class="mt-4 flex flex-col gap-2">' + docs.map(d =>
         '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[12.5px]" style="border-color:' + (v && v.id === d.id ? 'var(--acc)' : 'var(--bd)') + ';">' +
           '<div><span class="font-semibold" style="color:var(--tx);">' + esc(DOC_TYPE_LABELS[d.docType] || d.docType) + '</span>' +
-          ' <span class="mono" style="color:var(--tx4);">&middot; ' + new Date(d.uploadedAt).toLocaleString() + '</span></div>' +
+          ' <span class="mono" style="color:var(--tx4);">&middot; ' + fmtDateTime(d.uploadedAt) + '</span></div>' +
           actionBtn('View', "viewDocument('" + c.id + "','" + d.id + "')", state.docBusyId === d.id) +
         '</div>').join('') + '</div>' +
       '<div class="mt-4">' + viewer + '</div>' +
