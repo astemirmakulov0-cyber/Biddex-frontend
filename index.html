@@ -78,6 +78,11 @@
   table.dtable th { text-align:left; font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--tx4); padding:10px 12px; border-bottom:1px solid var(--bd); white-space:nowrap; }
   table.dtable td { padding:12px; border-bottom:1px solid var(--bd); vertical-align:middle; }
   table.dtable tr:last-child td { border-bottom:none; }
+  /* "?" term hints (see hint() in the script): the ::after enlarges the tap target to ~32px without growing the icon */
+  .bx-hint { display:inline-grid; place-items:center; width:18px; height:18px; margin-inline-start:6px; padding:0; border-radius:999px; border:1px solid var(--bd2); background:var(--panel); color:var(--tx3); font-size:11px; font-weight:700; line-height:1; cursor:help; vertical-align:middle; position:relative; text-transform:none; letter-spacing:0; flex-shrink:0; }
+  .bx-hint::after { content:''; position:absolute; inset:-7px; }
+  .bx-hint:hover, .bx-hint:focus-visible { border-color:var(--acc); color:var(--acc); outline:none; }
+  .bx-hint-pop { position:fixed; z-index:90; width:max-content; max-width:min(260px, calc(100vw - 16px)); padding:10px 12px; border-radius:10px; font-size:12.5px; font-weight:500; line-height:1.45; text-transform:none; letter-spacing:0; background:var(--tx); color:var(--bg); box-shadow:0 8px 24px rgba(0,0,0,0.25); pointer-events:none; }
   .chip { border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:600; border:1px solid var(--bd); color:var(--tx3); background:var(--panel); cursor:pointer; white-space:nowrap; }
   .chip.active { background:var(--tx); color:var(--panel); border-color:var(--tx); }
   .avatar2 { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px; flex-shrink:0; }
@@ -209,7 +214,85 @@ const I18N = {
     rfqBudgetOpt:"Budget (BHD, optional)",
     rfqBudgetRequired:"Please enter a budget (it is required).",
     budgetNotSpecified:"Budget not specified",
-    close:"Close"
+    close:"Close",
+    hintLabel:"What does this mean?",
+    hint_rfq:"RFQ (Request for Quotation) is your request to suppliers: what you need, how much, and by when. Suppliers reply with their prices.",
+    hint_quote:"A quote (also called a bid) is a supplier's price offer for an RFQ, with delivery time and payment terms. The buyer compares the offers and picks one.",
+    hint_award:"Awarding means choosing the winning quote. The supplier then receives a purchase order (LPO) to accept.",
+    hint_lpo:"LPO (Local Purchase Order) is the official order sent to the supplier after you award a quote. Once the supplier accepts it, the order goes ahead.",
+    hint_exact:"Equivalent accepted: suppliers may offer a similar product from another brand. Exact brand only: only the brand you named is accepted.",
+    hint_verification:"The Biddex team checks your trade license or CR certificate by hand. Only verified companies can post RFQs and send quotes.",
+    hint_wallet:"Credits are your prepaid balance on Biddex. They pay the fee for sending quotes, when a fee applies. Biddex adds credits for you.",
+    hint_lowstock:"The level at which this item counts as running low. When the quantity drops to it or below, you get an alert. 0 means no alerts.",
+    hint_recount:"Recount means entering what you actually have on the shelf right now, so the number in Biddex matches reality.",
+    obTitle:"Getting started",
+    obProgress:"{n} of {m} steps done",
+    obGo:"Go",
+    obInReview:"In review",
+    obOptional:"optional",
+    obDoneChip:"Getting started: all done",
+    obHide:"Hide",
+    obSettingsHeading:"Getting started checklist",
+    obSettingsText:"You hid the first-steps card on the home page.",
+    obShowAgain:"Show checklist again",
+    obShownToast:"The checklist is back on the home page.",
+    ob_profile:"Complete your company profile",
+    obd_profile:"Add your phone, country and CR number in Settings.",
+    ob_verification:"Get verified",
+    obd_verification:"Upload your trade license or CR certificate for the Biddex team to check.",
+    ob_firstRfq:"Post your first RFQ",
+    obd_firstRfq:"Tell suppliers what you need and when.",
+    ob_award:"Choose a bid (award)",
+    obd_award:"Compare the quotes and award the best one.",
+    ob_receipt:"Confirm you received an order",
+    obd_receipt:"When the goods arrive, confirm receipt on the order.",
+    ob_stock:"Track an item in Stock",
+    obd_stock:"Get low-stock alerts and re-order in one tap.",
+    ob_catalog:"Add your products",
+    obd_catalog:"Add them one by one or import an Excel/CSV file.",
+    ob_firstBid:"Place your first bid",
+    obd_firstBid:"Find an open RFQ and send your quote.",
+    ob_acceptLpo:"Accept your first LPO",
+    obd_acceptLpo:"When a buyer picks your bid, accept the purchase order.",
+    walletEyebrow:"WALLET",
+    walletTitle:"Bid credits",
+    walletAvailable:"AVAILABLE BALANCE",
+    walletCredits:"credits",
+    walletFeeNote:"Credits are used to submit quotes: {n}% of the RFQ budget per quote.",
+    walletTxBidFee:"Bid fee",
+    walletTxTopup:"Top-up",
+    walletTxRefund:"Refund",
+    walletTxAdjust:"Adjustment",
+    bhd:"BHD",
+    bidTitle:"Submit quote",
+    bidCost:"Submitting a quote costs <b class=\"mono\">{fee}</b> ({pct}% of this RFQ's {budget} budget), deducted from your wallet.",
+    bidSpecs:"Buyer's specifications",
+    bidQty:"Quantity requested:",
+    bidUnitPrice:"Unit price ({cur} per {unit})",
+    bidUnitWord:"unit",
+    bidDelivery:"Delivery (days)",
+    bidTerms:"Payment terms (days after buyer confirms receipt)",
+    bidAttach:"Attachments (optional, up to {n})",
+    bidRemove:"Remove",
+    bidAddFile:"Add file",
+    bidFileTypes:"PDF, JPEG, PNG or WebP",
+    bidAttachNote:"Specs, certificates or photos: PDF, JPEG, PNG or WebP, up to 10 MB each. Only the buyer and Biddex admins can see them. You can change them until the buyer shortlists your quote or bidding closes.",
+    bidSubmitting:"Submitting…",
+    bidNoQty:"The buyer did not set a quantity — this RFQ can't be quoted.",
+    bidTotalEnter:"Total: enter a unit price — total = unit price × {qty}",
+    bidTotal:"Total:",
+    bidOverBudget:"Above the buyer's budget of {budget} — you can still submit.",
+    bidTermsError:"Payment terms must be a whole number of days, 0-120.",
+    bidUploading:"Uploading file {i} of {n}…",
+    bidFilesFailed:"Quote submitted, but {n} file(s) failed ({err}). Add them via Files.",
+    bidSubmitted:"Quote submitted.",
+    bidSubmittedFiles:"Quote submitted with {n} file(s).",
+    bidMaxFiles:"At most {n} files per quote",
+    quotePerUnit:"{price} / unit",
+    quoteTotalWord:"total",
+    quoteUnitNotRecorded:"(unit price not recorded)",
+    fileTooBig:"{name}: must be at most 10 MB",
+    fileBadType:"{name}: only PDF, JPEG, PNG or WebP"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -310,7 +393,85 @@ const I18N = {
     rfqBudgetOpt:"الميزانية (د.ب، اختيارية)",
     rfqBudgetRequired:"يرجى إدخال الميزانية (إلزامية).",
     budgetNotSpecified:"الميزانية غير محددة",
-    close:"إغلاق"
+    close:"إغلاق",
+    hintLabel:"ما معنى هذا؟",
+    hint_rfq:"طلب التسعير (RFQ) هو طلبك إلى الموردين: ما تحتاجه وبأي كمية ومتى. يرد الموردون بأسعارهم.",
+    hint_quote:"العرض (أو المزايدة) هو سعر يقدّمه المورد على طلب التسعير مع مدة التوصيل وشروط الدفع. يقارن المشتري العروض ويختار أحدها.",
+    hint_award:"الترسية تعني اختيار العرض الفائز. بعدها يستلم المورد أمر شراء (LPO) ليقبله.",
+    hint_lpo:"أمر الشراء المحلي (LPO) هو الطلب الرسمي الذي يصل إلى المورد بعد ترسية العرض. عندما يقبله المورد يبدأ تنفيذ الطلب.",
+    hint_exact:"يُقبل ما يعادله: يمكن للموردين عرض منتج مماثل من علامة تجارية أخرى. العلامة نفسها فقط: تُقبل العلامة التي ذكرتها فقط.",
+    hint_verification:"يراجع فريق Biddex رخصتك التجارية أو شهادة السجل التجاري يدويًا. الشركات الموثّقة فقط يمكنها نشر الطلبات وتقديم العروض.",
+    hint_wallet:"الرصيد هو مبلغك المدفوع مسبقًا في Biddex. يُخصم منه رسم تقديم العروض عندما يكون هناك رسم. تتولى Biddex شحنه لك.",
+    hint_lowstock:"المستوى الذي يُعدّ عنده الصنف قارب على النفاد. عندما تنخفض الكمية إليه أو دونه يصلك تنبيه. القيمة 0 تعني عدم التنبيه.",
+    hint_recount:"إعادة الجرد تعني إدخال الكمية الموجودة لديك فعلًا الآن، لتطابق الأرقام في Biddex الواقع.",
+    obTitle:"ابدأ من هنا",
+    obProgress:"اكتمل {n} من {m} خطوات",
+    obGo:"انتقل",
+    obInReview:"قيد المراجعة",
+    obOptional:"اختياري",
+    obDoneChip:"البدء: اكتملت كل الخطوات",
+    obHide:"إخفاء",
+    obSettingsHeading:"قائمة الخطوات الأولى",
+    obSettingsText:"أخفيت بطاقة الخطوات الأولى من الصفحة الرئيسية.",
+    obShowAgain:"إظهار القائمة مرة أخرى",
+    obShownToast:"عادت القائمة إلى الصفحة الرئيسية.",
+    ob_profile:"أكمل ملف شركتك",
+    obd_profile:"أضف رقم الهاتف والدولة ورقم السجل التجاري في الإعدادات.",
+    ob_verification:"وثّق شركتك",
+    obd_verification:"ارفع رخصتك التجارية أو شهادة السجل التجاري ليراجعها فريق Biddex.",
+    ob_firstRfq:"انشر أول طلب تسعير",
+    obd_firstRfq:"أخبر الموردين بما تحتاجه ومتى.",
+    ob_award:"اختر عرضًا (ترسية)",
+    obd_award:"قارن العروض ورسِّ الطلب على الأفضل.",
+    ob_receipt:"أكّد استلام طلب",
+    obd_receipt:"عند وصول البضاعة أكّد الاستلام في صفحة الطلب.",
+    ob_stock:"تابع صنفًا في المخزون",
+    obd_stock:"تنبيهات نقص المخزون وإعادة الطلب بنقرة واحدة.",
+    ob_catalog:"أضف منتجاتك",
+    obd_catalog:"أضفها واحدًا واحدًا أو استورد ملف Excel/CSV.",
+    ob_firstBid:"قدّم أول عرض",
+    obd_firstBid:"اختر طلب تسعير مفتوحًا وأرسل عرضك.",
+    ob_acceptLpo:"اقبل أول أمر شراء",
+    obd_acceptLpo:"عندما يختار المشتري عرضك اقبل أمر الشراء.",
+    walletEyebrow:"المحفظة",
+    walletTitle:"رصيد العروض",
+    walletAvailable:"الرصيد المتاح",
+    walletCredits:"رصيد",
+    walletFeeNote:"يُستخدم الرصيد لتقديم العروض: {n}% من ميزانية الطلب لكل عرض.",
+    walletTxBidFee:"رسم العرض",
+    walletTxTopup:"شحن رصيد",
+    walletTxRefund:"استرداد",
+    walletTxAdjust:"تعديل",
+    bhd:"د.ب",
+    bidTitle:"تقديم عرض",
+    bidCost:"تقديم العرض يكلّف <b class=\"mono\">{fee}</b> ({pct}% من ميزانية هذا الطلب البالغة {budget})، وتُخصم من محفظتك.",
+    bidSpecs:"مواصفات المشتري",
+    bidQty:"الكمية المطلوبة:",
+    bidUnitPrice:"سعر الوحدة ({cur} لكل {unit})",
+    bidUnitWord:"وحدة",
+    bidDelivery:"مدة التوصيل (بالأيام)",
+    bidTerms:"شروط الدفع (أيام بعد تأكيد المشتري للاستلام)",
+    bidAttach:"المرفقات (اختيارية، حتى {n})",
+    bidRemove:"إزالة",
+    bidAddFile:"إضافة ملف",
+    bidFileTypes:"PDF أو JPEG أو PNG أو WebP",
+    bidAttachNote:"مواصفات أو شهادات أو صور: PDF أو JPEG أو PNG أو WebP، حتى 10 ميغابايت لكل ملف. لا يراها إلا المشتري ومسؤولو Biddex. يمكنك تعديلها حتى يُدرج المشتري عرضك في القائمة المختصرة أو يُغلق باب العروض.",
+    bidSubmitting:"جارٍ الإرسال…",
+    bidNoQty:"لم يحدد المشتري كمية، لذا لا يمكن تقديم عرض على هذا الطلب.",
+    bidTotalEnter:"الإجمالي: أدخل سعر الوحدة — الإجمالي = سعر الوحدة × {qty}",
+    bidTotal:"الإجمالي:",
+    bidOverBudget:"أعلى من ميزانية المشتري البالغة {budget} — يمكنك الإرسال رغم ذلك.",
+    bidTermsError:"يجب أن تكون شروط الدفع عددًا صحيحًا من الأيام بين 0 و120.",
+    bidUploading:"جارٍ رفع الملف {i} من {n}…",
+    bidFilesFailed:"تم إرسال العرض، لكن تعذّر رفع {n} ملف ({err}). أضفها عبر «الملفات».",
+    bidSubmitted:"تم إرسال العرض.",
+    bidSubmittedFiles:"تم إرسال العرض مع {n} ملف.",
+    bidMaxFiles:"الحد الأقصى {n} ملفات لكل عرض",
+    quotePerUnit:"{price} / وحدة",
+    quoteTotalWord:"الإجمالي",
+    quoteUnitNotRecorded:"(سعر الوحدة غير مسجّل)",
+    fileTooBig:"{name}: الحد الأقصى 10 ميغابايت",
+    fileBadType:"{name}: يُسمح بـ PDF أو JPEG أو PNG أو WebP فقط"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -365,7 +526,7 @@ let state = {
   unverifiedEmail: '', resendBusy: false,
   showForgotModal: false, forgotEmail: '', forgotBusy: false,
 
-  token: null, user: null, company: null, wallet: null,
+  token: null, user: null, company: null, wallet: null, onboarding: null,
 
   rfqs: [], catalog: [], myCatalog: [], stock: [],
   loading: false,
@@ -677,11 +838,11 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, rfqs:[], catalog:[], myCatalog:[], stock:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 async function refreshAll(){
-  await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications() ]);
+  await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications(), refreshOnboarding() ]);
 }
 
 // ---------- Background refresh errors ----------
@@ -885,6 +1046,7 @@ async function resolveDispute(action){
 }
 
 function setSection(sec){
+  if (sec === 'main') refreshOnboarding(); // the home card may have ticked while the user was elsewhere
   if (sec === 'profile') {
     const c = state.company || {};
     state.profileForm = { name: c.name||'', country: c.country||'', phone: c.phone||'', registrationNumber: c.registrationNumber||'' };
@@ -940,8 +1102,8 @@ const DOC_TYPE_RE = /^(application\/pdf|image\/(jpeg|png|webp))$/;
 const DOC_EXT_RE = /\.(pdf|jpe?g|png|webp)$/i;
 // the same checks the server makes, so a wrong file is refused before uploading it
 function docFileProblem(file){
-  if (file.size > DOC_MAX_BYTES) return file.name + ': must be at most 10 MB';
-  if (!DOC_EXT_RE.test(file.name) && !DOC_TYPE_RE.test(file.type)) return file.name + ': only PDF, JPEG, PNG or WebP';
+  if (file.size > DOC_MAX_BYTES) return t('fileTooBig').replace('{name}', file.name);
+  if (!DOC_EXT_RE.test(file.name) && !DOC_TYPE_RE.test(file.type)) return t('fileBadType').replace('{name}', file.name);
   return '';
 }
 const DOC_MAX_BYTES = 10 * 1024 * 1024;
@@ -1056,7 +1218,7 @@ function onQuoteFilesChange(e){
   const problems = picked.map(docFileProblem).filter(Boolean);
   const ok = picked.filter(f => !docFileProblem(f));
   const room = MAX_QUOTE_FILES - state.quoteFiles.length;
-  if (ok.length > room) problems.push('At most ' + MAX_QUOTE_FILES + ' files per quote');
+  if (ok.length > room) problems.push(t('bidMaxFiles').replace('{n}', MAX_QUOTE_FILES));
   setState({ quoteFiles: [...state.quoteFiles, ...ok.slice(0, Math.max(0, room))] });
   if (problems.length) showToast(problems[0]);
 }
@@ -1717,17 +1879,18 @@ function closeSubmitQuote(){ setState({ submitQuoteRfqId:null }); }
 function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
 
 // Quote total = unit price × the RFQ quantity, in fils (as the server computes it)
+function bhdMoney(n){ return (Number(n) || 0).toFixed(3) + ' ' + t('bhd'); }
 function quoteTotalHtml(rawPrice, rfq){
   const qty = rfq && rfq.quantity;
   const unit = parseMoneyInput(rawPrice);
-  if (!qty) return 'The buyer did not set a quantity — this RFQ can\'t be quoted.';
-  if (String(rawPrice || '').trim() && unit == null) return 'Enter a number, e.g. 2.5';
-  if (!unit || unit <= 0) return 'Total: enter a unit price — total = unit price × ' + qty;
+  if (!qty) return t('bidNoQty');
+  if (String(rawPrice || '').trim() && unit == null) return t('rfqBudgetNumber');
+  if (!unit || unit <= 0) return t('bidTotalEnter').replace('{qty}', qty);
   const totalFils = Math.round(unit * 1000) * qty;
   const total = totalFils / 1000;
   const over = rfq.budget && total > Number(rfq.budget);
-  return 'Total: <b class="mono" style="color:var(--tx);">' + total.toFixed(3) + ' BHD</b> <span class="mono" style="color:var(--tx4);">(' + unit.toFixed(3) + ' × ' + qty + ')</span>' +
-    (over ? '<div class="mt-1 text-[12px]" style="color:var(--warn);">Above the buyer\'s budget of ' + fmt(rfq.budget) + ' — you can still submit.</div>' : '');
+  return t('bidTotal') + ' <b class="mono" style="color:var(--tx);">' + bhdMoney(total) + '</b> <span class="mono" style="color:var(--tx4);">(' + unit.toFixed(3) + ' × ' + qty + ')</span>' +
+    (over ? '<div class="mt-1 text-[12px]" style="color:var(--warn);">' + t('bidOverBudget').replace('{budget}', bhdMoney(rfq.budget)) + '</div>' : '');
 }
 function updateQuoteTotal(){
   const el = document.getElementById('quote-total');
@@ -1737,8 +1900,8 @@ function updateQuoteTotal(){
 // "12.000 BHD / unit · 144.000 BHD total"; quotes from before unit pricing only have the total
 function quotePriceText(q){
   return q.unitPrice != null
-    ? fmt(q.unitPrice) + ' / unit &middot; <b>' + fmt(q.price) + '</b> total'
-    : '<b>' + fmt(q.price) + '</b> total <span style="color:var(--tx4);">(unit price not recorded)</span>';
+    ? t('quotePerUnit').replace('{price}', bhdMoney(q.unitPrice)) + ' &middot; <b>' + bhdMoney(q.price) + '</b> ' + t('quoteTotalWord')
+    : '<b>' + bhdMoney(q.price) + '</b> ' + t('quoteTotalWord') + ' <span style="color:var(--tx4);">' + t('quoteUnitNotRecorded') + '</span>';
 }
 
 async function submitQuote(){
@@ -1746,9 +1909,9 @@ async function submitQuote(){
   const days = parseInt(f.days, 10);
   if (!f.price || !days) return;
   const price = parseMoneyInput(f.price);
-  if (price == null || price <= 0) { showToast('Enter a number, e.g. 2.5'); return; }
+  if (price == null || price <= 0) { showToast(t('rfqBudgetNumber')); return; }
   const paymentTerms = f.paymentTerms === '' ? 30 : parseInt(f.paymentTerms, 10);
-  if (!Number.isInteger(paymentTerms) || paymentTerms < 0 || paymentTerms > 120) { showToast('Payment terms must be a whole number of days, 0-120.'); return; }
+  if (!Number.isInteger(paymentTerms) || paymentTerms < 0 || paymentTerms > 120) { showToast(t('bidTermsError')); return; }
   const rfqId = state.submitQuoteRfqId;
   setState({ quoteBusy:true });
   try {
@@ -1759,15 +1922,15 @@ async function submitQuote(){
     const files = state.quoteFiles;
     const errors = [];
     for (let i = 0; i < files.length; i++) {
-      setState({ quoteUploadNote: 'Uploading file ' + (i + 1) + ' of ' + files.length + '…' });
+      setState({ quoteUploadNote: t('bidUploading').replace('{i}', i + 1).replace('{n}', files.length) });
       const err = await uploadQuoteFile(quote.id, files[i]);
       if (err) errors.push(err);
     }
     // show "Quoted" right away; the server copy arrives with the next refreshRfqs()
     setState({ submitQuoteRfqId:null, quoteBusy:false, quoteFiles: [], quoteUploadNote: '', rfqs: (state.rfqs || []).map(r => r.id === rfqId ? { ...r, quotes: [{ ...quote, _count: { attachments: files.length - errors.length } }] } : r) });
     showToast(errors.length
-      ? 'Quote submitted, but ' + errors.length + ' file(s) failed (' + errors[0] + '). Add them via Files.'
-      : 'Quote submitted' + (files.length ? ' with ' + files.length + ' file(s).' : '.'));
+      ? t('bidFilesFailed').replace('{n}', errors.length).replace('{err}', errors[0])
+      : files.length ? t('bidSubmittedFiles').replace('{n}', files.length) : t('bidSubmitted'));
     refreshWallet(); refreshRfqs();
   } catch(e) {
     if (e.status === 409) {
@@ -2105,6 +2268,7 @@ function render(){
     : state.view === 'admin' ? renderAdmin()
     : state.view === 'buyer' ? renderDashboard('buyer')
     : renderDashboard('supplier');
+  hintClose();
   bindEvents();
 }
 
@@ -2256,7 +2420,7 @@ function field(name, label, value, placeholder, type){
 
 function renderDashboard(role){
   const isBuyer = role === 'buyer';
-  const walletLabel = (state.wallet ? Number(state.wallet.balance).toFixed(3) : '—') + ' credits';
+  const walletLabel = (state.wallet ? Number(state.wallet.balance).toFixed(3) : '—') + ' ' + t('walletCredits');
   const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
     '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo(isBuyer ? 'BUYER ACCOUNT' : 'SUPPLIER ACCOUNT') +
     '<div class="relative flex items-center gap-1.5 sm:gap-2.5">' +
@@ -2337,14 +2501,14 @@ function renderBuyerHub(){
   const awarded = rfqs.filter(r => r.status === 'AWARDED').length;
   const openOrders = activeOrderCount();
 
-  return '<div class="eyebrow mb-2">ZONE A · COMMAND HEADER</div>' +
+  return onboardingCard() +
   '<div class="flex flex-wrap items-start justify-between gap-4 mb-6">' +
     '<div><h1 class="text-[26px] font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">' + t('dashTitleBuyer') + '</h1>' +
     '<p class="mt-1 text-[13.5px] max-w-[520px]" style="color:var(--tx3);">' + t('dashSubBuyer') + '</p></div>' +
     '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('createRfq') + '</button>' +
   '</div>' +
   statsBar([[t('statActiveRfqs'), active], [t('statTotalQuotes'), totalQuotes], [t('statAwarded'), awarded], [t('statOpenOrders'), openOrders]]) +
-  '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentRfqs') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
+  '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentRfqs') + hint('rfq') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
   (rfqs.length === 0 ? emptyState('No RFQs yet', 'Post your first request and suppliers will start quoting.') : rfqTable(rfqs.slice(0,5))) +
   '<div class="flex items-center justify-between mb-4 mt-8"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentOrders') + '</h2><button onclick="setSection(\'lpos\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
   renderOrdersList(false, 3);
@@ -2408,7 +2572,7 @@ function statusPill(status){
 function renderBuyerRfqsPage(){
   const rfqs = state.rfqs || [];
   return '<div class="flex items-center justify-between mb-6">' +
-    '<div><div class="eyebrow mb-1.5">ALL REQUESTS</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Your RFQs</h1></div>' +
+    '<div><div class="eyebrow mb-1.5">ALL REQUESTS</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Your RFQs' + hint('rfq') + '</h1></div>' +
     '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc);">+ Create new RFQ</button>' +
   '</div>' +
   (rfqs.length === 0 ? emptyState('No RFQs yet', 'Post your first request and suppliers will start quoting.') : rfqTable(rfqs));
@@ -2423,7 +2587,7 @@ function renderLpoManagement(isBuyer){
   const closedOrders = orders.filter(isOrderClosed);
   const liveCount = activeOrderCount(); // = pending LPOs + live orders, i.e. exactly what the Live section lists
   return '<div class="eyebrow mb-1.5">CLOSED-LOOP TRACKER</div>' +
-  '<h1 class="text-[24px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">LPO management</h1>' +
+  '<h1 class="text-[24px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">LPO management' + hint('lpo') + '</h1>' +
   '<p class="mb-5 text-[13.5px] max-w-[620px]" style="color:var(--tx3);">One pipeline shared by both sides of the deal — from digital LPO to payment confirmation, with a full message trail per order.</p>' +
   '<div class="inline-block mb-6 rounded-lg border px-3.5 py-2 mono text-[12px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx3);">' + liveCount + ' live order(s)</div>' +
   '<div class="mb-6 flex flex-wrap gap-2">' + STAGES.map((s,i) => '<span class="chip" style="cursor:default;">' + (i+1) + ' &nbsp;' + s + '</span>').join('') + '</div>' +
@@ -2535,7 +2699,7 @@ function renderSupplierHub(){
   const rfqs = state.rfqs || [];
   const myCatalog = state.myCatalog || [];
   const activeOrders = activeOrderCount();
-  return '<div class="eyebrow mb-2">ZONE A · COMMAND HEADER</div>' +
+  return onboardingCard() +
   '<h1 class="text-[26px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">' + t('dashTitleSupplier') + '</h1>' +
   '<p class="mb-6 text-[13.5px] max-w-[560px]" style="color:var(--tx3);">' + t('dashSubSupplier') + '</p>' +
   statsBar([[t('statOpenRequests'), rfqs.length], [t('statCatalogItems'), myCatalog.length], [t('statActiveOrders'), activeOrders]]) +
@@ -2563,7 +2727,7 @@ function opportunityCard(r){
         '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
         '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; Verified buyer &middot; ' + esc(categoryLabel(r.category)) + '</div>' +
         (r.brand ? '<div class="mt-1 flex items-center gap-1.5 text-[11.5px]" style="color:var(--tx3);"><span class="font-semibold">' + esc(r.brand) + '</span>' +
-          '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (r.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + (r.exactBrandOnly ? 'Exact brand only' : 'Equivalent accepted') + '</span></div>' : '') +
+          '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (r.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + (r.exactBrandOnly ? 'Exact brand only' : 'Equivalent accepted') + '</span>' + hint('exact') + '</div>' : '') +
         (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">Your quote: ' + quotePriceText(ownQuote) + '</div>' : '') +
         specsHtml(r.specifications, r.id) +
       '</div>' +
@@ -2582,8 +2746,7 @@ function opportunityCard(r){
 
 function renderOpportunityFeedPage(){
   const rfqs = state.rfqs || [];
-  return '<div class="eyebrow mb-1.5">ZONE B · OPPORTUNITY FEED</div>' +
-  '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Opportunities</h1>' +
+  return '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Opportunities</h1>' +
   '<div class="flex gap-2 overflow-x-auto pb-1 mb-5">' +
     ACTIVE_CATEGORIES.map(c => '<span onclick="setOppCategory(' + jsAttr(c) + ')" class="chip' + (state.opportunityCategory===c?' active':'') + '">' + esc(c) + '</span>').join('') +
     COMING_SOON_CATEGORIES.map(c => '<span class="chip" title="Coming soon" style="opacity:0.45; cursor:not-allowed;">' + esc(c) + ' · Coming soon</span>').join('') + '</div>' +
@@ -2690,7 +2853,7 @@ function stockItemsList(items){
     '<button onclick="deleteStockItemUi(\'' + it.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx4);">Remove</button>';
 
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
-    '<thead><tr><th>' + t('stockItemCol') + '</th><th>' + t('stockQuantityCol') + '</th><th>' + t('stockThresholdCol') + '</th><th>' + t('stockStatusCol') + '</th><th></th></tr></thead><tbody>' +
+    '<thead><tr><th>' + t('stockItemCol') + '</th><th>' + t('stockQuantityCol') + '</th><th>' + t('stockThresholdCol') + hint('lowstock') + '</th><th>' + t('stockStatusCol') + '</th><th></th></tr></thead><tbody>' +
     items.map((it) => '<tr><td><div class="flex items-center gap-2.5">' + avatarHtml(it.name, 32) +
       '<div><span class="font-semibold" style="color:var(--tx);">' + esc(it.name) + '</span>' +
       (it.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(it.brand) + '</div>' : '') + '</div></div></td>' +
@@ -2815,7 +2978,7 @@ function renderStockAddModal(){
       CATALOG_UNITS.map(u => '<option value="' + u + '"' + (f.unit===u?' selected':'') + '>' + u + '</option>').join('') +
     '</select></label>' +
     (editing ? '' : field('quantity', t('stockQuantityCol') + ' (optional)', f.quantity, '0')) +
-    field('threshold', t('stockThresholdCol') + ' — ' + t('lowStockHint'), f.threshold, '0'),
+    field('threshold', t('stockThresholdCol') + ' — ' + t('lowStockHint') + hint('lowstock'), f.threshold, '0'),
     'saveStockItem()', state.stockBusy ? t('pleaseWait') : t('saveChanges'), state.stockBusy);
 }
 
@@ -2823,27 +2986,142 @@ function renderStockCountModal(){
   if (!state.showStockCount) return '';
   const it = (state.stock || []).find(s => s.id === state.showStockCount);
   if (!it) return '';
-  return modalWrap(t('recount') + ': ' + it.name, 'closeStockCount()',
+  return modalWrap(t('recount') + ': ' + esc(it.name) + hint('recount'), 'closeStockCount()',
     '<p class="text-[13px]" style="color:var(--tx3);">' + t('recountIntro').replace('{qty}', fmtQty(it.quantity)).replace('{unit}', esc(it.unit)) + '</p>' +
     '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('actualQuantity') + '</span>' +
       '<input data-stockcount type="text" inputmode="decimal" value="' + esc(state.stockCountValue) + '" placeholder="0" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
     'submitStockCount()', state.stockBusy ? t('pleaseWait') : t('saveChanges'), state.stockBusy);
 }
 
+// ---------- "?" hints ----------
+// hint('rfq') renders a small "?" button; its text is t('hint_rfq'). Hover/focus on devices with a mouse, tap
+// elsewhere. The bubble is one fixed-position element on <body> (never clipped by a modal's overflow) that is
+// rebuilt on every open, so it always matches the current language.
+function hint(key){
+  return '<button type="button" class="bx-hint" data-hint="' + key + '" aria-label="' + esc(t('hintLabel')) + '">?</button>';
+}
+let hintBtn = null;
+const hintCanHover = !!(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches);
+function hintClose(){
+  const p = document.getElementById('bx-hint-pop');
+  if (p) p.remove();
+  hintBtn = null;
+}
+function hintOpen(btn){
+  hintClose();
+  const pop = document.createElement('div');
+  pop.id = 'bx-hint-pop'; pop.className = 'bx-hint-pop'; pop.setAttribute('role', 'tooltip');
+  pop.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+  pop.textContent = t('hint_' + btn.getAttribute('data-hint'));
+  document.body.appendChild(pop);
+  const r = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight, vw = document.documentElement.clientWidth;
+  const left = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, vw - w - 8));
+  let top = r.bottom + 8;
+  if (top + h > window.innerHeight - 8 && r.top - h - 8 > 8) top = r.top - h - 8;
+  pop.style.left = left + 'px'; pop.style.top = top + 'px';
+  hintBtn = btn;
+}
+// capture phase: a "?" inside a label/modal header must not trigger the parent's click (focus, close, ...)
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('[data-hint]');
+  if (b) { e.preventDefault(); e.stopPropagation(); if (hintBtn === b && !hintCanHover) hintClose(); else hintOpen(b); return; }
+  if (hintBtn) hintClose();
+}, true);
+document.addEventListener('mouseover', (e) => { if (!hintCanHover) return; const b = e.target.closest && e.target.closest('[data-hint]'); if (b && b !== hintBtn) hintOpen(b); });
+document.addEventListener('mouseout', (e) => { if (!hintCanHover || !hintBtn) return; if (!(e.relatedTarget && hintBtn.contains(e.relatedTarget)) && e.target.closest && e.target.closest('[data-hint]') === hintBtn) hintClose(); });
+document.addEventListener('focusin', (e) => { if (!hintCanHover) return; const b = e.target.closest && e.target.closest('[data-hint]'); if (b) hintOpen(b); });
+document.addEventListener('focusout', (e) => { if (hintCanHover && hintBtn && e.target === hintBtn) hintClose(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hintClose(); });
+window.addEventListener('scroll', hintClose, true);
+window.addEventListener('resize', hintClose);
+
+// ---------- First-steps checklist (home page card) ----------
+// Steps come from GET /api/onboarding (derived from real data on the server, so they tick by themselves).
+async function refreshOnboarding(){
+  if (!state.token || !state.company || state.view === 'admin') return;
+  try { const data = await api('/api/onboarding'); setIfChanged('onboarding', data); }
+  catch(e) { /* a nicety: if it fails the card just stays as it was */ }
+}
+const OB_GO = {
+  profile: () => setSection('profile'),
+  verification: () => openVerifyModal(),
+  firstRfq: () => openPostRfq(),
+  award: () => setSection('rfqs'),
+  receipt: () => setSection('lpos'),
+  stock: () => { setSection('stock'); openStockAdd(); },
+  catalog: () => setSection('catalog'),
+  firstBid: () => setSection('rfqs'),
+  acceptLpo: () => setSection('lpos'),
+};
+function obGo(key){ if (OB_GO[key]) OB_GO[key](); }
+async function setOnboardingHidden(hidden){
+  try {
+    await api('/api/onboarding', { method:'PATCH', body: JSON.stringify({ hidden }) });
+    if (hidden) setState({ onboarding: { ...state.onboarding, visible:false, state:'hidden', dismissed:true } });
+    else { await refreshOnboarding(); showToast(t('obShownToast')); }
+  } catch(e) { showToast(e.message); }
+}
+function onboardingCard(){
+  const ob = state.onboarding;
+  if (!ob || !ob.visible) return '';
+  const hideBtn = '<button type="button" onclick="setOnboardingHidden(true)" class="shrink-0 rounded-lg px-2 py-1 text-[12px] font-semibold" style="color:var(--tx4);">' + t('obHide') + '</button>';
+  if (ob.state === 'done') {
+    return '<div class="mb-6 flex items-center justify-between gap-3 rounded-xl border px-4 py-2.5" style="border-color:var(--ok); background:var(--ok-soft);">' +
+      '<span class="min-w-0 text-[13px] font-semibold" style="color:var(--ok);">✓ ' + t('obDoneChip') + '</span>' + hideBtn + '</div>';
+  }
+  const firstOpen = ob.steps.findIndex(x => !x.done && !x.optional);
+  const rows = ob.steps.map((x, i) => {
+    const current = i === firstOpen;
+    const review = x.key === 'verification' && x.status === 'IN_REVIEW';
+    const dot = x.done
+      ? '<span class="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[12px] font-bold text-white" style="background:var(--ok);">✓</span>'
+      : '<span class="mono grid h-6 w-6 shrink-0 place-items-center rounded-full border text-[11px] font-bold" style="' + (current ? 'border-color:var(--acc); color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx4);') + '">' + (i + 1) + '</span>';
+    const action = x.done ? ''
+      : review ? '<span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--info-soft); color:var(--info);">' + t('obInReview') + '</span>'
+      : '<button type="button" onclick="obGo(\'' + x.key + '\')" class="shrink-0 rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="' + (current ? 'background:var(--acc); border-color:var(--acc); color:#fff;' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('obGo') + '</button>';
+    return '<div class="flex items-center gap-3 py-2.5' + (i ? ' border-t' : '') + '" style="border-color:var(--bd);">' + dot +
+      '<div class="min-w-0 flex-1"><div class="text-[13.5px] font-semibold" style="color:' + (x.done ? 'var(--tx4)' : 'var(--tx)') + ';">' + t('ob_' + x.key) +
+        (x.optional ? ' <span class="text-[11px] font-normal" style="color:var(--tx4);">(' + t('obOptional') + ')</span>' : '') + '</div>' +
+      (x.done ? '' : '<div class="text-[12px]" style="color:var(--tx4);">' + t('obd_' + x.key) + '</div>') + '</div>' + action + '</div>';
+  }).join('');
+  const pct = ob.total ? Math.round(100 * ob.doneCount / ob.total) : 0;
+  return '<div class="mb-6 rounded-xl border p-4 sm:p-5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="text-[15px] font-bold" style="color:var(--tx);">' + t('obTitle') + '</div>' +
+    '<div class="mt-0.5 text-[12px]" style="color:var(--tx4);">' + t('obProgress').replace('{n}', ob.doneCount).replace('{m}', ob.total) + '</div></div>' + hideBtn + '</div>' +
+    '<div class="mt-3 h-1.5 overflow-hidden rounded-full" style="background:var(--sunken);"><div class="h-full rounded-full" style="width:' + pct + '%; background:var(--ok);"></div></div>' +
+    '<div class="mt-2">' + rows + '</div></div>';
+}
+// Settings: the way back after hiding the card
+function onboardingRestoreBlock(){
+  if (!state.onboarding || !state.onboarding.dismissed) return '';
+  return '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-1 text-[15px] font-bold" style="color:var(--tx);">' + t('obSettingsHeading') + '</div>' +
+    '<div class="mb-3 text-[12.5px]" style="color:var(--tx4);">' + t('obSettingsText') + '</div>' +
+    '<button type="button" onclick="setOnboardingHidden(false)" class="rounded-lg border px-3 py-2 text-[12.5px] font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t('obShowAgain') + '</button></div>';
+}
+
 // ---------- Wallet modal ----------
 
+// the server's reference text is English ("Admin credit", "Refund: RFQ cancelled (RFQ …)"): known kinds are
+// labelled from the type, and only a custom top-up/adjustment note is shown as written
+function walletTxLabel(tx){
+  if (tx.type === 'BID_DEBIT') return t('walletTxBidFee');
+  if (tx.type === 'REFUND') return t('walletTxRefund');
+  if (tx.type === 'TOPUP') return !tx.reference || tx.reference === 'Admin credit' ? t('walletTxTopup') : tx.reference;
+  return tx.reference || t('walletTxAdjust');
+}
 function renderWalletModal(){
   if (!state.showWalletModal) return '';
   const bal = state.wallet ? Number(state.wallet.balance) : 0;
   const txs = (state.wallet && state.wallet.transactions) || [];
   return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-end bg-black/50">' +
     '<div class="bx-rise h-full w-full max-w-sm overflow-y-auto bx-scroll p-6" style="background:var(--panel);">' +
-      '<div class="flex items-center justify-between mb-1"><span class="eyebrow">WALLET</span><button onclick="closeWalletModal()" class="text-[16px]" style="color:var(--tx4);">&times;</button></div>' +
-      '<h2 class="text-[20px] font-extrabold mb-5" style="color:var(--tx);">Bid credits</h2>' +
+      '<div class="flex items-center justify-between mb-1"><span class="eyebrow">' + t('walletEyebrow') + '</span><button onclick="closeWalletModal()" class="text-[16px]" style="color:var(--tx4);">&times;</button></div>' +
+      '<h2 class="text-[20px] font-extrabold mb-5" style="color:var(--tx);">' + t('walletTitle') + hint('wallet') + '</h2>' +
       '<div class="rounded-xl p-5 mb-5" style="background:var(--acc-soft);">' +
-        '<div class="eyebrow" style="color:var(--acc);">AVAILABLE BALANCE</div>' +
-        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(3) + ' credits</div>' +
-        (bidFeePercent() > 0 ? '<div class="mt-1 text-[12px]" style="color:var(--tx3);">Credits are used to submit quotes: ' + bidFeePercent() + '% of the RFQ budget per quote.</div>' : '') +
+        '<div class="eyebrow" style="color:var(--acc);">' + t('walletAvailable') + '</div>' +
+        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(3) + ' ' + t('walletCredits') + '</div>' +
+        (bidFeePercent() > 0 ? '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + t('walletFeeNote').replace('{n}', bidFeePercent()) + '</div>' : '') +
       '</div>' +
       '<div class="rounded-xl border px-4 py-3 text-[13px] font-semibold" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + t('walletContactAdmin') + '</div>' +
       '<h3 class="mt-6 mb-2 text-[13px] font-bold" style="color:var(--tx);">' + t('walletHistory') + '</h3>' +
@@ -2851,7 +3129,7 @@ function renderWalletModal(){
         '<div class="flex flex-col gap-1.5">' + txs.map(tx => {
           const amt = Number(tx.amount);
           return '<div class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[12px]" style="border-color:var(--bd);">' +
-            '<div class="min-w-0"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(tx.type === 'BID_DEBIT' ? 'Bid fee' : (tx.reference || (tx.type === 'TOPUP' ? 'Top-up' : tx.type))) + '</div>' +
+            '<div class="min-w-0"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(walletTxLabel(tx)) + '</div>' +
             '<div class="mono text-[10.5px]" style="color:var(--tx4);">' + new Date(tx.createdAt).toLocaleString() + '</div></div>' +
             '<span class="mono font-bold shrink-0" style="color:' + (amt >= 0 ? 'var(--ok)' : 'var(--tx2)') + ';">' + (amt >= 0 ? '+' : '') + amt.toFixed(3) + '</span></div>';
         }).join('') + '</div>') +
@@ -2867,7 +3145,7 @@ function renderSettings(){
   return '<div class="eyebrow mb-1.5">ACCOUNT</div>' +
   '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Settings</h1>' +
   '<div class="max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
-    '<div class="mb-4 flex items-center gap-2">' + verificationBadge() + '</div>' +
+    '<div class="mb-4 flex items-center gap-2">' + verificationBadge() + hint('verification') + '</div>' +
     '<div class="flex flex-col gap-4">' +
       profileField('name','Company name', f.name) +
       profileField('country','Country', f.country) +
@@ -2876,6 +3154,7 @@ function renderSettings(){
     '</div>' +
     '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + (state.profileBusy ? 'Saving…' : 'Save changes') + '</button>' +
   '</div>' +
+  onboardingRestoreBlock() +
   '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">' + t('settingsEmailHeading') + '</div>' +
     '<div class="flex flex-col gap-3">' +
@@ -3147,7 +3426,7 @@ function verificationBanner(){
   const st = state.company ? state.company.verificationStatus : null;
   if (!st || st === 'VERIFIED' || st === 'IN_REVIEW') return '';
   return '<div class="mb-6 flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
-    '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + (st === 'REJECTED' ? 'Your verification was rejected — submit a new document.' : 'Get verified: upload your trade license or CR certificate for review by the Biddex team.') + '</div>' +
+    '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + (st === 'REJECTED' ? 'Your verification was rejected — submit a new document.' : 'Get verified: upload your trade license or CR certificate for review by the Biddex team.') + hint('verification') + '</div>' +
     '<button onclick="openVerifyModal()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Submit document</button>' +
   '</div>';
 }
@@ -3649,7 +3928,7 @@ function renderModals(){
     const more = rfqMoreOpen();
     const units = CATALOG_UNITS.concat(r.unit && !CATALOG_UNITS.includes(r.unit) ? [r.unit] : []);
     const feeOn = bidFeePercent() > 0;
-    html += modalWrap(t(editing ? 'rfqModalEdit' : 'rfqModalPost'), 'closePostRfq()',
+    html += modalWrap(t(editing ? 'rfqModalEdit' : 'rfqModalPost') + hint('rfq'), 'closePostRfq()',
       // 1. what
       '<div class="flex flex-col gap-1.5"><label class="flex flex-col gap-1.5">' + label(t('rfqWhatNeed')) +
         '<input data-field="title" type="text" autocomplete="off" value="' + esc(r.title) + '" placeholder="' + t('rfqWhatNeedPh') + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + boxStyle + '" /></label>' +
@@ -3682,7 +3961,7 @@ function renderModals(){
           field('brand', t('rfqBrand'), r.brand, t('rfqBrandPh')) +
           '<div id="brand-toggle-container" class="flex gap-2" style="display:' + ((r.brand || '').trim() ? 'flex' : 'none') + ';">' +
             '<button type="button" onclick="setExactBrandOnly(false)" class="flex-1 rounded-lg border px-3 py-2 text-[12px] font-bold" style="' + (!r.exactBrandOnly ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('rfqEquivalent') + '</button>' +
-            '<button type="button" onclick="setExactBrandOnly(true)" class="flex-1 rounded-lg border px-3 py-2 text-[12px] font-bold" style="' + (r.exactBrandOnly ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('rfqExactBrand') + '</button>' +
+            '<button type="button" onclick="setExactBrandOnly(true)" class="flex-1 rounded-lg border px-3 py-2 text-[12px] font-bold" style="' + (r.exactBrandOnly ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t('rfqExactBrand') + '</button>' + hint('exact') +
           '</div>' +
           field('budget', feeOn ? t('rfqBudget') + t('rfqBudgetFee').replace('{n}', bidFeePercent()) : t('rfqBudgetOpt'), r.budget, t('rfqBudgetPh')) +
           '<label class="flex flex-col gap-1.5">' + label(t('rfqCategory')) +
@@ -3781,11 +4060,11 @@ function renderModals(){
       return shortlisted +
         (x.status === 'SUBMITTED' ? btn('Shortlist', "changeQuoteStatus('" + x.id + "','shortlist')", 'border-color:var(--bd2); color:var(--tx);') : '') +
         btn('Reject', "changeQuoteStatus('" + x.id + "','reject')", 'border-color:var(--bd2); color:var(--bad);') +
-        '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">Award</button>';
+        '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">Award</button>' + hint('award');
     };
     html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
       '<div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quotes</h3>' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Quotes' + hint('quote') + '</h3>' +
         '<button onclick="closeCompare()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
         (compareRfq && (compareRfq.imageUrl || compareRfq.brand)
           ? '<div class="mt-3 flex items-center gap-2.5 rounded-lg border p-2" style="border-color:var(--bd); background:var(--inset);">' +
@@ -3818,31 +4097,31 @@ function renderModals(){
     const costNotice = !hasBudget
       ? ''
       : feePercent > 0
-      ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">Submitting a quote costs <b class="mono">' + fee.toFixed(3) + ' BHD</b> (' + feePercent + '% of this RFQ\'s ' + fmt(rfqForQuote.budget) + ' budget), deducted from your wallet.</div>'
+      ? '<div class="rounded-lg px-3 py-2.5 text-[12.5px]" style="background:var(--acc-soft2); color:var(--tx2);">' + t('bidCost').replace('{fee}', bhdMoney(fee)).replace('{pct}', feePercent).replace('{budget}', bhdMoney(rfqForQuote.budget)) + '</div>'
       : '';
-    html += modalWrap('Submit quote', 'closeSubmitQuote()',
+    html += modalWrap(t('bidTitle') + hint('quote'), 'closeSubmitQuote()',
       costNotice +
-      (rfqForQuote && rfqForQuote.specifications ? '<div class="rounded-lg border px-3 py-2.5" style="border-color:var(--bd); background:var(--inset);"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Buyer\'s specifications</div><div class="mt-1 text-[12.5px] leading-relaxed" style="color:var(--tx2); white-space:pre-wrap; overflow-wrap:anywhere; max-height:160px; overflow-y:auto;">' + esc(rfqForQuote.specifications) + '</div></div>' : '') +
-      '<div class="text-[12.5px]" style="color:var(--tx3);">Quantity requested: <b class="mono" style="color:var(--tx);">' + esc(rfqForQuote && rfqForQuote.quantity || '—') + ' ' + esc(rfqForQuote && rfqForQuote.unit || '') + '</b></div>' +
-      field('price','Unit price (BHD per ' + esc(rfqForQuote && rfqForQuote.unit || 'unit') + ')', f.price, '5.800') +
+      (rfqForQuote && rfqForQuote.specifications ? '<div class="rounded-lg border px-3 py-2.5" style="border-color:var(--bd); background:var(--inset);"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('bidSpecs') + '</div><div class="mt-1 text-[12.5px] leading-relaxed" style="color:var(--tx2); white-space:pre-wrap; overflow-wrap:anywhere; max-height:160px; overflow-y:auto;">' + esc(rfqForQuote.specifications) + '</div></div>' : '') +
+      '<div class="text-[12.5px]" style="color:var(--tx3);">' + t('bidQty') + ' <b class="mono" style="color:var(--tx);">' + esc(rfqForQuote && rfqForQuote.quantity || '—') + ' ' + esc(unitLabel(rfqForQuote && rfqForQuote.unit || '')) + '</b></div>' +
+      field('price', t('bidUnitPrice').replace('{cur}', t('bhd')).replace('{unit}', esc(rfqForQuote && rfqForQuote.unit ? unitLabel(rfqForQuote.unit) : t('bidUnitWord'))), f.price, '5.800') +
       '<div id="quote-total" class="rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + quoteTotalHtml(f.price, rfqForQuote) + '</div>' +
-      field('days','Delivery (days)', f.days, '2') +
-      field('paymentTerms','Payment terms (days after buyer confirms receipt)', f.paymentTerms, '30') +
-      '<div class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Attachments (optional, up to ' + MAX_QUOTE_FILES + ')</span>' +
+      field('days', t('bidDelivery'), f.days, '2') +
+      field('paymentTerms', t('bidTerms'), f.paymentTerms, '30') +
+      '<div class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('bidAttach').replace('{n}', MAX_QUOTE_FILES) + '</span>' +
         (state.quoteFiles.length ? '<div class="flex flex-col gap-1.5">' + state.quoteFiles.map((file, i) =>
           '<div class="flex items-center justify-between gap-2 rounded-lg border px-3 py-1.5 text-[12px]" style="border-color:var(--bd);"><span class="truncate" style="color:var(--tx);">' + esc(file.name) + ' <span class="mono" style="color:var(--tx4);">' + fmtBytes(file.size) + '</span></span>' +
-          (state.quoteBusy ? '' : '<button onclick="removeQuoteFile(' + i + ')" class="text-[11px] font-semibold shrink-0" style="color:var(--tx4);">Remove</button>') + '</div>').join('') + '</div>' : '') +
+          (state.quoteBusy ? '' : '<button onclick="removeQuoteFile(' + i + ')" class="text-[11px] font-semibold shrink-0" style="color:var(--tx4);">' + t('bidRemove') + '</button>') + '</div>').join('') + '</div>' : '') +
         (state.quoteFiles.length < MAX_QUOTE_FILES && !state.quoteBusy
           ? '<label class="flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2 text-[12px] cursor-pointer" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-              '<span class="shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">Add file</span>' +
-              '<span class="min-w-0 truncate" style="color:var(--tx4);">PDF, JPEG, PNG or WebP</span>' +
+              '<span class="shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('bidAddFile') + '</span>' +
+              '<span class="min-w-0 truncate" style="color:var(--tx4);">' + t('bidFileTypes') + '</span>' +
               '<input data-quotefiles type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" class="sr-only" />' +
             '</label>'
           : '') +
-        '<span class="text-[11px]" style="color:var(--tx4);">Specs, certificates or photos: PDF, JPEG, PNG or WebP, up to 10 MB each. Only the buyer and Biddex admins can see them. You can change them until the buyer shortlists your quote or bidding closes.</span>' +
+        '<span class="text-[11px]" style="color:var(--tx4);">' + t('bidAttachNote') + '</span>' +
         (state.quoteUploadNote ? '<span class="text-[12px] font-semibold" style="color:var(--acc);">' + esc(state.quoteUploadNote) + '</span>' : '') +
       '</div>',
-      'submitQuote()', state.quoteBusy ? 'Submitting…' : 'Submit quote', state.quoteBusy);
+      'submitQuote()', state.quoteBusy ? t('bidSubmitting') : t('bidTitle'), state.quoteBusy);
   }
   if (state.attQuoteId) {
     const rfq = (state.rfqs || []).find(r => r.id === state.attRfqId) || {};
@@ -4144,6 +4423,7 @@ setInterval(() => {
     refreshOrders();
     refreshLpos();
     refreshNotifications();
+    refreshOnboarding();
     if (state.section === 'orderDetail' && state.selectedOrderId) { refreshChat(state.selectedOrderId); refreshOrderDocs(state.selectedOrderId); }
   } else if (state.view === 'admin') {
     refreshAdmin();
