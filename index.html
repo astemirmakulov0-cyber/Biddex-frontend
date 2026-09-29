@@ -532,7 +532,179 @@ const I18N = {
     qfNoteFrozen:"Files are frozen: the buyer evaluates your quote with the files above.",
     qfAttached:"File attached.",
     qfRemoved:"File removed.",
-    qfConfirmRemove:"Remove this file from your quote?"
+    qfConfirmRemove:"Remove this file from your quote?",
+    osConfirmed:"Confirmed",
+    osInProgress:"In progress",
+    osShipped:"Shipped",
+    osDelivered:"Delivered",
+    osCompleted:"Completed",
+    osDisputed:"Disputed",
+    osCancelled:"Cancelled",
+    dsPending:"Pending",
+    dsDispatched:"Dispatched",
+    dsInTransit:"In transit",
+    dsDelivered:"Delivered",
+    dsFailed:"Failed",
+    isIssued:"Issued",
+    isPartiallyPaid:"Partially paid",
+    isPaid:"Paid",
+    isOverdue:"Overdue",
+    isCancelled:"Cancelled",
+    lsIssued:"issued",
+    lsAccepted:"accepted",
+    lsDeclined:"declined",
+    stage1:"LPO issued",
+    stage2:"Accepted",
+    stage3:"Shipped",
+    stage4:"Received",
+    stage5:"Payment confirmed",
+    stage6:"Completed",
+    stageOf:"Stage {n} / 6",
+    stagesDone:"Completed · all 6 stages done",
+    disputedPrefix:"Disputed · {rest}",
+    overdueToday:"Overdue 0 days",
+    overdueOne:"Overdue 1 day",
+    overdueTwo:"Overdue {n} days",
+    overdueFew:"Overdue {n} days",
+    overdueMany:"Overdue {n} days",
+    pmBank:"Bank transfer",
+    pmBenefit:"BenefitPay",
+    pmCheque:"Cheque",
+    pmCash:"Cash",
+    pmCard:"Card",
+    pmOther:"Other",
+    payPending:"Awaiting confirmation",
+    payCompleted:"Confirmed",
+    payFailed:"Rejected",
+    payRefunded:"Refunded",
+    dkDeliveryNote:"Delivery note",
+    dkInvoice:"Invoice",
+    dkOther:"Other",
+    dkQuoteAttachment:"Bid attachment",
+    lpoEyebrow:"CLOSED-LOOP TRACKER",
+    lpoTitle:"LPO management",
+    lpoSubtitle:"One pipeline shared by both sides of the deal — from digital LPO to payment confirmation, with a full message trail per order.",
+    lpoLiveCount:"{n} live order(s)",
+    lpoNoLive:"No live orders",
+    lpoNoOrders:"No orders yet",
+    lpoFinishedBelow:"Finished orders are listed under Completed below.",
+    lpoBuyerEmpty:"Orders are created once you award a supplier.",
+    lpoSupplierEmpty:"Accepted purchase orders will appear here.",
+    lpoLiveOrders:"Live orders",
+    lpoAwaitingSupplier:"Awaiting supplier acceptance",
+    lpoPurchaseOrder:"Purchase order",
+    lpoWaitingSupplier:"Waiting for supplier",
+    lpoClosedGroup:"Completed & cancelled",
+    lpoOrderFallback:"Order",
+    lpoOpenOrder:"Open order",
+    lpoAwaitingYou:"Awaiting your acceptance",
+    lpoDecline:"Decline",
+    lpoAccept:"Accept order",
+    lpoNoneInProgress:"No orders in progress",
+    lpoCompletedUnder:"Completed orders are under LPO management.",
+    odBack:"← Back to LPO management",
+    odEyebrow:"ORDER · {status}",
+    odNotFound:"Order not found",
+    odGoBack:"Go back and try again.",
+    odMarkShipped:"Mark as shipped",
+    odMarkDelivered:"Mark as delivered",
+    odSendAgain:"Send again",
+    odDeliveryFailed:"Delivery failed",
+    odPayableAfter:"Payable after you confirm receipt",
+    odPay:"Pay {amount}",
+    odAwaitingSupplierConfirm:"Awaiting supplier confirmation",
+    odConfirmReceipt:"Confirm receipt",
+    odAwaitingBuyerReceipt:"Awaiting buyer's receipt confirmation",
+    odOpenDispute:"Open dispute",
+    odDisputedNote:"This order is disputed and paused until a Biddex admin reviews it. The decision will appear in the messages below.",
+    cardRequest:"Request",
+    cardPo:"Purchase order",
+    cardDelivery:"Delivery",
+    cardInvoice:"Invoice",
+    rowQuantity:"Quantity",
+    rowNeededBy:"Needed by",
+    rowDescription:"Description",
+    rowLpo:"LPO",
+    rowBuyer:"Buyer",
+    rowSupplier:"Supplier",
+    rowAmount:"Amount",
+    rowTerms:"Terms",
+    rowPaymentTerms:"Payment terms",
+    rowPaymentTermsVal:"{n} days after receipt is confirmed",
+    rowStatus:"Status",
+    rowStatusWithLpo:"{status} (LPO {lpo})",
+    rowTracking:"Tracking",
+    rowDispatched:"Dispatched",
+    rowDelivered:"Delivered",
+    rowReceiptConfirmed:"Receipt confirmed",
+    rowDueDate:"Due date",
+    rowConfirmed:"Confirmed",
+    rowAwaitingConfirmation:"Awaiting confirmation",
+    rowOutstanding:"Outstanding",
+    payTitle:"Payments",
+    payNone:"No payments reported yet.",
+    payRef:"ref {ref}",
+    payReported:"Reported {date}",
+    payReject:"Reject",
+    payConfirmReceived:"Confirm received",
+    chatTitle:"Messages",
+    chatEmpty:"No messages yet — say hello.",
+    chatPlaceholder:"Type a message…",
+    chatSend:"Send",
+    chatAdmin:"BIDDEX ADMIN",
+    docsTitle:"Documents",
+    docsNone:"No documents yet.",
+    docsUploadHint:" Upload delivery notes, invoices, certificates or photos (PDF, JPEG, PNG, WebP, up to 10 MB).",
+    docsUploadFile:"Upload file",
+    docsNote:"PDF, JPEG, PNG or WebP, up to 10 MB. Visible only to you, your counterparty and Biddex admins.",
+    docsUploading:"Uploading…",
+    toastDocUploaded:"{kind} uploaded.",
+    toastDocRemoved:"Document removed.",
+    rcTitle:"Confirm receipt",
+    rcBody:"Confirm that {bold}. The confirmation is posted to the order chat, the supplier is notified and the invoice becomes payable. After confirming you can no longer open a dispute on this order.",
+    rcBold:"all goods arrived in the agreed quantity and quality",
+    rcPlaceholder:"Optional note, e.g. counted 200 bags, all intact",
+    rcReport:"Report a problem",
+    rcOk:"Everything is correct",
+    rcBusy:"Confirming…",
+    dpTitle:"Open dispute",
+    dpBody:"The order will be paused until a Biddex admin reviews it and either resumes or cancels it. Your reason is posted to the order chat and the supplier is notified.",
+    dpPlaceholder:"What went wrong? e.g. 20 of 100 units arrived damaged",
+    dpBusy:"Opening…",
+    dcTitle:"Decline purchase order",
+    dcBody:"The buyer will be notified and can award the RFQ to another supplier.",
+    dcNoRefund:"Your bid fee is not refunded.",
+    dcReason:"Reason for the buyer (optional)",
+    dcPlaceholder:"e.g. Out of stock until next month",
+    dcBusy:"Declining…",
+    dfTitle:"Delivery failed",
+    dfReason:"Reason (shown to the buyer, required)",
+    dfPlaceholder:"e.g. Recipient not available, will retry tomorrow",
+    dfSubmit:"Mark as failed",
+    pmTitle:"Report a payment",
+    pmOutstanding:"Outstanding: {amount}. The supplier confirms the payment once the money arrives; until then it shows as awaiting confirmation.",
+    pmAmount:"Amount ({cur})",
+    pmMethod:"Method",
+    pmReference:"Reference / transfer no. (optional)",
+    pmBusy:"Sending…",
+    pmSubmit:"Report payment",
+    toastDisputeReason:"Describe the problem for the admin and the supplier.",
+    toastDisputeOpened:"Dispute opened — a Biddex admin will review it.",
+    toastReceipt:"Receipt confirmed — the invoice is now payable.",
+    toastOrderConfirmed:"Order confirmed — delivery and invoice created.",
+    toastLpoDeclined:"Purchase order declined.",
+    toastDelDispatched:"Marked as dispatched.",
+    toastDelShipped:"Marked as shipped.",
+    toastDelDelivered:"Marked as delivered.",
+    toastDelFailed:"Delivery marked as failed.",
+    toastDelUpdated:"Delivery status updated.",
+    toastDelReason:"Describe why the delivery failed.",
+    toastPositiveAmount:"Enter a positive amount.",
+    toastAmountTooBig:"Amount is more than the outstanding {amount}.",
+    toastPayReported:"Payment reported — waiting for the supplier to confirm it.",
+    toastPayConfirmed:"Payment confirmed.",
+    toastPayRejected:"Payment rejected.",
+    promptRejectPayment:"Reject this payment? Optionally say why (e.g. \"not received\"):"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -947,7 +1119,179 @@ const I18N = {
     qfNoteFrozen:"الملفات مثبّتة: يقيّم المشتري عرضك بالملفات أعلاه.",
     qfAttached:"تم إرفاق الملف.",
     qfRemoved:"تمت إزالة الملف.",
-    qfConfirmRemove:"هل تريد إزالة هذا الملف من عرضك؟"
+    qfConfirmRemove:"هل تريد إزالة هذا الملف من عرضك؟",
+    osConfirmed:"مؤكدة",
+    osInProgress:"قيد التنفيذ",
+    osShipped:"تم الشحن",
+    osDelivered:"تم التسليم",
+    osCompleted:"مكتملة",
+    osDisputed:"قيد النزاع",
+    osCancelled:"ملغاة",
+    dsPending:"قيد الانتظار",
+    dsDispatched:"تم الإرسال",
+    dsInTransit:"في الطريق",
+    dsDelivered:"تم التسليم",
+    dsFailed:"فشل التسليم",
+    isIssued:"صادرة",
+    isPartiallyPaid:"مدفوعة جزئيًا",
+    isPaid:"مدفوعة",
+    isOverdue:"متأخرة",
+    isCancelled:"ملغاة",
+    lsIssued:"صادر",
+    lsAccepted:"مقبول",
+    lsDeclined:"مرفوض",
+    stage1:"إصدار أمر الشراء",
+    stage2:"القبول",
+    stage3:"الشحن",
+    stage4:"الاستلام",
+    stage5:"تأكيد الدفع",
+    stage6:"الاكتمال",
+    stageOf:"المرحلة {n} من 6",
+    stagesDone:"مكتملة · اكتملت المراحل الست",
+    disputedPrefix:"قيد النزاع · {rest}",
+    overdueToday:"متأخرة منذ اليوم",
+    overdueOne:"متأخرة يومًا واحدًا",
+    overdueTwo:"متأخرة يومين",
+    overdueFew:"متأخرة {n} أيام",
+    overdueMany:"متأخرة {n} يومًا",
+    pmBank:"تحويل بنكي",
+    pmBenefit:"بنفت باي",
+    pmCheque:"شيك",
+    pmCash:"نقدًا",
+    pmCard:"بطاقة",
+    pmOther:"أخرى",
+    payPending:"بانتظار التأكيد",
+    payCompleted:"مؤكدة",
+    payFailed:"مرفوضة",
+    payRefunded:"مستردة",
+    dkDeliveryNote:"إشعار تسليم",
+    dkInvoice:"فاتورة",
+    dkOther:"أخرى",
+    dkQuoteAttachment:"مرفق عرض",
+    lpoEyebrow:"تتبّع متكامل",
+    lpoTitle:"إدارة أوامر الشراء (LPO)",
+    lpoSubtitle:"مسار واحد يجمع طرفي الصفقة — من أمر الشراء الرقمي حتى تأكيد الدفع، مع سجل كامل للرسائل لكل طلبية.",
+    lpoLiveCount:"{n} طلبية جارية",
+    lpoNoLive:"لا توجد طلبيات جارية",
+    lpoNoOrders:"لا توجد طلبيات بعد",
+    lpoFinishedBelow:"تظهر الطلبيات المنتهية ضمن «المكتملة والملغاة» أدناه.",
+    lpoBuyerEmpty:"تُنشأ الطلبيات بمجرد ترسية عرض على مورد.",
+    lpoSupplierEmpty:"ستظهر هنا أوامر الشراء التي تقبلها.",
+    lpoLiveOrders:"الطلبيات الجارية",
+    lpoAwaitingSupplier:"بانتظار قبول المورد",
+    lpoPurchaseOrder:"أمر شراء",
+    lpoWaitingSupplier:"بانتظار المورد",
+    lpoClosedGroup:"المكتملة والملغاة",
+    lpoOrderFallback:"طلبية",
+    lpoOpenOrder:"فتح الطلبية",
+    lpoAwaitingYou:"بانتظار قبولك",
+    lpoDecline:"رفض",
+    lpoAccept:"قبول الطلبية",
+    lpoNoneInProgress:"لا توجد طلبيات قيد التنفيذ",
+    lpoCompletedUnder:"الطلبيات المكتملة موجودة ضمن إدارة أوامر الشراء.",
+    odBack:"العودة إلى إدارة أوامر الشراء (LPO) →",
+    odEyebrow:"طلبية · {status}",
+    odNotFound:"الطلبية غير موجودة",
+    odGoBack:"ارجع وحاول مرة أخرى.",
+    odMarkShipped:"تأكيد الشحن",
+    odMarkDelivered:"تأكيد التسليم",
+    odSendAgain:"إعادة الإرسال",
+    odDeliveryFailed:"فشل التسليم",
+    odPayableAfter:"تُدفع بعد تأكيدك الاستلام",
+    odPay:"دفع {amount}",
+    odAwaitingSupplierConfirm:"بانتظار تأكيد المورد",
+    odConfirmReceipt:"تأكيد الاستلام",
+    odAwaitingBuyerReceipt:"بانتظار تأكيد المشتري للاستلام",
+    odOpenDispute:"فتح نزاع",
+    odDisputedNote:"هذه الطلبية محل نزاع وهي متوقفة حتى يراجعها مسؤول Biddex. سيظهر القرار في الرسائل أدناه.",
+    cardRequest:"تفاصيل الطلب",
+    cardPo:"أمر الشراء (LPO)",
+    cardDelivery:"التوصيل",
+    cardInvoice:"الفاتورة",
+    rowQuantity:"الكمية",
+    rowNeededBy:"مطلوب بحلول",
+    rowDescription:"الوصف",
+    rowLpo:"أمر الشراء",
+    rowBuyer:"المشتري",
+    rowSupplier:"المورد",
+    rowAmount:"المبلغ",
+    rowTerms:"الشروط",
+    rowPaymentTerms:"شروط الدفع",
+    rowPaymentTermsVal:"بعد {n} يومًا من تأكيد الاستلام",
+    rowStatus:"الحالة",
+    rowStatusWithLpo:"{status} (أمر الشراء: {lpo})",
+    rowTracking:"التتبّع",
+    rowDispatched:"وقت الإرسال",
+    rowDelivered:"وقت التسليم",
+    rowReceiptConfirmed:"تأكيد الاستلام",
+    rowDueDate:"تاريخ الاستحقاق",
+    rowConfirmed:"المؤكد",
+    rowAwaitingConfirmation:"بانتظار التأكيد",
+    rowOutstanding:"المتبقي",
+    payTitle:"الدفعات",
+    payNone:"لم يتم الإبلاغ عن أي دفعة بعد.",
+    payRef:"المرجع: {ref}",
+    payReported:"تم الإبلاغ في {date}",
+    payReject:"رفض",
+    payConfirmReceived:"تأكيد وصول المبلغ",
+    chatTitle:"الرسائل",
+    chatEmpty:"لا توجد رسائل بعد — ابدأ المحادثة.",
+    chatPlaceholder:"اكتب رسالة…",
+    chatSend:"إرسال",
+    chatAdmin:"إدارة Biddex",
+    docsTitle:"المستندات",
+    docsNone:"لا توجد مستندات بعد.",
+    docsUploadHint:" ارفع إشعارات التسليم أو الفواتير أو الشهادات أو الصور (PDF أو JPEG أو PNG أو WebP، حتى 10 ميغابايت).",
+    docsUploadFile:"رفع ملف",
+    docsNote:"PDF أو JPEG أو PNG أو WebP، حتى 10 ميغابايت. لا يراها إلا أنت والطرف الآخر ومسؤولو Biddex.",
+    docsUploading:"جارٍ الرفع…",
+    toastDocUploaded:"تم رفع المستند ({kind}).",
+    toastDocRemoved:"تمت إزالة المستند.",
+    rcTitle:"تأكيد الاستلام",
+    rcBody:"أكّد أن {bold}. سيُنشر التأكيد في محادثة الطلبية، وسيُشعَر المورد، وتصبح الفاتورة مستحقة الدفع. بعد التأكيد لا يمكنك فتح نزاع على هذه الطلبية.",
+    rcBold:"جميع البضائع وصلت بالكمية والجودة المتفق عليهما",
+    rcPlaceholder:"ملاحظة اختيارية، مثال: عددت 200 كيسًا وكلها سليمة",
+    rcReport:"الإبلاغ عن مشكلة",
+    rcOk:"كل شيء سليم",
+    rcBusy:"جارٍ التأكيد…",
+    dpTitle:"فتح نزاع",
+    dpBody:"ستتوقف الطلبية حتى يراجعها مسؤول Biddex ويقرر استئنافها أو إلغاءها. سيُنشر سببك في محادثة الطلبية ويُشعَر المورد.",
+    dpPlaceholder:"ما المشكلة؟ مثال: وصلت 20 وحدة تالفة من أصل 100",
+    dpBusy:"جارٍ الفتح…",
+    dcTitle:"رفض أمر الشراء",
+    dcBody:"سيُشعَر المشتري ويمكنه ترسية طلب التسعير على مورد آخر.",
+    dcNoRefund:"لا يُعاد رسم العرض الذي دفعته.",
+    dcReason:"سبب الرفض للمشتري (اختياري)",
+    dcPlaceholder:"مثال: نفد المخزون حتى الشهر القادم",
+    dcBusy:"جارٍ الرفض…",
+    dfTitle:"فشل التسليم",
+    dfReason:"السبب (يظهر للمشتري، مطلوب)",
+    dfPlaceholder:"مثال: المستلم غير متواجد، سنعيد المحاولة غدًا",
+    dfSubmit:"تسجيل فشل التسليم",
+    pmTitle:"الإبلاغ عن دفعة",
+    pmOutstanding:"المتبقي: {amount}. يؤكد المورد الدفعة عند وصول المبلغ، وتظهر حتى ذلك الحين بانتظار التأكيد.",
+    pmAmount:"المبلغ ({cur})",
+    pmMethod:"طريقة الدفع",
+    pmReference:"المرجع / رقم التحويل (اختياري)",
+    pmBusy:"جارٍ الإرسال…",
+    pmSubmit:"الإبلاغ عن الدفعة",
+    toastDisputeReason:"صِف المشكلة للمسؤول وللمورد.",
+    toastDisputeOpened:"تم فتح النزاع — سيراجعه مسؤول Biddex.",
+    toastReceipt:"تم تأكيد الاستلام — أصبحت الفاتورة مستحقة الدفع.",
+    toastOrderConfirmed:"تم تأكيد الطلبية — أُنشئ التوصيل والفاتورة.",
+    toastLpoDeclined:"تم رفض أمر الشراء.",
+    toastDelDispatched:"تم تسجيل الإرسال.",
+    toastDelShipped:"تم تسجيل الشحن.",
+    toastDelDelivered:"تم تسجيل التسليم.",
+    toastDelFailed:"تم تسجيل فشل التسليم.",
+    toastDelUpdated:"تم تحديث حالة التوصيل.",
+    toastDelReason:"صِف سبب فشل التسليم.",
+    toastPositiveAmount:"أدخل مبلغًا أكبر من صفر.",
+    toastAmountTooBig:"المبلغ أكبر من المتبقي ({amount}).",
+    toastPayReported:"تم الإبلاغ عن الدفعة — بانتظار تأكيد المورد.",
+    toastPayConfirmed:"تم تأكيد الدفعة.",
+    toastPayRejected:"تم رفض الدفعة.",
+    promptRejectPayment:"هل تريد رفض هذه الدفعة؟ يمكنك ذكر السبب (مثال: \"لم تصل\"):"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -1135,7 +1479,7 @@ async function refreshConfig(){
 function overdueDaysLabel(dueDate){
   if (!dueDate) return '';
   const days = Math.max(0, Math.floor((Date.now() - new Date(dueDate).getTime()) / 86400000));
-  return 'Overdue ' + days + (days === 1 ? ' day' : ' days');
+  return tpl(days === 0 ? 'overdueToday' : days === 1 ? 'overdueOne' : days === 2 ? 'overdueTwo' : days <= 10 ? 'overdueFew' : 'overdueMany', { n: days });
 }
 // Money inputs: accepts "," or "." as the decimal separator (so "2,5" reads as 2.5), at most 3 decimals.
 // Returns a Number, or null if the input isn't a valid non-negative amount.
@@ -1582,7 +1926,8 @@ async function openOrderDetail(orderId){
 }
 // ---------- Order documents ----------
 
-const DOC_KIND_LABELS = { DELIVERY_NOTE: 'Delivery note', INVOICE: 'Invoice', OTHER: 'Other', QUOTE_ATTACHMENT: 'Bid attachment' };
+const DOC_KIND_KEYS = { DELIVERY_NOTE:'dkDeliveryNote', INVOICE:'dkInvoice', OTHER:'dkOther', QUOTE_ATTACHMENT:'dkQuoteAttachment' };
+const docKindLabel = (k) => DOC_KIND_KEYS[k] ? t(DOC_KIND_KEYS[k]) : (k || '');
 const DOC_TYPE_RE = /^(application\/pdf|image\/(jpeg|png|webp))$/;
 const DOC_EXT_RE = /\.(pdf|jpe?g|png|webp)$/i;
 // the same checks the server makes, so a wrong file is refused before uploading it
@@ -1617,7 +1962,7 @@ async function onDocFileChange(e){
   setState({ docUploading: true });
   try {
     await api('/api/orders/' + orderId + '/documents', { method:'POST', body: form });
-    showToast(DOC_KIND_LABELS[state.docKind] + ' uploaded.');
+    showToast(tpl('toastDocUploaded', { kind: docKindLabel(state.docKind) }));
   } catch(err) { showToast(err.message); }
   setState({ docUploading: false });
   refreshOrderDocs(orderId);
@@ -1643,7 +1988,7 @@ async function deleteDoc(docId){
   setState({ docBusyId: docId });
   try {
     await api('/api/documents/' + docId, { method:'DELETE' });
-    showToast('Document removed.');
+    showToast(t('toastDocRemoved'));
   } catch(e) { showToast(e.message); }
   setState({ docBusyId: null });
   if (orderId) refreshOrderDocs(orderId);
@@ -1659,36 +2004,36 @@ function renderDocumentsPanel(opts){
   const open = !['COMPLETED', 'CANCELLED'].includes(order.status);
   const kinds = opts.isSupplier ? ['DELIVERY_NOTE', 'INVOICE', 'OTHER'] : ['OTHER'];
   const list = docs.length === 0
-    ? '<div class="text-[12px]" style="color:var(--tx4);">No documents yet.' + (opts.canUpload ? ' Upload delivery notes, invoices, certificates or photos (PDF, JPEG, PNG, WebP, up to 10 MB).' : '') + '</div>'
+    ? '<div class="text-[12px]" style="color:var(--tx4);">' + t('docsNone') + (opts.canUpload ? t('docsUploadHint') : '') + '</div>'
     : '<div class="flex flex-col gap-2">' + docs.map(d => {
         const busy = state.docBusyId === d.id;
         const mine = !!myCompanyId && d.uploadedByCompanyId === myCompanyId;
         return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd);">' +
           '<div class="min-w-0 flex-1">' +
-            '<div class="flex items-center gap-2"><span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx3);">' + esc(DOC_KIND_LABELS[d.kind] || d.kind) + '</span>' +
+            '<div class="flex items-center gap-2"><span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx3);">' + esc(docKindLabel(d.kind)) + '</span>' +
             '<span class="truncate font-semibold" style="color:var(--tx);">' + esc(d.fileName) + '</span></div>' +
             '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + companyLabel(d.uploadedByCompany) + ' &middot; ' + fmtDateTime(d.createdAt) + '</div>' +
           '</div>' +
           '<div class="flex gap-2 shrink-0">' +
-            (opts.canUpload && mine && open && d.kind !== 'QUOTE_ATTACHMENT' ? '<button onclick="' + (busy ? '' : "deleteDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Remove</button>' : '') +
-            '<button onclick="' + (busy ? '' : "downloadDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? 'Working…' : 'Download') + '</button>' +
+            (opts.canUpload && mine && open && d.kind !== 'QUOTE_ATTACHMENT' ? '<button onclick="' + (busy ? '' : "deleteDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">' + t('btnRemove') + '</button>' : '') +
+            '<button onclick="' + (busy ? '' : "downloadDoc('" + d.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? t('working') : t('download')) + '</button>' +
           '</div>' +
         '</div>';
       }).join('') + '</div>';
   const uploader = opts.canUpload && order.status !== 'CANCELLED'
     ? '<div class="mt-3 flex flex-wrap items-center gap-2">' +
         '<select onchange="setDocKind(event)" class="rounded-lg border px-2.5 py-1.5 text-[12px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' +
-          kinds.map(k => '<option value="' + k + '"' + (state.docKind === k ? ' selected' : '') + '>' + DOC_KIND_LABELS[k] + '</option>').join('') +
+          kinds.map(k => '<option value="' + k + '"' + (state.docKind === k ? ' selected' : '') + '>' + docKindLabel(k) + '</option>').join('') +
         '</select>' +
         '<label class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); cursor:pointer; opacity:' + (state.docUploading?'0.6':'1') + ';">' +
-          (state.docUploading ? 'Uploading…' : 'Upload file') +
+          t(state.docUploading ? 'docsUploading' : 'docsUploadFile') +
           '<input data-docfile type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" class="hidden"' + (state.docUploading ? ' disabled' : '') + ' />' +
         '</label>' +
-        '<span class="text-[11px]" style="color:var(--tx4);">PDF, JPEG, PNG or WebP, up to 10 MB. Visible only to you, your counterparty and Biddex admins.</span>' +
+        '<span class="text-[11px]" style="color:var(--tx4);">' + t('docsNote') + '</span>' +
       '</div>'
     : '';
   return '<div class="' + (opts.compact ? 'mt-4' : 'mt-6 rounded-xl border p-4') + '" style="' + (opts.compact ? '' : 'border-color:var(--bd); background:var(--panel);') + '">' +
-    '<div class="mb-3 text-[' + (opts.compact ? '12' : '13') + 'px] font-bold" style="color:var(--tx);">Documents</div>' + list + uploader +
+    '<div class="mb-3 text-[' + (opts.compact ? '12' : '13') + 'px] font-bold" style="color:var(--tx);">' + t('docsTitle') + '</div>' + list + uploader +
   '</div>';
 }
 
@@ -1780,7 +2125,7 @@ async function submitReceipt(){
   try {
     await api('/api/orders/' + orderId + '/receipt', { method:'POST', body: JSON.stringify({ comment: state.receiptComment.trim() || undefined }) });
     setState({ receiptBusy:false, receiptOrderId:null, receiptComment:'' });
-    showToast('Receipt confirmed — the invoice is now payable.');
+    showToast(t('toastReceipt'));
     refreshOrders();
     if (state.section === 'orderDetail' && state.selectedOrderId === orderId) openOrderDetail(orderId);
   } catch(e) { setState({ receiptBusy:false }); showToast(e.message); }
@@ -1792,12 +2137,12 @@ function closeDisputeModal(){ setState({ disputeOrderId: null }); }
 async function submitDispute(){
   const orderId = state.disputeOrderId;
   const reason = state.disputeReason.trim();
-  if (!reason) { showToast('Describe the problem for the admin and the supplier.'); return; }
+  if (!reason) { showToast(t('toastDisputeReason')); return; }
   setState({ disputeBusy:true });
   try {
     await api('/api/orders/' + orderId + '/status', { method:'PATCH', body: JSON.stringify({ status:'DISPUTED', reason }) });
     setState({ disputeBusy:false, disputeOrderId:null, disputeReason:'' });
-    showToast('Dispute opened — a Biddex admin will review it.');
+    showToast(t('toastDisputeOpened'));
     refreshOrders();
     if (state.section === 'orderDetail' && state.selectedOrderId === orderId) openOrderDetail(orderId);
   } catch(e) { setState({ disputeBusy:false }); showToast(e.message); }
@@ -1971,7 +2316,7 @@ async function acceptLpo(lpoId){
   setState({ ordersBusyId: lpoId });
   try {
     await api('/api/lpos/' + lpoId + '/accept', { method:'PATCH' });
-    showToast('Order confirmed — delivery and invoice created.');
+    showToast(t('toastOrderConfirmed'));
     setState({ ordersBusyId: null });
     refreshLpos(); refreshOrders();
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
@@ -1985,18 +2330,18 @@ async function submitDeclineLpo(){
   setState({ declineBusy: true, ordersBusyId: lpoId });
   try {
     await api('/api/lpos/' + lpoId + '/decline', { method:'PATCH', body: JSON.stringify({ reason: state.declineReason.trim() || undefined }) });
-    showToast('Purchase order declined.');
+    showToast(t('toastLpoDeclined'));
     setState({ declineBusy: false, declineLpoId: null, ordersBusyId: null });
     refreshLpos();
   } catch(e) { setState({ declineBusy: false, ordersBusyId: null }); showToast(e.message); refreshLpos(); }
 }
 
-const DELIVERY_ACTION_TOAST = { DISPATCHED:'Marked as dispatched.', IN_TRANSIT:'Marked as shipped.', DELIVERED:'Marked as delivered.', FAILED:'Delivery marked as failed.' };
+const DELIVERY_ACTION_TOAST = { DISPATCHED:'toastDelDispatched', IN_TRANSIT:'toastDelShipped', DELIVERED:'toastDelDelivered', FAILED:'toastDelFailed' };
 async function updateDelivery(orderId, status, extra){
   setState({ ordersBusyId: orderId });
   try {
     await api('/api/orders/' + orderId + '/delivery', { method:'PATCH', body: JSON.stringify({ status, ...(extra||{}) }) });
-    showToast(DELIVERY_ACTION_TOAST[status] || 'Delivery status updated.');
+    showToast(t(DELIVERY_ACTION_TOAST[status] || 'toastDelUpdated'));
     setState({ ordersBusyId: null });
     refreshOrders();
     if (state.section === 'orderDetail' && state.selectedOrderId === orderId) openOrderDetail(orderId);
@@ -2007,7 +2352,7 @@ function openDeliveryFailModal(orderId){ setState({ showDeliveryFailModal: order
 function closeDeliveryFailModal(){ setState({ showDeliveryFailModal: null, deliveryFailReason: '' }); }
 async function confirmDeliveryFail(){
   const reason = state.deliveryFailReason.trim();
-  if (!reason) { showToast('Describe why the delivery failed.'); return; }
+  if (!reason) { showToast(t('toastDelReason')); return; }
   const orderId = state.showDeliveryFailModal;
   setState({ showDeliveryFailModal: null, deliveryFailReason: '' });
   await updateDelivery(orderId, 'FAILED', { reason });
@@ -2022,7 +2367,8 @@ function invoiceTotals(invoice){
   return { paid: paid / 1000, pending: pending / 1000, outstanding: Math.max(0, fils(invoice.amount) - paid - pending) / 1000 };
 }
 
-const PAYMENT_METHOD_LABELS = { bank_transfer:'Bank transfer', benefit_pay:'BenefitPay', cheque:'Cheque', cash:'Cash', card:'Card', other:'Other' };
+const PAYMENT_METHOD_KEYS = { bank_transfer:'pmBank', benefit_pay:'pmBenefit', cheque:'pmCheque', cash:'pmCash', card:'pmCard', other:'pmOther' };
+const paymentMethodLabel = (m) => PAYMENT_METHOD_KEYS[m] ? t(PAYMENT_METHOD_KEYS[m]) : (m || '—');
 
 function openPayModal(invoiceId, outstanding){
   setState({ showPayModal: invoiceId, payOutstanding: outstanding, payForm: { amount: outstanding.toFixed(3), method:'bank_transfer', reference:'' } });
@@ -2031,13 +2377,13 @@ function closePayModal(){ setState({ showPayModal: null }); }
 
 async function submitPayment(){
   const f = state.payForm, amount = Number(f.amount);
-  if (!Number.isFinite(amount) || amount <= 0) { showToast('Enter a positive amount.'); return; }
-  if (amount > state.payOutstanding + 1e-9) { showToast('Amount is more than the outstanding ' + fmt(state.payOutstanding) + '.'); return; }
+  if (!Number.isFinite(amount) || amount <= 0) { showToast(t('toastPositiveAmount')); return; }
+  if (amount > state.payOutstanding + 1e-9) { showToast(tpl('toastAmountTooBig', { amount: fmt(state.payOutstanding) })); return; }
   setState({ payBusy:true });
   try {
     await api('/api/invoices/' + state.showPayModal + '/payments', { method:'POST', body: JSON.stringify({ amount: Math.round(amount * 1000) / 1000, method: f.method, reference: f.reference.trim() || undefined }) });
     setState({ payBusy:false, showPayModal:null });
-    showToast('Payment reported — waiting for the supplier to confirm it.');
+    showToast(t('toastPayReported'));
     refreshOrders();
     if (state.section === 'orderDetail' && state.selectedOrderId) openOrderDetail(state.selectedOrderId);
   } catch(e) { setState({ payBusy:false }); showToast(e.message); }
@@ -2046,7 +2392,7 @@ async function submitPayment(){
 async function decidePayment(paymentId, decision){
   let body = {};
   if (decision === 'reject') {
-    const reason = prompt('Reject this payment? Optionally say why (e.g. "not received"):', '');
+    const reason = prompt(t('promptRejectPayment'), '');
     if (reason === null) return;
     body = { reason };
   }
@@ -2054,7 +2400,7 @@ async function decidePayment(paymentId, decision){
   try {
     await api('/api/payments/' + paymentId + '/' + decision, { method:'PATCH', body: JSON.stringify(body) });
     setState({ ordersBusyId: null });
-    showToast(decision === 'confirm' ? 'Payment confirmed.' : 'Payment rejected.');
+    showToast(t(decision === 'confirm' ? 'toastPayConfirmed' : 'toastPayRejected'));
     refreshOrders();
     if (state.section === 'orderDetail' && state.selectedOrderId) openOrderDetail(state.selectedOrderId);
   } catch(e) { setState({ ordersBusyId: null }); showToast(e.message); }
@@ -2718,7 +3064,15 @@ function orderStageIndex(o){
   if (['DISPATCHED', 'IN_TRANSIT', 'DELIVERED', 'FAILED'].includes(delivery.status)) return 3;
   return 2; // accepted, delivery pending
 }
-const ORDER_STATUS_LABELS = { CONFIRMED:'Confirmed', IN_PROGRESS:'In progress', SHIPPED:'Shipped', DELIVERED:'Delivered', COMPLETED:'Completed', DISPUTED:'Disputed', CANCELLED:'Cancelled' };
+const ORDER_STATUS_LABELS = { CONFIRMED:'Confirmed', IN_PROGRESS:'In progress', SHIPPED:'Shipped', DELIVERED:'Delivered', COMPLETED:'Completed', DISPUTED:'Disputed', CANCELLED:'Cancelled' }; // English, admin screens
+// User-facing (translated) labels for statuses the server sends as enums; unknown values are shown as they are
+const ORDER_STATUS_KEYS = { CONFIRMED:'osConfirmed', IN_PROGRESS:'osInProgress', SHIPPED:'osShipped', DELIVERED:'osDelivered', COMPLETED:'osCompleted', DISPUTED:'osDisputed', CANCELLED:'osCancelled' };
+const DELIVERY_STATUS_KEYS = { PENDING:'dsPending', DISPATCHED:'dsDispatched', IN_TRANSIT:'dsInTransit', DELIVERED:'dsDelivered', FAILED:'dsFailed' };
+const INVOICE_STATUS_KEYS = { ISSUED:'isIssued', PARTIALLY_PAID:'isPartiallyPaid', PAID:'isPaid', OVERDUE:'isOverdue', CANCELLED:'isCancelled' };
+const LPO_STATUS_KEYS = { ISSUED:'lsIssued', ACCEPTED:'lsAccepted', DECLINED:'lsDeclined' };
+const enumLabel = (map, v) => (v && map[v]) ? t(map[v]) : (v || '—');
+const orderStatusLabel = (v) => enumLabel(ORDER_STATUS_KEYS, v);
+const stageName = (i) => t('stage' + (i + 1));
 
 // Completed and cancelled orders are history, everything else is live
 function isOrderClosed(o){ return o.status === 'COMPLETED' || o.status === 'CANCELLED'; }
@@ -2727,11 +3081,11 @@ function isOrderClosed(o){ return o.status === 'COMPLETED' || o.status === 'CANC
 // the last one in the "current step" accent colour; a cancelled one shows an empty grey bar.
 function orderProgressHtml(o, captionClass){
   const cap = (text, color) => '<div class="' + captionClass + '" style="color:' + color + ';">' + text + '</div>';
-  if (o.status === 'COMPLETED') return stageTrackerHtml(STAGES.length + 1) + cap('Completed &middot; all 6 stages done', 'var(--ok)');
-  if (o.status === 'CANCELLED') return stageTrackerHtml(0) + cap('Cancelled', 'var(--bad)');
+  if (o.status === 'COMPLETED') return stageTrackerHtml(STAGES.length + 1) + cap(esc(t('stagesDone')).replace(' · ', ' &middot; '), 'var(--ok)');
+  if (o.status === 'CANCELLED') return stageTrackerHtml(0) + cap(t('osCancelled'), 'var(--bad)');
   const idx = orderStageIndex(o);
-  const base = STAGES[idx-1] + ' &middot; Stage ' + idx + ' / 6';
-  if (o.status === 'DISPUTED') return stageTrackerHtml(idx) + cap('Disputed &middot; ' + base, 'var(--warn)');
+  const base = stageName(idx-1) + ' &middot; ' + tpl('stageOf', { n: idx });
+  if (o.status === 'DISPUTED') return stageTrackerHtml(idx) + cap(tpl('disputedPrefix', { rest: base }).replace(' · ', ' &middot; '), 'var(--warn)');
   return stageTrackerHtml(idx) + cap(base, 'var(--tx3)');
 }
 
@@ -2845,7 +3199,7 @@ function renderAuth(){
   return '<div class="min-h-screen flex items-center justify-center p-4">' +
   '<div class="bx-rise w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex items-center justify-between mb-4">' +
-      '<button onclick="goLanding()" class="text-[12px] font-semibold" style="color:var(--tx4);">&larr; ' + t('back') + '</button>' +
+      '<button onclick="goLanding()" class="text-[12px] font-semibold" style="color:var(--tx4);">' + (state.lang === 'ar' ? '&rarr; ' : '&larr; ') + t('back') + '</button>' +
       '<div class="flex items-center gap-2">' + langToggleBtn() + themeToggleBtn() + '</div>' +
     '</div>' +
     logo() +
@@ -3070,16 +3424,16 @@ function renderLpoManagement(isBuyer){
   const liveOrders = orders.filter(o => !isOrderClosed(o));
   const closedOrders = orders.filter(isOrderClosed);
   const liveCount = activeOrderCount(); // = pending LPOs + live orders, i.e. exactly what the Live section lists
-  return '<div class="eyebrow mb-1.5">CLOSED-LOOP TRACKER</div>' +
-  '<h1 class="text-[24px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">LPO management' + hint('lpo') + '</h1>' +
-  '<p class="mb-5 text-[13.5px] max-w-[620px]" style="color:var(--tx3);">One pipeline shared by both sides of the deal — from digital LPO to payment confirmation, with a full message trail per order.</p>' +
-  '<div class="inline-block mb-6 rounded-lg border px-3.5 py-2 mono text-[12px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx3);">' + liveCount + ' live order(s)</div>' +
-  '<div class="mb-6 flex flex-wrap gap-2">' + STAGES.map((s,i) => '<span class="chip" style="cursor:default;">' + (i+1) + ' &nbsp;' + s + '</span>').join('') + '</div>' +
+  return '<div class="eyebrow mb-1.5">' + t('lpoEyebrow') + '</div>' +
+  '<h1 class="text-[24px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">' + t('lpoTitle') + hint('lpo') + '</h1>' +
+  '<p class="mb-5 text-[13.5px] max-w-[620px]" style="color:var(--tx3);">' + t('lpoSubtitle') + '</p>' +
+  '<div class="inline-block mb-6 rounded-lg border px-3.5 py-2 mono text-[12px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx3);">' + tpl('lpoLiveCount', { n: liveCount }) + '</div>' +
+  '<div class="mb-6 flex flex-wrap gap-2">' + STAGES.map((s,i) => '<span class="chip" style="cursor:default;">' + (i+1) + ' &nbsp;' + stageName(i) + '</span>').join('') + '</div>' +
   (isBuyer ? renderBuyerPendingLpos() : renderAwaitingLpos()) +
   (liveOrders.length === 0 && pending.length === 0
-    ? emptyState(orders.length ? 'No live orders' : 'No orders yet',
-        orders.length ? 'Finished orders are listed under Completed below.' : (isBuyer ? 'Orders are created once you award a supplier.' : 'Accepted purchase orders will appear here.'))
-    : (liveOrders.length ? '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">Live orders</h2><div class="flex flex-col gap-3">' + liveOrders.map(o => lpoTrackerRow(o, isBuyer)).join('') + '</div>' : '')) +
+    ? emptyState(t(orders.length ? 'lpoNoLive' : 'lpoNoOrders'),
+        t(orders.length ? 'lpoFinishedBelow' : (isBuyer ? 'lpoBuyerEmpty' : 'lpoSupplierEmpty')))
+    : (liveOrders.length ? '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">' + t('lpoLiveOrders') + '</h2><div class="flex flex-col gap-3">' + liveOrders.map(o => lpoTrackerRow(o, isBuyer)).join('') + '</div>' : '')) +
   renderClosedOrders(closedOrders, isBuyer);
 }
 
@@ -3087,12 +3441,12 @@ function renderLpoManagement(isBuyer){
 function renderBuyerPendingLpos(){
   const pending = (state.lpos || []).filter(l => l.status === 'ISSUED');
   if (pending.length === 0) return '';
-  return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">Awaiting supplier acceptance</h2>' +
+  return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">' + t('lpoAwaitingSupplier') + '</h2>' +
     '<div class="flex flex-col gap-3 mb-8">' + pending.map(l =>
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : 'Purchase order') + '</div>' +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : t('lpoPurchaseOrder')) + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
-        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold shrink-0" style="background:var(--warn-soft); color:var(--warn);">Waiting for supplier</span>' +
+        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold shrink-0" style="background:var(--warn-soft); color:var(--warn);">' + t('lpoWaitingSupplier') + '</span>' +
       '</div>').join('') + '</div>';
 }
 
@@ -3103,14 +3457,14 @@ function renderClosedOrders(closed, isBuyer){
   return '<div class="mt-8">' +
     '<button onclick="toggleClosedOrders()" class="mb-3 flex items-center gap-2 text-[14px] font-bold" style="color:var(--tx);">' +
       '<span style="display:inline-block; width:12px; color:var(--tx4);">' + (state.showClosedOrders ? '&#9662;' : '&#9656;') + '</span>' +
-      'Completed &amp; cancelled <span class="mono text-[12px] font-semibold rounded-full px-2 py-0.5" style="background:var(--sunken); color:var(--tx3);">' + closed.length + '</span>' +
+      t('lpoClosedGroup') + ' <span class="mono text-[12px] font-semibold rounded-full px-2 py-0.5" style="background:var(--sunken); color:var(--tx3);">' + closed.length + '</span>' +
     '</button>' +
     (state.showClosedOrders ? '<div class="flex flex-col gap-3">' + closed.map(o => lpoTrackerRow(o, isBuyer)).join('') + '</div>' : '') +
   '</div>';
 }
 
 function lpoTrackerRow(o, isBuyer){
-  const title = o.lpo && o.lpo.rfq ? o.lpo.rfq.title : 'Order';
+  const title = o.lpo && o.lpo.rfq ? o.lpo.rfq.title : t('lpoOrderFallback');
   const idLabel = 'LPO-' + esc(String(o.lpo ? o.lpo.id : o.id).slice(-4).toUpperCase());
   const counterpartyCompany = isBuyer ? (o.lpo && o.lpo.supplierCompany) : (o.lpo && o.lpo.buyerCompany);
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);' + (isOrderClosed(o) ? ' opacity:0.85;' : '') + '">' +
@@ -3121,7 +3475,7 @@ function lpoTrackerRow(o, isBuyer){
       '<div class="flex-1 min-w-[180px]">' + orderProgressHtml(o, 'mt-1.5 text-[11.5px] font-semibold') + '</div>' +
       '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
       (isBuyer && o.status === 'COMPLETED' ? '<button onclick="reorderFromOrder(\'' + o.id + '\')" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold shrink-0" style="border-color:var(--bd2); color:var(--tx2);">' + t('reorder') + '</button>' : '') +
-      '<button onclick="openOrderDetail(\'' + o.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">Open order</button>' +
+      '<button onclick="openOrderDetail(\'' + o.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('lpoOpenOrder') + '</button>' +
     '</div>' +
   '</div>';
 }
@@ -3129,14 +3483,14 @@ function lpoTrackerRow(o, isBuyer){
 function renderAwaitingLpos(){
   const pending = (state.lpos || []).filter(l => l.status === 'ISSUED');
   if (pending.length === 0) return '';
-  return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">Awaiting your acceptance</h2>' +
+  return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">' + t('lpoAwaitingYou') + '</h2>' +
     '<div class="flex flex-col gap-3 mb-8">' + pending.map(l =>
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : 'Purchase order') + '</div>' +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : t('lpoPurchaseOrder')) + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
         '<div class="flex items-center gap-2 shrink-0">' +
-          '<button onclick="' + (state.ordersBusyId === l.id ? '' : "declineLpo('" + l.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">Decline</button>' +
-          actionBtn('Accept order', "acceptLpo('" + l.id + "')", state.ordersBusyId === l.id) +
+          '<button onclick="' + (state.ordersBusyId === l.id ? '' : "declineLpo('" + l.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">' + t('lpoDecline') + '</button>' +
+          actionBtn(t('lpoAccept'), "acceptLpo('" + l.id + "')", state.ordersBusyId === l.id) +
         '</div>' +
       '</div>').join('') + '</div>';
 }
@@ -3148,14 +3502,14 @@ function renderOrdersList(isSupplier, limit){
   if (limit) orders = orders.slice(0, limit);
   if (orders.length === 0) {
     return all.length
-      ? emptyState('No orders in progress', 'Completed orders are under LPO management.')
-      : emptyState('No orders yet', isSupplier ? 'Accepted purchase orders will appear here.' : 'Orders are created once you award a supplier.');
+      ? emptyState(t('lpoNoneInProgress'), t('lpoCompletedUnder'))
+      : emptyState(t('lpoNoOrders'), t(isSupplier ? 'lpoSupplierEmpty' : 'lpoBuyerEmpty'));
   }
   return '<div class="flex flex-col gap-3">' + orders.map(o => lpoTrackerRow(o, !isSupplier)).join('') + '</div>';
 }
 
 function actionBtn(label, onclick, busy){
-  return '<button onclick="' + (busy ? '' : onclick) + '" class="rounded-lg px-3 py-1.5 font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? 'Working…' : label) + '</button>';
+  return '<button onclick="' + (busy ? '' : onclick) + '" class="rounded-lg px-3 py-1.5 font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? t('working') : label) + '</button>';
 }
 
 // ---------- Buyer: Network (browse suppliers / catalog) ----------
@@ -3694,9 +4048,9 @@ function profileField(name, label, value){
 // ---------- Order detail ----------
 
 function renderOrderDetail(){
-  if (state.orderDetailLoading) return '<div class="py-16 text-center text-[13px]" style="color:var(--tx4);">Loading…</div>';
+  if (state.orderDetailLoading) return '<div class="py-16 text-center text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>';
   const d = state.orderDetail;
-  if (!d || !d.order) return emptyState('Order not found', 'Go back and try again.');
+  if (!d || !d.order) return emptyState(t('odNotFound'), t('odGoBack'));
   const order = d.order, rfq = d.rfq;
   const lpo = order.lpo || {};
   const delivery = order.delivery || {};
@@ -3708,11 +4062,11 @@ function renderOrderDetail(){
     const st = delivery.status;
     const busy = state.ordersBusyId === order.id;
     const btns = [];
-    if (st === 'PENDING' || st === 'DISPATCHED') btns.push(actionBtn('Mark as shipped', "updateDelivery('" + order.id + "','IN_TRANSIT')", busy));
-    if (st === 'DISPATCHED' || st === 'IN_TRANSIT') btns.push(actionBtn('Mark as delivered', "updateDelivery('" + order.id + "','DELIVERED')", busy));
-    if (st === 'FAILED') btns.push(actionBtn('Send again', "updateDelivery('" + order.id + "','IN_TRANSIT')", busy));
+    if (st === 'PENDING' || st === 'DISPATCHED') btns.push(actionBtn(t('odMarkShipped'), "updateDelivery('" + order.id + "','IN_TRANSIT')", busy));
+    if (st === 'DISPATCHED' || st === 'IN_TRANSIT') btns.push(actionBtn(t('odMarkDelivered'), "updateDelivery('" + order.id + "','DELIVERED')", busy));
+    if (st === 'FAILED') btns.push(actionBtn(t('odSendAgain'), "updateDelivery('" + order.id + "','IN_TRANSIT')", busy));
     if (st === 'DISPATCHED' || st === 'IN_TRANSIT') {
-      btns.push('<button onclick="' + (busy ? '' : "openDeliveryFailModal('" + order.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Delivery failed</button>');
+      btns.push('<button onclick="' + (busy ? '' : "openDeliveryFailModal('" + order.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('odDeliveryFailed') + '</button>');
     }
     deliveryAction = btns.join('');
   }
@@ -3721,29 +4075,29 @@ function renderOrderDetail(){
   let payAction = '';
   if (!isSupplier && invoice.id && ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'].includes(invoice.status) && order.status !== 'CANCELLED') {
     payAction = !order.receivedAt
-      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Payable after you confirm receipt</span>'
+      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + t('odPayableAfter') + '</span>'
       : totals.outstanding > 0
-      ? actionBtn('Pay ' + fmt(totals.outstanding), 'openPayModal(\'' + invoice.id + '\',' + totals.outstanding + ')', false)
-      : '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Awaiting supplier confirmation</span>';
+      ? actionBtn(tpl('odPay', { amount: fmt(totals.outstanding) }), 'openPayModal(\'' + invoice.id + '\',' + totals.outstanding + ')', false)
+      : '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + t('odAwaitingSupplierConfirm') + '</span>';
   }
 
   // once shipped, the buyer confirms receipt (or reports a problem, which opens a dispute)
   const receiptAction = !isSupplier && awaitingReceipt
-    ? actionBtn('Confirm receipt', "openReceiptModal('" + order.id + "')", false)
+    ? actionBtn(t('odConfirmReceipt'), "openReceiptModal('" + order.id + "')", false)
     : isSupplier && awaitingReceipt
-      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Awaiting buyer\'s receipt confirmation</span>'
+      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + t('odAwaitingBuyerReceipt') + '</span>'
       : '';
   // the buyer can dispute an order that is still open and not yet received; an admin then resumes or cancels it
   const disputeAction = !isSupplier && !order.receivedAt && ['CONFIRMED', 'IN_PROGRESS', 'SHIPPED', 'DELIVERED'].includes(order.status)
-    ? '<button onclick="openDisputeModal(\'' + order.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Open dispute</button>'
+    ? '<button onclick="openDisputeModal(\'' + order.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('odOpenDispute') + '</button>'
     : '';
   const disputeNote = order.status === 'DISPUTED'
-    ? '<div class="mb-4 rounded-xl border px-4 py-3 text-[13px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">This order is disputed and paused until a Biddex admin reviews it. The decision will appear in the messages below.</div>'
+    ? '<div class="mb-4 rounded-xl border px-4 py-3 text-[13px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' + t('odDisputedNote') + '</div>'
     : '';
 
-  return '<button onclick="closeOrderDetail()" class="mb-4 text-[12px] font-semibold" style="color:var(--tx4);">&larr; Back to LPO management</button>' +
-  '<div class="eyebrow mb-1.5">ORDER · ' + esc(order.status) + '</div>' +
-  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfq.title : 'Order') + '</h1>' + disputeNote +
+  return '<button onclick="closeOrderDetail()" class="mb-4 text-[12px] font-semibold" style="color:var(--tx4);">' + t('odBack') + '</button>' +
+  '<div class="eyebrow mb-1.5">' + tpl('odEyebrow', { status: esc(orderStatusLabel(order.status)) }) + '</div>' +
+  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfq.title : t('lpoOrderFallback')) + '</h1>' + disputeNote +
   '<div class="rounded-xl border p-4 mb-6" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-end justify-between gap-3">' +
       '<div class="flex-1 min-w-[220px]">' + orderProgressHtml(order, 'mt-2 text-[12.5px] font-semibold') + '</div>' +
@@ -3751,34 +4105,34 @@ function renderOrderDetail(){
     '</div>' +
   '</div>' +
   '<div class="grid gap-4 sm:grid-cols-2">' +
-    detailCard('Request', [
-      ['Quantity', rfq ? (rfq.quantity || '—') + ' ' + (rfq.unit || '') : '—'],
-      ['Needed by', rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—'],
-      ['Description', rfq ? rfq.description : '—']
+    detailCard(t('cardRequest'), [
+      [t('rowQuantity'), rfq ? (rfq.quantity || '—') + ' ' + unitLabel(rfq.unit || '') : '—'],
+      [t('rowNeededBy'), rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—'],
+      [t('rowDescription'), rfq ? rfq.description : '—']
     ]) +
-    detailCard('Purchase order', [
-      ['LPO', 'LPO-' + String(lpo.id || '').slice(-4).toUpperCase()],
-      [isSupplier ? 'Buyer' : 'Supplier', (isSupplier ? lpo.buyerCompany : lpo.supplierCompany)?.name || '—'],
-      ['Amount', fmt(lpo.totalAmount)],
-      ['Terms', lpo.terms || '—'],
-      ['Payment terms', (lpo.paymentTermsDays != null ? lpo.paymentTermsDays : 30) + ' days after receipt is confirmed'],
+    detailCard(t('cardPo'), [
+      [t('rowLpo'), 'LPO-' + String(lpo.id || '').slice(-4).toUpperCase()],
+      [t(isSupplier ? 'rowBuyer' : 'rowSupplier'), (isSupplier ? lpo.buyerCompany : lpo.supplierCompany)?.name || '—'],
+      [t('rowAmount'), fmt(lpo.totalAmount)],
+      [t('rowTerms'), lpo.terms || '—'],
+      [t('rowPaymentTerms'), tpl('rowPaymentTermsVal', { n: lpo.paymentTermsDays != null ? lpo.paymentTermsDays : 30 })],
       // the LPO document stays ACCEPTED once taken; how the deal went is the order's status
-      ['Status', (ORDER_STATUS_LABELS[order.status] || order.status) + (lpo.status ? ' (LPO ' + lpo.status.toLowerCase() + ')' : '')]
+      [t('rowStatus'), lpo.status ? tpl('rowStatusWithLpo', { status: orderStatusLabel(order.status), lpo: enumLabel(LPO_STATUS_KEYS, lpo.status) }) : orderStatusLabel(order.status)]
     ]) +
-    detailCard('Delivery', [
-      ['Status', delivery.status || '—'],
-      ['Tracking', delivery.trackingInfo || '—'],
-      ['Dispatched', delivery.dispatchedAt ? fmtDateTime(delivery.dispatchedAt) : '—'],
-      ['Delivered', delivery.deliveredAt ? fmtDateTime(delivery.deliveredAt) : '—'],
-      ['Receipt confirmed', order.receivedAt ? fmtDateTime(order.receivedAt) : '—']
+    detailCard(t('cardDelivery'), [
+      [t('rowStatus'), enumLabel(DELIVERY_STATUS_KEYS, delivery.status)],
+      [t('rowTracking'), delivery.trackingInfo || '—'],
+      [t('rowDispatched'), delivery.dispatchedAt ? fmtDateTime(delivery.dispatchedAt) : '—'],
+      [t('rowDelivered'), delivery.deliveredAt ? fmtDateTime(delivery.deliveredAt) : '—'],
+      [t('rowReceiptConfirmed'), order.receivedAt ? fmtDateTime(order.receivedAt) : '—']
     ]) +
-    detailCard('Invoice', [
-      ['Amount', invoice.amount ? fmt(invoice.amount) : '—'],
-      ['Status', (invoice.status || '—') + (invoice.status === 'OVERDUE' ? ' · ' + overdueDaysLabel(invoice.dueDate) : '')],
-      ['Due date', invoice.dueDate ? fmtDate(invoice.dueDate) : '—'],
-      ['Confirmed', fmt(totals.paid)],
-      ['Awaiting confirmation', fmt(totals.pending)],
-      ['Outstanding', fmt(totals.outstanding)]
+    detailCard(t('cardInvoice'), [
+      [t('rowAmount'), invoice.amount ? fmt(invoice.amount) : '—'],
+      [t('rowStatus'), enumLabel(INVOICE_STATUS_KEYS, invoice.status) + (invoice.status === 'OVERDUE' ? ' · ' + overdueDaysLabel(invoice.dueDate) : '')],
+      [t('rowDueDate'), invoice.dueDate ? fmtDate(invoice.dueDate) : '—'],
+      [t('rowConfirmed'), fmt(totals.paid)],
+      [t('rowAwaitingConfirmation'), fmt(totals.pending)],
+      [t('rowOutstanding'), fmt(totals.outstanding)]
     ]) +
   '</div>' +
   renderPaymentsPanel(invoice, isSupplier) +
@@ -3789,22 +4143,22 @@ function renderOrderDetail(){
 function renderPaymentsPanel(invoice, isSupplier){
   const list = (invoice.payments || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   if (!invoice.id) return '';
-  const label = { PENDING: ['Awaiting confirmation','background:var(--warn-soft); color:var(--warn);'], COMPLETED: ['Confirmed','background:var(--ok-soft); color:var(--ok);'], FAILED: ['Rejected','background:var(--bad-soft); color:var(--bad);'], REFUNDED: ['Refunded','background:var(--sunken); color:var(--tx3);'] };
+  const label = { PENDING: [t('payPending'),'background:var(--warn-soft); color:var(--warn);'], COMPLETED: [t('payCompleted'),'background:var(--ok-soft); color:var(--ok);'], FAILED: [t('payFailed'),'background:var(--bad-soft); color:var(--bad);'], REFUNDED: [t('payRefunded'),'background:var(--sunken); color:var(--tx3);'] };
   return '<div class="mt-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
-    '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">Payments</div>' +
-    (list.length === 0 ? '<div class="text-[12px]" style="color:var(--tx4);">No payments reported yet.</div>' :
+    '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">' + t('payTitle') + '</div>' +
+    (list.length === 0 ? '<div class="text-[12px]" style="color:var(--tx4);">' + t('payNone') + '</div>' :
       '<div class="flex flex-col gap-2">' + list.map(p => {
         const [txt, style] = label[p.status] || [p.status, ''];
         const actions = isSupplier && p.status === 'PENDING'
           ? '<div class="flex gap-2 shrink-0">' +
-              '<button onclick="' + (state.ordersBusyId === p.id ? '' : "decidePayment('" + p.id + "','reject')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">Reject</button>' +
-              actionBtn('Confirm received', "decidePayment('" + p.id + "','confirm')", state.ordersBusyId === p.id) +
+              '<button onclick="' + (state.ordersBusyId === p.id ? '' : "decidePayment('" + p.id + "','reject')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">' + t('payReject') + '</button>' +
+              actionBtn(t('payConfirmReceived'), "decidePayment('" + p.id + "','confirm')", state.ordersBusyId === p.id) +
             '</div>'
           : '';
         return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd);">' +
           '<div class="min-w-0">' +
-            '<div class="font-semibold mono" style="color:var(--tx);">' + fmt(p.amount) + ' <span class="font-normal" style="color:var(--tx3);">&middot; ' + esc(PAYMENT_METHOD_LABELS[p.method] || p.method || '—') + (p.reference ? ' &middot; ref ' + esc(p.reference) : '') + '</span></div>' +
-            '<div class="text-[11px] mt-0.5" style="color:var(--tx4);">Reported ' + fmtDateTime(p.createdAt) + (p.status === 'FAILED' && p.rejectReason ? ' &middot; ' + esc(p.rejectReason) : '') + '</div>' +
+            '<div class="font-semibold mono" style="color:var(--tx);">' + fmt(p.amount) + ' <span class="font-normal" style="color:var(--tx3);">&middot; ' + esc(paymentMethodLabel(p.method)) + (p.reference ? ' &middot; ' + tpl('payRef', { ref: esc(p.reference) }) : '') + '</span></div>' +
+            '<div class="text-[11px] mt-0.5" style="color:var(--tx4);">' + tpl('payReported', { date: fmtDateTime(p.createdAt) }) + (p.status === 'FAILED' && p.rejectReason ? ' &middot; ' + esc(p.rejectReason) : '') + '</div>' +
           '</div>' +
           '<div class="flex items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + txt + '</span>' + actions + '</div>' +
         '</div>';
@@ -3816,14 +4170,14 @@ function renderChatPanel(){
   const msgs = state.chatMessages || [];
   const myCompanyId = state.company ? state.company.id : null;
   return '<div class="mt-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
-    '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">Messages</div>' +
+    '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">' + t('chatTitle') + '</div>' +
     '<div class="mb-3 flex max-h-[280px] flex-col gap-2 overflow-y-auto bx-scroll pr-1">' +
-    (msgs.length === 0 ? '<div class="py-6 text-center text-[12px]" style="color:var(--tx4);">No messages yet — say hello.</div>' :
+    (msgs.length === 0 ? '<div class="py-6 text-center text-[12px]" style="color:var(--tx4);">' + t('chatEmpty') + '</div>' :
       msgs.map(m => chatMessageHtml(m, myCompanyId)).join('')) +
     '</div>' +
     '<div class="flex gap-2">' +
-      '<input data-chat="draft" type="text" value="' + esc(state.chatDraft) + '" placeholder="Type a message…" class="flex-1 rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
-      '<button onclick="sendChatMessage()" ' + (state.chatBusy?'disabled':'') + ' class="rounded-lg px-4 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (state.chatBusy?'0.6':'1') + ';">Send</button>' +
+      '<input data-chat="draft" type="text" value="' + esc(state.chatDraft) + '" placeholder="' + esc(t('chatPlaceholder')) + '" class="flex-1 rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" />' +
+      '<button onclick="sendChatMessage()" ' + (state.chatBusy?'disabled':'') + ' class="rounded-lg px-4 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (state.chatBusy?'0.6':'1') + ';">' + t('chatSend') + '</button>' +
     '</div>' +
   '</div>';
 }
@@ -3833,7 +4187,7 @@ function chatMessageHtml(m, myCompanyId){
   if (!m.senderCompanyId) {
     return '<div class="flex justify-center">' +
       '<div class="max-w-[90%] rounded-xl border px-3 py-2 text-[13px]" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' +
-        '<div class="mb-0.5 text-[10px] font-bold">BIDDEX ADMIN</div>' + esc(m.body) +
+        '<div class="mb-0.5 text-[10px] font-bold">' + t('chatAdmin') + '</div>' + esc(m.body) +
       '</div></div>';
   }
   const mine = !!myCompanyId && m.senderCompanyId === myCompanyId;
@@ -4464,18 +4818,18 @@ function renderModals(){
   if (state.showPayModal) {
     const f = state.payForm;
     const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
-    html += modalWrap('Report a payment', 'closePayModal()',
+    html += modalWrap(t('pmTitle'), 'closePayModal()',
       '<div class="rounded-lg border px-3 py-2.5 text-[12.5px] font-semibold" style="border-color:var(--warn); background:var(--warn-soft); color:var(--warn);">' + esc(t('paymentDisclaimer')) + '</div>' +
-      '<p class="text-[12.5px]" style="color:var(--tx3);">Outstanding: <b class="mono" style="color:var(--tx);">' + fmt(state.payOutstanding) + '</b>. The supplier confirms the payment once the money arrives; until then it shows as awaiting confirmation.</p>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Amount (BHD)</span>' +
+      '<p class="text-[12.5px]" style="color:var(--tx3);">' + tpl('pmOutstanding', { amount: '<b class="mono" style="color:var(--tx);">' + fmt(state.payOutstanding) + '</b>' }) + '</p>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + tpl('pmAmount', { cur: t('bhd') }) + '</span>' +
         '<input data-pay="amount" type="number" min="0.001" step="0.001" max="' + state.payOutstanding + '" value="' + esc(f.amount) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Method</span>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('pmMethod') + '</span>' +
         '<select data-pay="method" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '">' +
-          Object.keys(PAYMENT_METHOD_LABELS).map(m => '<option value="' + m + '"' + (f.method === m ? ' selected' : '') + '>' + PAYMENT_METHOD_LABELS[m] + '</option>').join('') +
+          Object.keys(PAYMENT_METHOD_KEYS).map(m => '<option value="' + m + '"' + (f.method === m ? ' selected' : '') + '>' + paymentMethodLabel(m) + '</option>').join('') +
         '</select></label>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reference / transfer no. (optional)</span>' +
-        '<input data-pay="reference" type="text" maxlength="100" value="' + esc(f.reference) + '" placeholder="e.g. BBK-2026-004512" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>',
-      'submitPayment()', state.payBusy ? 'Sending…' : 'Report payment', state.payBusy);
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('pmReference') + '</span>' +
+        '<input data-pay="reference" type="text" maxlength="100" value="' + esc(f.reference) + '" placeholder="BBK-2026-004512" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>',
+      'submitPayment()', t(state.payBusy ? 'pmBusy' : 'pmSubmit'), state.payBusy);
   }
   if (state.closeBiddingRfqId) {
     const cr = (state.rfqs || []).find(x => x.id === state.closeBiddingRfqId) || {};
@@ -4486,11 +4840,11 @@ function renderModals(){
       'confirmCloseBidding()', t(state.closeBiddingBusy ? 'closeBiddingBusy' : 'closeBiddingYes'), state.closeBiddingBusy);
   }
   if (state.declineLpoId) {
-    html += modalWrap('Decline purchase order', 'closeDeclineLpo()',
-      '<p class="text-[13px]" style="color:var(--tx3);">The buyer will be notified and can award the RFQ to another supplier. ' + (bidFeePercent() > 0 ? 'Your bid fee is not refunded.' : '') + '</p>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reason for the buyer (optional)</span>' +
-        '<textarea data-decline="reason" rows="3" maxlength="500" placeholder="e.g. Out of stock until next month" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(state.declineReason || '') + '</textarea></label>',
-      'submitDeclineLpo()', state.declineBusy ? 'Declining…' : 'Decline purchase order', state.declineBusy);
+    html += modalWrap(t('dcTitle'), 'closeDeclineLpo()',
+      '<p class="text-[13px]" style="color:var(--tx3);">' + t('dcBody') + (bidFeePercent() > 0 ? ' ' + t('dcNoRefund') : '') + '</p>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('dcReason') + '</span>' +
+        '<textarea data-decline="reason" rows="3" maxlength="500" placeholder="' + esc(t('dcPlaceholder')) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(state.declineReason || '') + '</textarea></label>',
+      'submitDeclineLpo()', t(state.declineBusy ? 'dcBusy' : 'dcTitle'), state.declineBusy);
   }
   if (state.cancelRfqId) {
     const r = (state.rfqs || []).find(x => x.id === state.cancelRfqId) || {};
@@ -4511,21 +4865,21 @@ function renderModals(){
     const busy = state.receiptBusy;
     html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
       '<div class="bx-rise bx-modal bx-scroll w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">Confirm receipt</h3>' +
-        '<button onclick="closeReceiptModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
-        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Confirm that <b style="color:var(--tx);">all goods arrived in the agreed quantity and quality</b>. The confirmation is posted to the order chat, the supplier is notified and the invoice becomes payable. After confirming you can no longer open a dispute on this order.</p>' +
-        '<textarea data-receipt="comment" maxlength="1000" rows="2" class="mt-4 w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="Optional note, e.g. counted 200 bags, all intact">' + esc(state.receiptComment) + '</textarea>' +
+        '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('rcTitle') + '</h3>' +
+        '<button onclick="closeReceiptModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
+        '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + tpl('rcBody', { bold: '<b style="color:var(--tx);">' + t('rcBold') + '</b>' }) + '</p>' +
+        '<textarea data-receipt="comment" maxlength="1000" rows="2" class="mt-4 w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="' + esc(t('rcPlaceholder')) + '">' + esc(state.receiptComment) + '</textarea>' +
         '<div class="mt-5 flex flex-wrap gap-2">' +
-          '<button onclick="' + (busy ? '' : 'receiptReportProblem()') + '" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">Report a problem</button>' +
-          '<button onclick="' + (busy ? '' : 'submitReceipt()') + '" class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + (busy ? 'Confirming…' : 'Everything is correct') + '</button>' +
+          '<button onclick="' + (busy ? '' : 'receiptReportProblem()') + '" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('rcReport') + '</button>' +
+          '<button onclick="' + (busy ? '' : 'submitReceipt()') + '" class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + t(busy ? 'rcBusy' : 'rcOk') + '</button>' +
         '</div>' +
       '</div></div>';
   }
   if (state.disputeOrderId) {
-    html += modalWrap('Open dispute', 'closeDisputeModal()',
-      '<p class="text-[13px]" style="color:var(--tx3);">The order will be paused until a Biddex admin reviews it and either resumes or cancels it. Your reason is posted to the order chat and the supplier is notified.</p>' +
-      '<textarea data-dispute="reason" maxlength="1000" rows="4" class="w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="What went wrong? e.g. 20 of 100 units arrived damaged">' + esc(state.disputeReason) + '</textarea>',
-      'submitDispute()', state.disputeBusy ? 'Opening…' : 'Open dispute', state.disputeBusy);
+    html += modalWrap(t('dpTitle'), 'closeDisputeModal()',
+      '<p class="text-[13px]" style="color:var(--tx3);">' + t('dpBody') + '</p>' +
+      '<textarea data-dispute="reason" maxlength="1000" rows="4" class="w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="' + esc(t('dpPlaceholder')) + '">' + esc(state.disputeReason) + '</textarea>',
+      'submitDispute()', t(state.disputeBusy ? 'dpBusy' : 'dpTitle'), state.disputeBusy);
   }
   if (state.compareRfqId) {
     const q = state.compareQuotes;
@@ -4684,11 +5038,11 @@ function renderModals(){
       'submitVerifyDoc()', t(state.verifyBusy ? 'verifySubmitting' : 'verifySubmit'), state.verifyBusy || state.verifyFileBusy || !v.fileUrl);
   }
   if (state.showDeliveryFailModal) {
-    html += modalWrap('Delivery failed',
+    html += modalWrap(t('dfTitle'),
       'closeDeliveryFailModal()',
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Reason (shown to the buyer, required)</span>' +
-        '<textarea data-deliveryfail="reason" maxlength="1000" rows="3" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Recipient not available, will retry tomorrow">' + esc(state.deliveryFailReason) + '</textarea></label>',
-      'confirmDeliveryFail()', state.ordersBusyId ? 'Working…' : 'Mark as failed', !!state.ordersBusyId);
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('dfReason') + '</span>' +
+        '<textarea data-deliveryfail="reason" maxlength="1000" rows="3" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="' + esc(t('dfPlaceholder')) + '">' + esc(state.deliveryFailReason) + '</textarea></label>',
+      'confirmDeliveryFail()', state.ordersBusyId ? t('working') : t('dfSubmit'), !!state.ordersBusyId);
   }
   return html;
 }
