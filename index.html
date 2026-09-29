@@ -704,7 +704,25 @@ const I18N = {
     toastPayReported:"Payment reported — waiting for the supplier to confirm it.",
     toastPayConfirmed:"Payment confirmed.",
     toastPayRejected:"Payment rejected.",
-    promptRejectPayment:"Reject this payment? Optionally say why (e.g. \"not received\"):"
+    promptRejectPayment:"Reject this payment? Optionally say why (e.g. \"not received\"):",
+    setEyebrow:"ACCOUNT",
+    pfCountry:"Country",
+    pfPhone:"Phone",
+    pfCr:"Registration number (CR)",
+    saving:"Saving…",
+    setDocsHeading:"Verification documents",
+    setSubmitUpdated:"+ Submit updated document",
+    setSubmitDoc:"+ Submit document",
+    setNoDocsTitle:"No documents submitted",
+    setNoDocsBody:"Submit a trade license or CR certificate for review.",
+    cpTitle:"Change password",
+    cpCurrent:"Current password",
+    cpNew:"New password",
+    cpUpdating:"Updating…",
+    cpUpdate:"Update password",
+    cpFillBoth:"Fill in both fields.",
+    cpDone:"Password updated. Other sessions have been signed out.",
+    toastEraseFields:"Enter the company name and your password."
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -1291,7 +1309,25 @@ const I18N = {
     toastPayReported:"تم الإبلاغ عن الدفعة — بانتظار تأكيد المورد.",
     toastPayConfirmed:"تم تأكيد الدفعة.",
     toastPayRejected:"تم رفض الدفعة.",
-    promptRejectPayment:"هل تريد رفض هذه الدفعة؟ يمكنك ذكر السبب (مثال: \"لم تصل\"):"
+    promptRejectPayment:"هل تريد رفض هذه الدفعة؟ يمكنك ذكر السبب (مثال: \"لم تصل\"):",
+    setEyebrow:"الحساب",
+    pfCountry:"الدولة",
+    pfPhone:"الهاتف",
+    pfCr:"رقم السجل التجاري (CR)",
+    saving:"جارٍ الحفظ…",
+    setDocsHeading:"مستندات التوثيق",
+    setSubmitUpdated:"+ إرسال مستند محدَّث",
+    setSubmitDoc:"+ إرسال مستند",
+    setNoDocsTitle:"لم يتم إرسال مستندات",
+    setNoDocsBody:"أرسل رخصة تجارية أو شهادة سجل تجاري للمراجعة.",
+    cpTitle:"تغيير كلمة المرور",
+    cpCurrent:"كلمة المرور الحالية",
+    cpNew:"كلمة المرور الجديدة",
+    cpUpdating:"جارٍ التحديث…",
+    cpUpdate:"تحديث كلمة المرور",
+    cpFillBoth:"املأ الحقلين.",
+    cpDone:"تم تحديث كلمة المرور. تم تسجيل الخروج من الجلسات الأخرى.",
+    toastEraseFields:"أدخل اسم الشركة وكلمة المرور."
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -2201,13 +2237,13 @@ function onChangePwField(field, e){ state.changePwForm[field] = e.target.value; 
 
 async function submitChangePassword(){
   const f = state.changePwForm;
-  if (!f.currentPassword || !f.newPassword) { setState({ changePwMsg:'Fill in both fields.', changePwOk:false }); return; }
+  if (!f.currentPassword || !f.newPassword) { setState({ changePwMsg:t('cpFillBoth'), changePwOk:false }); return; }
   setState({ changePwBusy:true, changePwMsg:'', changePwOk:false });
   try {
     const data = await api('/api/auth/password', { method:'PATCH', body: JSON.stringify(f) });
     // the old token is now invalid everywhere; keep this session going with the fresh one
     if (data && data.token) { state.token = data.token; saveSession(); }
-    setState({ changePwBusy:false, changePwForm:{ currentPassword:'', newPassword:'' }, changePwMsg:'Password updated. Other sessions have been signed out.', changePwOk:true });
+    setState({ changePwBusy:false, changePwForm:{ currentPassword:'', newPassword:'' }, changePwMsg:t('cpDone'), changePwOk:true });
   } catch(e) { setState({ changePwBusy:false, changePwMsg: e.message, changePwOk:false }); }
 }
 
@@ -2238,7 +2274,7 @@ function onEraseField(field, e){ state.eraseForm[field] = e.target.value; }
 
 async function confirmEraseAccount(){
   const f = state.eraseForm;
-  if (!f.companyName || !f.password) { showToast('Enter the company name and your password.'); return; }
+  if (!f.companyName || !f.password) { showToast(t('toastEraseFields')); return; }
   setState({ eraseBusy:true });
   try {
     await api('/api/auth/me/erase', { method:'DELETE', body: JSON.stringify(f) });
@@ -3980,17 +4016,17 @@ function renderSettings(){
   const c = state.company || {};
   const f = state.profileForm;
   const docs = c.documents || [];
-  return '<div class="eyebrow mb-1.5">ACCOUNT</div>' +
-  '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">Settings</h1>' +
+  return '<div class="eyebrow mb-1.5">' + t('setEyebrow') + '</div>' +
+  '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">' + t('navSettings') + '</h1>' +
   '<div class="max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="mb-4 flex items-center gap-2">' + verificationBadge() + hint('verification') + '</div>' +
     '<div class="flex flex-col gap-4">' +
-      profileField('name','Company name', f.name) +
-      profileField('country','Country', f.country) +
-      profileField('phone','Phone', f.phone) +
-      profileField('registrationNumber','Registration number (CR)', f.registrationNumber) +
+      profileField('name', t('companyName'), f.name) +
+      profileField('country', t('pfCountry'), f.country) +
+      profileField('phone', t('pfPhone'), f.phone) +
+      profileField('registrationNumber', t('pfCr'), f.registrationNumber) +
     '</div>' +
-    '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + (state.profileBusy ? 'Saving…' : 'Save changes') + '</button>' +
+    '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + t(state.profileBusy ? 'saving' : 'saveChanges') + '</button>' +
   '</div>' +
   onboardingRestoreBlock() +
   '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
@@ -4001,12 +4037,12 @@ function renderSettings(){
     '</div>' +
   '</div>' +
   '<div class="mt-6 max-w-lg">' +
-    '<div class="mb-3 flex items-center justify-between"><h2 class="text-[15px] font-bold" style="color:var(--tx);">Verification documents</h2>' +
-    '<button onclick="openVerifyModal()" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">' + (c.verificationStatus === 'VERIFIED' ? '+ Submit updated document' : '+ Submit document') + '</button>' +
+    '<div class="mb-3 flex items-center justify-between"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('setDocsHeading') + '</h2>' +
+    '<button onclick="openVerifyModal()" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t(c.verificationStatus === 'VERIFIED' ? 'setSubmitUpdated' : 'setSubmitDoc') + '</button>' +
     '</div>' +
-    (docs.length === 0 ? emptyState('No documents submitted', 'Submit a trade license or CR certificate for review.') :
+    (docs.length === 0 ? emptyState(t('setNoDocsTitle'), t('setNoDocsBody')) :
       '<div class="flex flex-col gap-2">' + docs.map(d =>
-        '<div class="flex items-center justify-between rounded-lg border p-3 text-[13px]" style="border-color:var(--bd); background:var(--panel);"><span style="color:var(--tx);">' + esc(d.docType) + '</span><span class="mono" style="color:var(--tx4);">' + fmtDate(d.uploadedAt) + '</span></div>'
+        '<div class="flex items-center justify-between rounded-lg border p-3 text-[13px]" style="border-color:var(--bd); background:var(--panel);"><span style="color:var(--tx);">' + esc(({ TRADE_LICENSE: t('docTradeLicense'), CR_CERTIFICATE: t('docCr'), OTHER: t('docOther') })[d.docType] || d.docType) + '</span><span class="mono" style="color:var(--tx4);">' + fmtDate(d.uploadedAt) + '</span></div>'
       ).join('') + '</div>') +
   '</div>' +
   renderChangePassword() +
@@ -4023,15 +4059,15 @@ function renderSettings(){
 function renderChangePassword(){
   const f = state.changePwForm;
   return '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
-    '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">Change password</div>' +
+    '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">' + t('cpTitle') + '</div>' +
     '<div class="flex flex-col gap-4">' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">Current password</span>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('cpCurrent') + '</span>' +
       '<input data-changepw="currentPassword" type="password" value="' + esc(f.currentPassword) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
-      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">New password</span>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('cpNew') + '</span>' +
       '<input data-changepw="newPassword" type="password" value="' + esc(f.newPassword) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
     '</div>' +
     (state.changePwMsg ? '<div class="mt-3 text-[12px] font-semibold" style="color:' + (state.changePwOk ? 'var(--ok)' : 'var(--acc)') + ';">' + esc(state.changePwMsg) + '</div>' : '') +
-    '<button onclick="submitChangePassword()" ' + (state.changePwBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.changePwBusy?'0.6':'1') + ';">' + (state.changePwBusy ? 'Updating…' : 'Update password') + '</button>' +
+    '<button onclick="submitChangePassword()" ' + (state.changePwBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.changePwBusy?'0.6':'1') + ';">' + t(state.changePwBusy ? 'cpUpdating' : 'cpUpdate') + '</button>' +
   '</div>';
 }
 
@@ -4632,7 +4668,7 @@ function renderEraseAccountModal(){
   return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
     '<div class="bx-rise bx-modal bx-scroll w-full max-w-sm rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">' + t('deleteAccountTitle') + '</h3>' +
-      '<button onclick="closeEraseModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<button onclick="closeEraseModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
       (state.eraseCheckLoading ? '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + t('pleaseWait') + '</p>' :
         blocked ?
           '<p class="mt-4 text-[13px]" style="color:var(--tx3);">' + t('deleteAccountBlockedIntro') + '</p>' +
