@@ -77,6 +77,24 @@
   html[lang=ar] .mono, html[lang=ar] .eyebrow { font-family:"JetBrains Mono", "Inter", system-ui, sans-serif; }
   html[dir=rtl] [data-dropdown=headerMenu] > div { right:auto !important; left:0 !important; }
   @media (min-width:640px) { html[dir=rtl] [data-dropdown=notif] > div { right:auto !important; left:0 !important; } }
+  /* Touch: no 300ms delay/double-tap zoom on controls, no grey flash on tap, brand-coloured checkboxes.
+     The pressed-state scale is for real touch screens only (pointer:coarse), so desktop mice see no change. */
+  body { -webkit-tap-highlight-color: transparent; }
+  a, button, input, select, textarea, label, summary, [onclick] { touch-action: manipulation; }
+  input[type=checkbox], input[type=radio] { accent-color: var(--acc); }
+  @media (pointer: coarse) {
+    button, .chip, .bx-tap, [data-navtab] { transition: transform .12s ease; }
+    button:not(:disabled):active, .chip:active, .bx-tap:active, [data-navtab]:active { transform: scale(0.97); }
+  }
+  /* Phone-width labels: no all-caps (Tailwind's uppercase utility); text written in capitals stays as written */
+  @media (max-width: 767px) { .uppercase { text-transform: none !important; } }
+  /* Primary form buttons span the width on phones */
+  @media (max-width: 639px) { .bx-btn-block { width: 100%; } }
+  /* Password fields: the show/hide button sits at the end of the field (right in LTR, left in RTL) */
+  .bx-pw { position: relative; display: block; width: 100%; }
+  .bx-pw.bx-pw > input { padding-inline-end: 44px; }
+  .bx-pw-eye { position: absolute; inset-inline-end: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: grid; place-items: center; border: 0; background: none; color: var(--tx4); cursor: pointer; border-radius: 8px; }
+  .bx-pw-eye:hover, .bx-pw-eye:focus-visible { color: var(--acc); outline: none; }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
@@ -741,7 +759,9 @@ const I18N = {
     lpStep3Title:"Re-check",
     lpStep3Body:"If you change your company name or CR number, your company goes back to review.",
     lpComingSoon:"(Coming soon)",
-    logoTagline:"BAHRAIN B2B PROCUREMENT"
+    logoTagline:"BAHRAIN B2B PROCUREMENT",
+    showPassword:"Show password",
+    hidePassword:"Hide password"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -1360,7 +1380,9 @@ const I18N = {
     lpStep3Title:"إعادة المراجعة",
     lpStep3Body:"إذا غيّرت اسم شركتك أو رقم سجلها التجاري، تعود شركتك إلى المراجعة.",
     lpComingSoon:"(قريبًا)",
-    logoTagline:"مشتريات الشركات في البحرين"
+    logoTagline:"مشتريات الشركات في البحرين",
+    showPassword:"إظهار كلمة المرور",
+    hidePassword:"إخفاء كلمة المرور"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -4063,7 +4085,7 @@ function renderSettings(){
       profileField('phone', t('pfPhone'), f.phone) +
       profileField('registrationNumber', t('pfCr'), f.registrationNumber) +
     '</div>' +
-    '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + t(state.profileBusy ? 'saving' : 'saveChanges') + '</button>' +
+    '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="bx-btn-block mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + t(state.profileBusy ? 'saving' : 'saveChanges') + '</button>' +
   '</div>' +
   onboardingRestoreBlock() +
   '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
@@ -4104,7 +4126,7 @@ function renderChangePassword(){
       '<input data-changepw="newPassword" type="password" value="' + esc(f.newPassword) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>' +
     '</div>' +
     (state.changePwMsg ? '<div class="mt-3 text-[12px] font-semibold" style="color:' + (state.changePwOk ? 'var(--ok)' : 'var(--acc)') + ';">' + esc(state.changePwMsg) + '</div>' : '') +
-    '<button onclick="submitChangePassword()" ' + (state.changePwBusy?'disabled':'') + ' class="mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.changePwBusy?'0.6':'1') + ';">' + t(state.changePwBusy ? 'cpUpdating' : 'cpUpdate') + '</button>' +
+    '<button onclick="submitChangePassword()" ' + (state.changePwBusy?'disabled':'') + ' class="bx-btn-block mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.changePwBusy?'0.6':'1') + ';">' + t(state.changePwBusy ? 'cpUpdating' : 'cpUpdate') + '</button>' +
   '</div>';
 }
 
@@ -4783,7 +4805,7 @@ function renderBulkImportModal(){
       '<div class="mt-5 flex flex-wrap justify-end gap-2">' +
         (state.bulkImportStep === 'preview' ? '<button onclick="setState({bulkImportStep:\'upload\'})" class="rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t('back') + '</button>' : '') +
         (state.bulkImportStep === 'preview'
-          ? '<button onclick="' + (state.bulkImportBusy ? '' : 'submitBulkImport()') + '" class="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkImportBusy?'0.6':'1') + ';">' + (state.bulkImportBusy ? t('biSaving') : tpl('biSave', { n: validCount })) + '</button>'
+          ? '<button onclick="' + (state.bulkImportBusy ? '' : 'submitBulkImport()') + '" class="bx-btn-block rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkImportBusy?'0.6':'1') + ';">' + (state.bulkImportBusy ? t('biSaving') : tpl('biSave', { n: validCount })) + '</button>'
           : '') +
       '</div>' +
     '</div></div>';
@@ -4818,7 +4840,7 @@ function renderBulkPhotoModal(){
             '</div>'
         ).join('') + '</div>' : '') +
       '<div class="mt-5 flex flex-wrap justify-end gap-2">' +
-        '<button onclick="' + (state.bulkPhotoBusy ? '' : 'submitBulkPhotos()') + '" class="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkPhotoBusy?'0.6':'1') + ';">' + (state.bulkPhotoBusy ? t('bpUploading') : tpl('bpUpload', { n: matched })) + '</button>' +
+        '<button onclick="' + (state.bulkPhotoBusy ? '' : 'submitBulkPhotos()') + '" class="bx-btn-block rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.bulkPhotoBusy?'0.6':'1') + ';">' + (state.bulkPhotoBusy ? t('bpUploading') : tpl('bpUpload', { n: matched })) + '</button>' +
       '</div>' +
     '</div></div>';
 }
@@ -5133,7 +5155,28 @@ function modalWrap(title, onClose, fieldsHtml, onSubmit, submitLabel, busy, stic
     '</div></div>';
 }
 
+// Adds a show/hide button to every password field (re-run after each render; the input node itself is only
+// moved into a wrapper, so the listeners bound to it stay). Toggles the field's type only, no state.
+const EYE_ON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m1 1 22 22"/></svg>';
+function decoratePasswordFields(){
+  document.querySelectorAll('input[type=password]').forEach(inp => {
+    if (inp.parentElement && inp.parentElement.classList.contains('bx-pw')) return;
+    const wrap = document.createElement('span');
+    wrap.className = 'bx-pw';
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'bx-pw-eye';
+    const paint = () => { const shown = inp.type === 'text'; btn.innerHTML = shown ? EYE_OFF : EYE_ON; btn.setAttribute('aria-label', t(shown ? 'hidePassword' : 'showPassword')); };
+    btn.addEventListener('click', () => { inp.type = inp.type === 'password' ? 'text' : 'password'; paint(); inp.focus(); });
+    paint();
+    wrap.appendChild(btn);
+  });
+}
+
 function bindEvents(){
+  decoratePasswordFields();
   document.querySelectorAll('[data-field]').forEach(el => {
     el.addEventListener('input', (e) => {
       const f = el.getAttribute('data-field');
