@@ -120,6 +120,16 @@
   html[dir=rtl] .bx-chev { transform: scaleX(-1); }
   .bx-tapcard { cursor: pointer; }
   .bx-tapcard:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+  /* Phones (<640px): dialogs become bottom sheets that slide up in 200ms; the "More" sheet uses the same motion.
+     Desktop keeps the centred dialog. Pure CSS: the markup of every modal is unchanged. */
+  @keyframes bxFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes bxSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .bx-sheet { animation: bxSheet .2s cubic-bezier(.22, 1, .36, 1) both; }
+  @media (max-width: 639px) {
+    .bx-overlay { align-items: flex-end !important; padding: 0 !important; animation: bxFade .2s ease both; }
+    .bx-overlay > .bx-modal { max-width: none !important; width: 100%; border-radius: 16px 16px 0 0 !important; border-bottom-width: 0; max-height: 88vh; max-height: 88dvh; animation: bxSheet .2s cubic-bezier(.22, 1, .36, 1) both; }
+  }
+  @media (prefers-reduced-motion: reduce) { .bx-sheet, .bx-overlay, .bx-overlay > .bx-modal { animation: none !important; } }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
