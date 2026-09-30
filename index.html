@@ -104,6 +104,18 @@
   .bx-pw.bx-pw > input { padding-inline-end: 44px; }
   .bx-pw-eye { position: absolute; inset-inline-end: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: grid; place-items: center; border: 0; background: none; color: var(--tx4); cursor: pointer; border-radius: 8px; }
   .bx-pw-eye:hover, .bx-pw-eye:focus-visible { color: var(--acc); outline: none; }
+  /* Phone navigation (<768px): bottom tab bar + "More" sheet replace the top tabs */
+  .bx-bottomnav { position: fixed; inset-inline: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--panel); border-top: 1px solid var(--bd); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .bx-bottomnav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 56px; padding: 6px 2px; font-size: 10.5px; font-weight: 600; color: var(--tx4); background: none; border: 0; min-width: 0; }
+  .bx-bottomnav button span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bx-bottomnav button[aria-current=page] { color: var(--acc); }
+  @media (min-width: 768px) { .bx-bottomnav, .bx-more { display: none !important; } }
+  @media (max-width: 767px) {
+    .bx-page { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+    body:has(.bx-bottomnav) .bx-toast { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  }
+  .bx-more-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 48px; padding: 0 14px; border: 0; border-radius: 12px; background: none; color: var(--tx2); font-size: 15px; font-weight: 600; text-align: start; }
+  .bx-more-row:active { background: var(--sunken); }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
@@ -770,7 +782,10 @@ const I18N = {
     lpComingSoon:"(Coming soon)",
     logoTagline:"BAHRAIN B2B PROCUREMENT",
     showPassword:"Show password",
-    hidePassword:"Hide password"
+    hidePassword:"Hide password",
+    navHomeShort:"Home",
+    navOrdersShort:"Orders",
+    navMoreShort:"More"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -1391,7 +1406,10 @@ const I18N = {
     lpComingSoon:"(قريبًا)",
     logoTagline:"مشتريات الشركات في البحرين",
     showPassword:"إظهار كلمة المرور",
-    hidePassword:"إخفاء كلمة المرور"
+    hidePassword:"إخفاء كلمة المرور",
+    navHomeShort:"الرئيسية",
+    navOrdersShort:"الطلبيات",
+    navMoreShort:"المزيد"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -1450,6 +1468,7 @@ function langToggleBtn(){
 }
 
 let state = {
+  showMoreSheet: false,
   view: 'landing', // landing | auth | buyer | supplier | admin
   authRole: 'BUYER',
   authMode: 'login',
@@ -1983,6 +2002,7 @@ async function resolveDispute(action){
 }
 
 function setSection(sec){
+  state.showMoreSheet = false;
   if (sec === 'main') refreshOnboarding(); // the home card may have ticked while the user was elsewhere
   if (sec === 'profile') {
     const c = state.company || {};
@@ -2082,7 +2102,7 @@ async function openDownload(path, busyId){
   try {
     const { url } = await api(path);
     const a = document.createElement('a');
-    a.href = url; a.rel = 'noopener';
+    a.href = url; a.rel = 'noopener'; a.target = '_blank';
     document.body.appendChild(a); a.click(); a.remove();
   } catch(e) { showToast(e.message); }
   setState({ docBusyId: null });
@@ -3224,7 +3244,7 @@ function logo(sub){
 
 function toastHtml(){
   if (!state.toast) return '';
-  return '<div class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] rounded-xl px-4 py-2.5 text-sm font-semibold shadow-2xl bx-rise" style="background:var(--tx); color:var(--bg);">' + esc(state.toast) + '</div>';
+  return '<div class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] rounded-xl px-4 py-2.5 text-sm font-semibold shadow-2xl bx-rise bx-toast" style="background:var(--tx); color:var(--bg);">' + esc(state.toast) + '</div>';
 }
 
 // ---------- Landing ----------
@@ -3377,12 +3397,6 @@ function renderDashboard(role){
       '<span class="hidden sm:contents">' + langToggleBtn() + themeToggleBtn() +
         '<button onclick="logout()" class="rounded-lg px-3 py-1.5 text-[12px] font-semibold border" style="border-color:var(--bd2); color:var(--tx3);">' + t('signOut') + '</button>' +
       '</span>' +
-      headerMenu([
-        !isBuyer ? menuItemBtn('openWalletModal()', walletLabel) : '',
-        menuItemBtn('toggleLang()', state.lang === 'ar' ? 'EN' : 'العربية'),
-        menuItemBtn('toggleTheme()', t(isDarkNow() ? 'themeLight' : 'themeDark')),
-        menuItemBtn('logout()', t('signOut')),
-      ].filter(Boolean).join('')) +
     '</div></div></header>' +
     navBar(role);
 
@@ -3394,7 +3408,8 @@ function renderDashboard(role){
     : state.section === 'stock' ? (isBuyer ? renderStockPage() : renderSupplierHub())
     : (isBuyer ? renderBuyerHub() : renderSupplierHub());
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + suspensionBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
+  return '<div>' + header + '<div class="bx-page mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + suspensionBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
+    bottomNav(role) + moreSheet(role, walletLabel) +
     renderModals() + renderWalletModal() + renderLightbox() + renderEraseAccountModal() + toastHtml();
 }
 
@@ -3408,13 +3423,54 @@ function suspensionBanner(){
   '</div>';
 }
 
+// ---------- Phone navigation ----------
+const NAV_ICONS = {
+  main: 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+  rfqs: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4',
+  opps: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+  lpos: 'M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v9',
+  stock: 'M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5',
+  catalog: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+  more: 'M5 12h.01M12 12h.01M19 12h.01'
+};
+function navIcon(key){ return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (key === 'more' ? 3 : 1.9) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + NAV_ICONS[key] + '"/></svg>'; }
+function bottomNav(role){
+  const isBuyer = role === 'buyer';
+  const tabs = isBuyer
+    ? [ ['main', 'main', t('navHomeShort')], ['rfqs', 'rfqs', t('navRfqs')], ['lpos', 'lpos', t('navOrdersShort')], ['stock', 'stock', t('navStock')], ['more', 'more', t('navMoreShort')] ]
+    : [ ['main', 'main', t('navHomeShort')], ['rfqs', 'opps', t('navOpportunities')], ['lpos', 'lpos', t('navOrdersShort')], ['catalog', 'catalog', t('navCatalog')], ['more', 'more', t('navMoreShort')] ];
+  // sections without a tab of their own live under "More"
+  const cur = state.section === 'orderDetail' ? 'lpos' : (tabs.some(x => x[0] === state.section) ? state.section : 'more');
+  return '<nav class="bx-bottomnav" aria-label="Biddex">' + tabs.map(([key, icon, label]) =>
+    '<button type="button" onclick="' + (key === 'more' ? 'toggleMoreSheet()' : "setSection('" + key + "')") + '"' + (cur === key ? ' aria-current="page"' : '') + '>' + navIcon(icon) + '<span>' + label + '</span></button>').join('') + '</nav>';
+}
+function toggleMoreSheet(){ setState({ showMoreSheet: !state.showMoreSheet }); }
+function moreSheet(role, walletLabel){
+  if (!state.showMoreSheet) return '';
+  const isBuyer = role === 'buyer';
+  const row = (onclick, label, extra) => '<button type="button" class="bx-more-row" onclick="' + onclick + '"><span>' + label + '</span>' + (extra || '') + '</button>';
+  return '<div class="bx-more bx-overlay fixed inset-0 z-50 flex items-end bg-black/50" onclick="if(event.target===this)toggleMoreSheet()">' +
+    '<div class="bx-sheet bx-rise w-full rounded-t-2xl border-t p-3" style="border-color:var(--bd); background:var(--panel); padding-bottom:calc(0.75rem + env(safe-area-inset-bottom, 0px));">' +
+      '<div class="flex items-center justify-between gap-3 px-3 pb-2 pt-1"><div class="min-w-0 truncate text-[14px] font-bold" style="color:var(--tx);">' + esc(state.company ? state.company.name : '') + '</div>' + verificationBadge() + '</div>' +
+      (isBuyer ? row("setSection('catalog')", t('navNetwork')) : row('toggleMoreSheet();openWalletModal()', t('walletTitle') || '', '<span class="mono text-[13px]" style="color:var(--acc);">' + walletLabel + '</span>')) +
+      row("setSection('profile')", t('navSettings')) +
+      row('toggleLang();toggleMoreSheet()', state.lang === 'ar' ? 'English' : 'العربية') +
+      row('toggleTheme();toggleMoreSheet()', t(isDarkNow() ? 'themeLight' : 'themeDark')) +
+      row('logout()', '<span style="color:var(--bad);">' + t('signOut') + '</span>') +
+    '</div></div>';
+}
+
+function mobileBack(sec){
+  return '<button type="button" onclick="setSection(\'' + sec + '\')" class="md:hidden mb-3 inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-semibold" style="color:var(--tx3);">' + (state.lang === 'ar' ? '&rarr; ' : '&larr; ') + t('back') + '</button>';
+}
+
 function navBar(role){
   const isBuyer = role === 'buyer';
   const tabs = isBuyer
     ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['stock',t('navStock')], ['catalog',t('navNetwork')], ['profile',t('navSettings')] ]
     : [ ['main',t('navSupplierHub')], ['rfqs',t('navOpportunities')], ['catalog',t('navCatalog')], ['lpos',t('navOrdersLpos')], ['profile',t('navSettings')] ];
   const activeKey = state.section === 'orderDetail' ? 'lpos' : state.section;
-  return '<div class="border-b" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div class="hidden md:block border-b" style="border-color:var(--bd); background:var(--panel);">' +
     '<div id="nav-scroller" class="bx-edge-fade mx-auto flex max-w-[1220px] gap-1 px-5 overflow-x-auto">' +
       tabs.map(([key,label]) => '<button data-navtab' + (activeKey === key ? ' data-navtab-active' : '') + ' onclick="setSection(\'' + key + '\')" class="border-b-2 px-4 py-3 text-[13px] font-semibold whitespace-nowrap" style="' + (activeKey === key ? 'border-color:var(--acc); color:var(--tx);' : 'border-color:transparent; color:var(--tx4);') + '">' + label + '</button>').join('') +
     '</div></div>';
@@ -3624,7 +3680,7 @@ function actionBtn(label, onclick, busy){
 
 function renderNetwork(){
   const items = state.catalog || [];
-  return '<div class="eyebrow mb-1.5">' + t('netEyebrow') + '</div>' +
+  return mobileBack('main') + '<div class="eyebrow mb-1.5">' + t('netEyebrow') + '</div>' +
   '<h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">' + t('netTitle') + '</h1>' +
   (items.length === 0 ? emptyState(t('netEmptyTitle'), t('netEmptyBody')) :
     '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">' + items.map(p =>
@@ -4088,7 +4144,7 @@ function renderSettings(){
   const c = state.company || {};
   const f = state.profileForm;
   const docs = c.documents || [];
-  return '<div class="eyebrow mb-1.5">' + t('setEyebrow') + '</div>' +
+  return mobileBack('main') + '<div class="eyebrow mb-1.5">' + t('setEyebrow') + '</div>' +
   '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">' + t('navSettings') + '</h1>' +
   '<div class="max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="mb-4 flex items-center gap-2">' + verificationBadge() + hint('verification') + '</div>' +
