@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <title>Biddex — Bahrain B2B Procurement</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F6F8FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0E17" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Biddex">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
 <script src="server-errors.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -79,7 +88,7 @@
   @media (min-width:640px) { html[dir=rtl] [data-dropdown=notif] > div { right:auto !important; left:0 !important; } }
   /* Touch: no 300ms delay/double-tap zoom on controls, no grey flash on tap, brand-coloured checkboxes.
      The pressed-state scale is for real touch screens only (pointer:coarse), so desktop mice see no change. */
-  body { -webkit-tap-highlight-color: transparent; }
+  body { -webkit-tap-highlight-color: transparent; padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
   a, button, input, select, textarea, label, summary, [onclick] { touch-action: manipulation; }
   input[type=checkbox], input[type=radio] { accent-color: var(--acc); }
   @media (pointer: coarse) {
@@ -1399,8 +1408,11 @@ function bhdMoney(n){ return fmtNum(n, 3) + ' ' + t('bhd'); }
 function initTheme(){
   try {
     const th = localStorage.getItem('biddex_theme');
-    if (th === 'dark' || th === 'light') document.documentElement.setAttribute('data-theme', th);
+    if (th === 'dark' || th === 'light') { document.documentElement.setAttribute('data-theme', th); applyThemeColor(th === 'dark'); }
   } catch(e) {}
+}
+function applyThemeColor(dark){
+  document.querySelectorAll('meta[name=theme-color]').forEach(m => m.setAttribute('content', dark ? '#0A0E17' : '#F6F8FC'));
 }
 function isDarkNow(){
   const cur = document.documentElement.getAttribute('data-theme');
@@ -1410,6 +1422,7 @@ function toggleTheme(){
   const next = isDarkNow() ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   try { localStorage.setItem('biddex_theme', next); } catch(e) {}
+  applyThemeColor(next === 'dark');
   render();
 }
 function themeToggleBtn(){
@@ -3206,7 +3219,7 @@ function render(){
 }
 
 function logo(sub){
-  return '<div class="flex items-center gap-2 sm:gap-2.5 shrink-0"><span class="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border font-extrabold" style="border-color:var(--bd); background:var(--inset); color:var(--acc); font-size:17px;">B<span style="font-size:11px; vertical-align:sub;">x</span></span><div class="leading-tight"><div class="font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">Biddex</div><div class="eyebrow hidden sm:block" style="font-size:9.5px; color:var(--tx4);">' + (sub || t('logoTagline')) + '</div></div></div>';
+  return '<div class="flex items-center gap-2 sm:gap-2.5 shrink-0"><svg class="h-8 w-8 sm:h-9 sm:w-9 shrink-0" viewBox="0 0 40 40" fill="none" role="img" aria-label="Biddex"><rect x="1" y="1" width="38" height="38" rx="11" style="fill:var(--inset); stroke:var(--bd);" stroke-width="1.5"/><path d="M10 10V30M10 10H18a4.5 4.5 0 0 1 0 9H10M10 19H19a5.5 5.5 0 0 1 0 11H10" style="stroke:var(--acc);" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M26.5 25l5 5M31.5 25l-5 5" style="stroke:var(--tx4);" stroke-width="2.4" stroke-linecap="round"/></svg><div class="leading-tight"><div class="font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">Biddex</div><div class="eyebrow hidden sm:block" style="font-size:9.5px; color:var(--tx4);">' + (sub || t('logoTagline')) + '</div></div></div>';
 }
 
 function toastHtml(){
