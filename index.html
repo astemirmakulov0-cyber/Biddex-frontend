@@ -119,6 +119,9 @@
   .bx-chev { flex-shrink: 0; color: var(--tx4); }
   html[dir=rtl] .bx-chev { transform: scaleX(-1); }
   .bx-tapcard { cursor: pointer; }
+  @keyframes bxFlash { 0%, 60% { box-shadow: 0 0 0 3px var(--acc); } 100% { box-shadow: 0 0 0 0 transparent; } }
+  .bx-flash { animation: bxFlash 2.4s ease both; }
+  @media (prefers-reduced-motion: reduce) { .bx-flash { animation: none; outline: 2px solid var(--acc); } }
   .bx-tapcard:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
   /* Phones (<640px): dialogs become bottom sheets that slide up in 200ms; the "More" sheet uses the same motion.
      Desktop keeps the centred dialog. Pure CSS: the markup of every modal is unchanged. */
@@ -351,6 +354,10 @@ const I18N = {
     stDraft:"Draft",
     stAwarded:"Awarded",
     stClosed:"Closed",
+    oppBiddingClosed:"Bidding closed",
+    nfTitle:"Not found",
+    nfBody:"This link is not valid, or the item is not available to your account.",
+    nfBack:"Back to Home",
     stCancelled:"Cancelled",
     timeD:"{n}d",
     timeH:"{n}h",
@@ -983,6 +990,10 @@ const I18N = {
     stDraft:"مسودة",
     stAwarded:"تمت الترسية",
     stClosed:"مغلق",
+    oppBiddingClosed:"تم إغلاق استقبال العروض",
+    nfTitle:"غير موجود",
+    nfBody:"هذا الرابط غير صالح، أو أن العنصر غير متاح لحسابك.",
+    nfBack:"العودة إلى الرئيسية",
     stCancelled:"ملغى",
     timeD:"{n}ي",
     timeH:"{n}س",
@@ -1521,6 +1532,7 @@ let state = {
   newRfq: { title:'', quantity:'', unit:'pcs', deadline:'', category: ACTIVE_CATEGORIES[0], budget:'', specifications:'' },
   postBusy: false,
 
+  notFound: null,
   compareRfqId: null, compareQuotes: [], compareLoading: false, compareBusyId: null,
 
   submitQuoteRfqId: null, quoteForm: { price:'', days:'', paymentTerms:'30' }, quoteBusy: false,
@@ -2068,7 +2080,7 @@ async function toggleEmailPref(field, checked){
   }
 }
 
-async function openOrderDetail(orderId){
+async function openOrderDetail(orderId, fromLink){
   setState({ section:'orderDetail', selectedOrderId: orderId, orderDetail:null, orderDetailLoading:true, chatMessages:[] });
   try {
     const order = await api('/api/orders/' + orderId);
@@ -2081,7 +2093,11 @@ async function openOrderDetail(orderId){
     setState({ orderDetail: { order, rfq }, orderDetailLoading:false, orderDocs: [], docKind: isSup ? 'DELIVERY_NOTE' : 'OTHER' });
     refreshChat(orderId);
     refreshOrderDocs(orderId);
-  } catch(e) { setState({ orderDetailLoading:false }); showToast(e.message); }
+  } catch(e) {
+    // a link to an order that does not exist or is not this company's: say so and land on Home
+    if (fromLink && (e.status === 400 || e.status === 403 || e.status === 404)) setState({ orderDetailLoading:false, section:'main', selectedOrderId:null, orderDetail:null, notFound:'order' });
+    else { setState({ orderDetailLoading:false }); showToast(e.message); }
+  }
 }
 // ---------- Order documents ----------
 
@@ -2825,6 +2841,26 @@ async function confirmCancelRfq(){
     refreshRfqs();
   } catch(e) { setState({ cancelBusy:false }); showToast(e.message); refreshRfqs(); }
 }
+
+// #/rfq/<id> — buyer: the bids (comparison) when there are any; supplier: the bid form while bidding is open,
+// otherwise the card with their own bid / the "bidding closed" note. Not this user's or not existing: "not found".
+async function openRfqLink(rfqId){
+  let rfq;
+  try { rfq = await api('/api/rfqs/' + encodeURIComponent(rfqId)); }
+  catch(e) { if (e.status === 400 || e.status === 403 || e.status === 404) setState({ notFound:'rfq' }); else showToast(e.message); return; }
+  if (!isDashboardView()) return; // signed out while the request was in flight
+  if (!(state.rfqs || []).some(r => r.id === rfq.id)) state.rfqs = [rfq].concat(state.rfqs || []);
+  const supplier = state.view === 'supplier';
+  setSection('rfqs');
+  if (!supplier) { if ((rfq.quotes || []).length) openCompare(rfq.id); return; }
+  const own = (rfq.quotes || []).find(q => q.status !== 'WITHDRAWN');
+  if (rfq.status === 'PUBLISHED' && !own && new Date(rfq.deadline) > new Date()) { openSubmitQuote(rfq.id); return; }
+  setTimeout(() => {
+    const el = document.querySelector('[data-rfq="' + String(rfq.id).replace(/["\\]/g, '') + '"]');
+    if (el) { el.scrollIntoView({ block:'center' }); el.classList.add('bx-flash'); }
+  }, 60);
+}
+function closeNotFound(){ setState({ notFound:null }); }
 
 async function openCompare(rfqId){
   setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true });
@@ -3787,7 +3823,7 @@ function opportunityCard(r){
     REJECTED: [t('oppNotSelected'), 'background:var(--bad-soft); color:var(--bad);'],
     AWARDED: [t('stAwarded'), 'background:var(--ok-soft); color:var(--ok);'],
   })[ownQuote.status] || [t('oppQuoted'), 'background:var(--sunken); color:var(--tx4);'];
-  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div data-rfq="' + esc(r.id) + '" class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-center gap-4">' +
       (r.imageUrl ? '<img src="' + esc(r.imageUrl) + '" class="h-10 w-10 shrink-0 rounded-xl object-cover border" style="border-color:var(--bd);" />' : avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40)) +
       '<div class="flex-1 min-w-[200px]">' +
@@ -3805,7 +3841,7 @@ function opportunityCard(r){
         ? '<div class="flex items-center gap-2 shrink-0"><button onclick="openAttachments(\'' + r.id + '\')" class="rounded-lg border px-3 py-2 text-[12px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">' + tpl('oppFiles', { n: (ownQuote._count && ownQuote._count.attachments) || 0 }) + '</button>' +
           '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold" style="' + quotedLabel[1] + '">' + quotedLabel[0] + '</span></div>'
         : tl.past
-        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">' + t('stClosed') + '</span>'
+        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">' + t('oppBiddingClosed') + '</span>'
         : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('oppSubmitQuote') + '</button>') +
     '</div>' +
   '</div>';
@@ -5110,6 +5146,9 @@ function renderModals(){
       '<textarea data-dispute="reason" maxlength="1000" rows="4" class="w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="' + esc(t('dpPlaceholder')) + '">' + esc(state.disputeReason) + '</textarea>',
       'submitDispute()', t(state.disputeBusy ? 'dpBusy' : 'dpTitle'), state.disputeBusy);
   }
+  if (state.notFound) {
+    html += modalWrap(t('nfTitle'), 'closeNotFound()', '<p class="text-[13px]" style="color:var(--tx3);">' + t('nfBody') + '</p>', 'closeNotFound()', t('nfBack'));
+  }
   if (state.compareRfqId) {
     const q = state.compareQuotes;
     const compareRfq = (state.rfqs || []).find(r => r.id === state.compareRfqId);
@@ -5492,6 +5531,7 @@ async function onVerifyFileChange(e){
 // Nothing here changes how screens open or close: after every render the depth the app is in is compared with
 // the depth of the history stack, and entries are pushed, or popped with history.go(-n), to match.
 const OVERLAYS = [
+  ['notFound', s => !!s.notFound, () => closeNotFound()],
   ['lightbox', s => !!s.lightboxImage, () => closeLightbox()],
   ['moreSheet', s => !!s.showMoreSheet, () => toggleMoreSheet()],
   ['postRfq', s => !!s.showPostRfq, () => closePostRfq()],
@@ -5533,24 +5573,41 @@ function sectionHash(sec){
 }
 // URL of the history entry at depth k while the app is showing the current screen
 function entryHash(k){
-  if (state.view === 'auth') return '#/login';
+  if (state.view === 'auth') return state.authMode === 'register' ? '#/register?role=' + (state.authRole === 'SUPPLIER' ? 'supplier' : 'buyer') : '#/login';
   if (!isDashboardView()) return '#/';
+  // the bids / bid form of one RFQ has its own link
+  if (k === currentDepth() && (topOverlay() === 'compare' || topOverlay() === 'submitQuote')) return '#/rfq/' + encodeURIComponent(state.compareRfqId || state.submitQuoteRfqId);
   if (state.section === 'orderDetail') return k >= 2 ? '#/order/' + encodeURIComponent(state.selectedOrderId || '') : '#/orders';
   return sectionHash(state.section);
 }
+function safeDecode(v){ try { return decodeURIComponent(v); } catch(e) { return v; } }
 function parseHash(h){
-  const m = String(h || '').match(/^#\/?([\w-]*)(?:\/([^/?#]+))?/);
+  const str = String(h || '');
+  const m = str.match(/^#\/?([\w-]*)(?:\/([^/?#]+))?/);
   if (!m) return { section: 'main' };
-  if (m[1] === 'order' && m[2]) return { section: 'orderDetail', orderId: decodeURIComponent(m[2]) };
+  if (m[1] === 'login') return { section: 'main', auth: 'login' };
+  if (m[1] === 'register') return { section: 'main', auth: 'register', role: new URLSearchParams(str.split('?')[1] || '').get('role') === 'supplier' ? 'SUPPLIER' : 'BUYER' };
+  if (m[1] === 'rfq' && m[2]) return { section: 'rfqLink', rfqId: safeDecode(m[2]) };
+  if (m[1] === 'order' && m[2]) return { section: 'orderDetail', orderId: safeDecode(m[2]) };
   return { section: ROUTE_NAMES[m[1]] || 'main' };
 }
-function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?$/); return !!m && (m[1] === 'order' || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
+function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?(?:\?[^#]*)?$/); return !!m && (['order', 'rfq', 'login', 'register'].includes(m[1]) || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
 function applyRoute(r){
   if (!isDashboardView()) return;
   const supplier = state.view === 'supplier';
-  if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId); return; }
+  if (r.section === 'rfqLink' && r.rfqId) { openRfqLink(r.rfqId); return; }
+  if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId, true); return; }
   if (r.section === 'stock' && supplier) r = { section: 'main' };
   setSection(r.section);
+}
+// A route from the address bar / a link. Sign-in and registration links only mean something signed out (signed in:
+// Home). Order and RFQ links from e-mails wait in pendingRoute until sign-in and take the user to the login screen.
+function applyDeepRoute(r){
+  if (state.view === 'admin') return;
+  if (r.auth) { if (!state.token) openAuth(r.role || 'BUYER', r.auth); else if (isDashboardView()) setSection('main'); return; }
+  if (isDashboardView()) { applyRoute(r); return; }
+  pendingRoute = r;
+  if (r.section === 'orderDetail' || r.section === 'rfqLink') openAuth('BUYER', 'login');
 }
 function applyPendingRoute(){ if (pendingRoute && isDashboardView()) { const r = pendingRoute; pendingRoute = null; applyRoute(r); } }
 
@@ -5588,7 +5645,7 @@ window.addEventListener('popstate', (e) => {
   if (histPopExpected) { histPopExpected = false; histBusy = false; histDirty = false; scheduleHistorySync(); return; }
   const st = e.state;
   if (!st || !st.bx) { // an entry we did not create (a typed or pasted address): follow its route
-    if (isDashboardView()) applyRoute(parseHash(location.hash)); else pendingRoute = parseHash(location.hash);
+    applyDeepRoute(parseHash(location.hash));
     histAdopt = true; scheduleHistorySync(); return;
   }
   const target = st.depth;
@@ -5615,10 +5672,10 @@ document.addEventListener('click', (e) => {
 function initRouter(){
   const st = history.state;
   const route = parseHash(location.hash);
-  const deep = route.section !== 'main';
+  const deep = route.section !== 'main' || !!route.auth;
   if (st && st.bx) histDepth = st.depth;
   else { histDepth = 0; if (deep) history.replaceState({ bx: 1, depth: 0 }, '', '#/'); } // a shared link: Home sits below it
-  if (deep) { if (isDashboardView()) applyRoute(route); else pendingRoute = route; }
+  if (deep) applyDeepRoute(route);
   scheduleHistorySync();
 }
 
