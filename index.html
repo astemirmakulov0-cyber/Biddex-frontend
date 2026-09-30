@@ -806,7 +806,8 @@ const I18N = {
     attnReceipts:"Orders to confirm as received",
     attnOverdue:"Overdue invoices",
     attnPay:"Invoices to pay",
-    attnLowStock:"Items low in stock"
+    attnLowStock:"Items low in stock",
+    rfqDiscardConfirm:"Discard what you entered in this request?"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -1437,7 +1438,8 @@ const I18N = {
     attnReceipts:"طلبيات بانتظار تأكيد الاستلام",
     attnOverdue:"فواتير متأخرة",
     attnPay:"فواتير مستحقة الدفع",
-    attnLowStock:"أصناف توشك على النفاد"
+    attnLowStock:"أصناف توشك على النفاد",
+    rfqDiscardConfirm:"هل تريد تجاهل ما أدخلته في هذا الطلب؟"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -1789,6 +1791,7 @@ async function submitAuth(){
     saveSession();
     const dest = data.user.role === 'ADMIN' ? 'admin' : (data.company && data.company.type === 'SUPPLIER' ? 'supplier' : 'buyer');
     setState({ view: dest, authBusy:false, section:'main' });
+    applyPendingRoute();
     if (dest === 'admin') refreshAdmin(); else refreshAll();
   } catch (e) {
     // Remember the email that was actually submitted so "Resend" targets it even if the field is edited afterwards.
@@ -3264,6 +3267,7 @@ function render(){
     : renderDashboard('supplier');
   hintClose();
   bindEvents();
+  scheduleHistorySync();
 }
 
 function logo(sub){
@@ -5480,11 +5484,150 @@ async function onVerifyFileChange(e){
   reader.readAsDataURL(file);
 }
 
+// ---------- History: system Back / browser Back close the top layer instead of leaving the app ----------
+// Layers, counted as a depth: Home = 0; any other tab or a screen from "More" = 1 (Back goes Home, and only
+// Home exits the app; tabs replace each other's entry instead of stacking); an order card = 2 (Back goes to
+// the Orders tab); sign-in over the landing = 1; a dialog / sheet adds 1 on top. Screens are also in the URL
+// hash so a reload or a shared link lands on the same screen (dialogs are not: they reopen closed).
+// Nothing here changes how screens open or close: after every render the depth the app is in is compared with
+// the depth of the history stack, and entries are pushed, or popped with history.go(-n), to match.
+const OVERLAYS = [
+  ['lightbox', s => !!s.lightboxImage, () => closeLightbox()],
+  ['moreSheet', s => !!s.showMoreSheet, () => toggleMoreSheet()],
+  ['postRfq', s => !!s.showPostRfq, () => closePostRfq()],
+  ['closeBidding', s => !!s.closeBiddingRfqId, () => closeCloseBidding()],
+  ['cancelRfq', s => !!s.cancelRfqId, () => closeCancelRfq()],
+  ['compare', s => !!s.compareRfqId, () => closeCompare()],
+  ['submitQuote', s => !!s.submitQuoteRfqId, () => closeSubmitQuote()],
+  ['attachments', s => !!s.attQuoteId, () => closeAttachments()],
+  ['catalogAdd', s => !!s.showCatalogAdd, () => closeCatalogAdd()],
+  ['bulkImport', s => !!s.showBulkImport, () => closeBulkImport()],
+  ['bulkPhoto', s => !!s.showBulkPhoto, () => closeBulkPhoto()],
+  ['stockAdd', s => !!s.showStockAdd, () => closeStockAdd()],
+  ['stockCount', s => !!s.showStockCount, () => closeStockCount()],
+  ['verify', s => !!s.showVerifyModal, () => closeVerifyModal()],
+  ['deliveryFail', s => !!s.showDeliveryFailModal, () => closeDeliveryFailModal()],
+  ['receipt', s => !!s.receiptOrderId, () => closeReceiptModal()],
+  ['dispute', s => !!s.disputeOrderId, () => closeDisputeModal()],
+  ['decline', s => !!s.declineLpoId, () => closeDeclineLpo()],
+  ['pay', s => !!s.showPayModal, () => closePayModal()],
+  ['wallet', s => !!s.showWalletModal, () => closeWalletModal()],
+  ['erase', s => !!s.showEraseModal, () => closeEraseModal()],
+  ['forgot', s => !!s.showForgotModal, () => closeForgotModal()]
+];
+const ROUTE_NAMES = { '': 'main', rfqs: 'rfqs', opportunities: 'rfqs', orders: 'lpos', stock: 'stock', suppliers: 'catalog', catalog: 'catalog', settings: 'profile' };
+let histDepth = 0, histBusy = false, histPopExpected = false, histDirty = false, histAdopt = false, histTimer = null, pendingRoute = null;
+
+function isDashboardView(){ return state.view === 'buyer' || state.view === 'supplier'; }
+function screenDepth(){
+  if (state.view === 'auth') return 1;
+  if (!isDashboardView()) return 0;
+  if (state.section === 'orderDetail') return 2;
+  return state.section === 'main' ? 0 : 1;
+}
+function topOverlay(){ const o = OVERLAYS.find(x => x[1](state)); return o ? o[0] : null; }
+function currentDepth(){ return screenDepth() + (topOverlay() ? 1 : 0); }
+function sectionHash(sec){
+  const supplier = state.view === 'supplier';
+  return ({ main: '#/', rfqs: supplier ? '#/opportunities' : '#/rfqs', lpos: '#/orders', stock: '#/stock', catalog: supplier ? '#/catalog' : '#/suppliers', profile: '#/settings' })[sec] || '#/';
+}
+// URL of the history entry at depth k while the app is showing the current screen
+function entryHash(k){
+  if (state.view === 'auth') return '#/login';
+  if (!isDashboardView()) return '#/';
+  if (state.section === 'orderDetail') return k >= 2 ? '#/order/' + encodeURIComponent(state.selectedOrderId || '') : '#/orders';
+  return sectionHash(state.section);
+}
+function parseHash(h){
+  const m = String(h || '').match(/^#\/?([\w-]*)(?:\/([^/?#]+))?/);
+  if (!m) return { section: 'main' };
+  if (m[1] === 'order' && m[2]) return { section: 'orderDetail', orderId: decodeURIComponent(m[2]) };
+  return { section: ROUTE_NAMES[m[1]] || 'main' };
+}
+function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?$/); return !!m && (m[1] === 'order' || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
+function applyRoute(r){
+  if (!isDashboardView()) return;
+  const supplier = state.view === 'supplier';
+  if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId); return; }
+  if (r.section === 'stock' && supplier) r = { section: 'main' };
+  setSection(r.section);
+}
+function applyPendingRoute(){ if (pendingRoute && isDashboardView()) { const r = pendingRoute; pendingRoute = null; applyRoute(r); } }
+
+function scheduleHistorySync(){ if (state.view === 'admin') return; clearTimeout(histTimer); histTimer = setTimeout(syncHistory, 0); }
+function syncHistory(){
+  if (histBusy) { histDirty = true; return; }
+  if (histAdopt) { histAdopt = false; histDepth = currentDepth(); history.replaceState({ bx: 1, depth: histDepth }, '', entryHash(histDepth)); return; }
+  const want = currentDepth();
+  if (want > histDepth) {
+    for (let k = histDepth + 1; k <= want; k++) history.pushState({ bx: 1, depth: k }, '', entryHash(k));
+    histDepth = want;
+  } else if (want < histDepth) {
+    const n = histDepth - want;
+    histDepth = want; histBusy = true; histPopExpected = true;
+    history.go(-n);
+    setTimeout(() => { if (histBusy) { histBusy = false; histPopExpected = false; scheduleHistorySync(); } }, 500); // no popstate came (nothing to go back to)
+    return;
+  }
+  const want_h = entryHash(want);
+  const cur_h = location.hash || '#/';
+  if (cur_h !== want_h) history.replaceState({ bx: 1, depth: want }, '', want_h);
+  else if (!history.state || history.state.depth !== want) history.replaceState({ bx: 1, depth: want }, '', want_h);
+}
+// something typed into the request form that would be lost on close
+function rfqFormDirty(){
+  const r = state.newRfq || {}, filled = (v) => !!String(v == null ? '' : v).trim();
+  if (!state.editRfqId) return filled(r.title) || filled(r.quantity) || filled(r.budget) || filled(r.specifications) || filled(r.brand);
+  const src = (state.rfqs || []).find(x => x.id === state.editRfqId);
+  if (!src) return false;
+  const same = (a, b) => String(a == null ? '' : a).trim() === String(b == null ? '' : b).trim();
+  return !(same(r.title, src.title) && same(r.quantity, src.quantity) && same(r.budget, src.budget != null ? Number(src.budget) : '') && same(r.specifications, src.specifications) && same(r.brand, src.brand));
+}
+window.addEventListener('popstate', (e) => {
+  if (state.view === 'admin') return;
+  if (histPopExpected) { histPopExpected = false; histBusy = false; histDirty = false; scheduleHistorySync(); return; }
+  const st = e.state;
+  if (!st || !st.bx) { // an entry we did not create (a typed or pasted address): follow its route
+    if (isDashboardView()) applyRoute(parseHash(location.hash)); else pendingRoute = parseHash(location.hash);
+    histAdopt = true; scheduleHistorySync(); return;
+  }
+  const target = st.depth;
+  let cur = currentDepth();
+  if (target > cur) { histBusy = true; histPopExpected = true; history.go(-(target - cur)); setTimeout(() => { histBusy = false; histPopExpected = false; scheduleHistorySync(); }, 500); return; } // "forward" onto a layer that cannot be restored
+  for (let guard = 0; cur > target && guard < 8; guard++) {
+    const ov = topOverlay();
+    if (ov) {
+      if (ov === 'postRfq' && rfqFormDirty() && !confirm(t('rfqDiscardConfirm'))) { history.pushState({ bx: 1, depth: cur }, '', location.hash || '#/'); return; }
+      OVERLAYS.find(x => x[0] === ov)[2]();
+    } else if (state.view === 'auth') goLanding();
+    else if (state.section === 'orderDetail') closeOrderDetail();
+    else setSection('main');
+    cur = currentDepth();
+  }
+  histDepth = currentDepth();
+  scheduleHistorySync();
+});
+// a plain "#" or an unknown in-page anchor must not add history entries or change the screen
+document.addEventListener('click', (e) => {
+  const a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+  if (a && !isKnownRoute(a.getAttribute('href'))) e.preventDefault();
+});
+function initRouter(){
+  const st = history.state;
+  const route = parseHash(location.hash);
+  const deep = route.section !== 'main';
+  if (st && st.bx) histDepth = st.depth;
+  else { histDepth = 0; if (deep) history.replaceState({ bx: 1, depth: 0 }, '', '#/'); } // a shared link: Home sits below it
+  if (deep) { if (isDashboardView()) applyRoute(route); else pendingRoute = route; }
+  scheduleHistorySync();
+}
+
 // ---------- Init ----------
 initTheme();
 initLang();
 loadSession();
 render();
+initRouter();
 refreshConfig(); // public: also covers the login/register screens and admins
 if (state.token) { if (state.view === 'admin') refreshAdmin(); else refreshAll(); }
 
