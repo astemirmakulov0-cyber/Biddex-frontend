@@ -16,7 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
 <script src="server-errors.js?v=1"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   /* Brand "Mix 1": warm light by default, dark on request. The accent follows the role: <html data-role="buyer|supplier">
      switches only --acc / --acc-soft / --acc-ink / --on-acc (admin and signed-out screens use the buyer accent). */
@@ -46,9 +46,13 @@
     --bd2:#3D3730; --inset:#181614; --sunken:#26221E;
   }
   :root[data-theme="dark"][data-role="supplier"] { --acc:#F0A24A; --acc-soft:#3A2A14; --acc-ink:#F6C98A; --on-acc:#2A1805; }
-  body { margin:0; font-family:"Inter", system-ui, sans-serif; background:var(--bg); color:var(--tx2); -webkit-font-smoothing:antialiased; }
+  body { margin:0; font-family:"Readex Pro", system-ui, sans-serif; background:var(--bg); color:var(--tx2); -webkit-font-smoothing:antialiased; }
   a { color:var(--acc); text-decoration:none; }
-  .mono { font-family:"JetBrains Mono", ui-monospace, monospace; letter-spacing:-0.01em; }
+  /* Headings and big numbers: Bricolage Grotesque (Latin only; Arabic falls through to Readex Pro). Everything else Readex Pro.
+     .mono keeps its name but is now just tabular figures; a real monospace is only for ids (.bx-id, e.g. RFQ-5E68). */
+  h1, h2, h3, .font-extrabold, .bx-display { font-family:"Bricolage Grotesque", "Readex Pro", system-ui, sans-serif; letter-spacing:-0.02em; }
+  .mono { font-family:inherit; font-variant-numeric:tabular-nums; letter-spacing:0; }
+  .bx-id { font-family:ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size:.94em; letter-spacing:0; }
   input, select, textarea { font-family:inherit; }
   /* iOS Safari zooms the page in on focus if the focused field renders below 16px — regardless of what
      any individual field's own text-sm/text-[12px] class says. Scoped to mobile so desktop keeps the
@@ -91,7 +95,7 @@
   html[dir=rtl] .eyebrow, html[dir=rtl] [class*="tracking-"], html[dir=rtl] table.dtable th { letter-spacing:0; text-transform:none; }
   html[dir=rtl] table.dtable th, html[dir=rtl] .text-left { text-align:right; }
   html[dir=rtl] .text-right { text-align:left; }
-  html[lang=ar] .mono, html[lang=ar] .eyebrow { font-family:"JetBrains Mono", "Inter", system-ui, sans-serif; }
+  html[dir=rtl] h1, html[dir=rtl] h2, html[dir=rtl] h3, html[dir=rtl] .font-extrabold, html[dir=rtl] .bx-display { letter-spacing:0; }
   html[dir=rtl] [data-dropdown=headerMenu] > div { right:auto !important; left:0 !important; }
   @media (min-width:640px) { html[dir=rtl] [data-dropdown=notif] > div { right:auto !important; left:0 !important; } }
   /* Touch: no 300ms delay/double-tap zoom on controls, no grey flash on tap, brand-coloured checkboxes.
@@ -141,7 +145,7 @@
     .bx-overlay > .bx-modal { max-width: none !important; width: 100%; border-radius: 16px 16px 0 0 !important; border-bottom-width: 0; max-height: 88vh; max-height: 88dvh; animation: bxSheet .2s cubic-bezier(.22, 1, .36, 1) both; }
   }
   @media (prefers-reduced-motion: reduce) { .bx-sheet, .bx-overlay, .bx-overlay > .bx-modal { animation: none !important; } }
-  .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
+  .eyebrow { font-family:inherit; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
   .stage-seg.done > span { background:var(--ok); width:100%; }
@@ -157,7 +161,7 @@
   .bx-hint-pop { position:fixed; z-index:90; width:max-content; max-width:min(260px, calc(100vw - 16px)); padding:10px 12px; border-radius:10px; font-size:12.5px; font-weight:500; line-height:1.45; text-transform:none; letter-spacing:0; background:var(--tx); color:var(--bg); box-shadow:0 8px 24px rgba(0,0,0,0.25); pointer-events:none; }
   .chip { border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:600; border:1px solid var(--bd); color:var(--tx3); background:var(--panel); cursor:pointer; white-space:nowrap; }
   .chip.active { background:var(--tx); color:var(--panel); border-color:var(--tx); }
-  .avatar2 { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px; flex-shrink:0; }
+  .avatar2 { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; font-weight:700; font-size:13px; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -3564,7 +3568,7 @@ function statsBar(pairs){
   return '<div class="mb-6 grid grid-cols-2 sm:grid-cols-' + pairs.length + ' gap-3">' + pairs.map(([label,val,sub]) =>
     '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
       '<div class="eyebrow" style="color:var(--tx4);">' + label + '</div>' +
-      '<div class="mono mt-1.5 text-[22px] font-bold" style="color:var(--tx);">' + val + '</div>' +
+      '<div class="mono bx-display mt-1.5 text-[22px] font-bold" style="color:var(--tx);">' + val + '</div>' +
       (sub ? '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + sub + '</div>' : '') +
     '</div>'
   ).join('') + '</div>';
@@ -3638,7 +3642,7 @@ function rfqTable(rfqs){
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>' + esc(t('thRfqTitleId')) + '</th><th>' + t('thCategory') + '</th><th>' + t('thBids') + '</th><th>' + t('thClosingIn') + '</th><th>' + t('thStatus') + '</th><th></th></tr></thead><tbody>' +
     rows.map(({r,tl,actions}) => '<tr>' +
-      '<td><div class="flex items-center gap-2.5">' + avatarHtml(r.title, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</div></div></div></td>' +
+      '<td><div class="flex items-center gap-2.5">' + avatarHtml(r.title, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div></div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</td>' +
       '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
       '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' +
@@ -3652,7 +3656,7 @@ function rfqTable(rfqs){
       return '<div class="rounded-xl border p-3.5' + (tap ? ' bx-tap bx-tapcard' : '') + '" style="border-color:var(--bd); background:var(--panel);"' + (tap ? ' role="button" tabindex="0" onclick="' + tap + '"' : '') + '>' +
         '<div class="flex items-start gap-2.5">' + avatarHtml(r.title, 32) +
           '<div class="min-w-0 flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-          '<div class="mono text-[11px]" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</div></div>' +
+          '<div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div></div>' +
           '<div class="shrink-0">' + statusPill(r.status) + '</div>' + (tap ? CHEVRON : '') +
         '</div>' +
         '<div class="mt-3 grid ' + (oneCategory ? 'grid-cols-2' : 'grid-cols-3') + ' gap-2 text-[12px]">' +
@@ -3744,7 +3748,7 @@ function lpoTrackerRow(o, isBuyer){
     '<div class="flex flex-wrap items-center justify-between gap-3">' +
       '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) +
         (o.invoice && o.invoice.status === 'OVERDUE' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">' + overdueDaysLabel(o.invoice.dueDate) + '</span>' : '') + '</div>' +
-        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">' + idLabel + (counterpartyCompany ? ' · ' + companyLabel(counterpartyCompany) : '') + '</div></div>' +
+        '<div class="text-[11.5px] mt-0.5" style="color:var(--tx4);"><span class="bx-id">' + idLabel + '</span>' + (counterpartyCompany ? ' · ' + companyLabel(counterpartyCompany) : '') + '</div></div>' +
       '<div class="flex-1 min-w-[180px]">' + orderProgressHtml(o, 'mt-1.5 text-[11.5px] font-semibold') + '</div>' +
       '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
       (isBuyer && o.status === 'COMPLETED' ? '<button onclick="reorderFromOrder(\'' + o.id + '\')" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold shrink-0" style="border-color:var(--bd2); color:var(--tx2);">' + t('reorder') + '</button>' : '') +
@@ -3836,7 +3840,7 @@ function opportunityCard(r){
       (r.imageUrl ? '<img src="' + esc(r.imageUrl) + '" class="h-10 w-10 shrink-0 rounded-xl object-cover border" style="border-color:var(--bd);" />' : avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40)) +
       '<div class="flex-1 min-w-[200px]">' +
         '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-        '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + t('oppVerifiedBuyer') + ' &middot; ' + esc(categoryDisplay(r.category)) + '</div>' +
+        '<div class="text-[11.5px] mt-0.5" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span> &middot; ' + t('oppVerifiedBuyer') + ' &middot; ' + esc(categoryDisplay(r.category)) + '</div>' +
         (r.brand ? '<div class="mt-1 flex items-center gap-1.5 text-[11.5px]" style="color:var(--tx3);"><span class="font-semibold">' + esc(r.brand) + '</span>' +
           '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (r.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + t(r.exactBrandOnly ? 'brandExact' : 'brandEquivalent') + '</span>' + hint('exact') + '</div>' : '') +
         (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">' + tpl('oppYourQuote', { price: quotePriceText(ownQuote) }) + '</div>' : '') +
@@ -4231,7 +4235,7 @@ function renderWalletModal(){
       '<h2 class="text-[20px] font-extrabold mb-5" style="color:var(--tx);">' + t('walletTitle') + hint('wallet') + '</h2>' +
       '<div class="rounded-xl p-5 mb-5" style="background:var(--acc-soft);">' +
         '<div class="eyebrow" style="color:var(--acc);">' + t('walletAvailable') + '</div>' +
-        '<div class="mono text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(3) + ' ' + t('walletCredits') + '</div>' +
+        '<div class="mono bx-display text-[30px] font-bold mt-1" style="color:var(--tx);">' + bal.toFixed(3) + ' ' + t('walletCredits') + '</div>' +
         (bidFeePercent() > 0 ? '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + t('walletFeeNote').replace('{n}', bidFeePercent()) + '</div>' : '') +
       '</div>' +
       '<div class="rounded-xl border px-4 py-3 text-[13px] font-semibold" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + t('walletContactAdmin') + '</div>' +
@@ -4620,7 +4624,7 @@ function renderAdminDisputes(){
       return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="min-w-[240px] flex-1">' +
           '<div class="font-semibold" style="color:var(--tx);">' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</div>' +
-          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">LPO-' + esc(String(lpo.id || '').slice(-4).toUpperCase()) + ' &middot; ' + fmt(lpo.totalAmount) +
+          '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);"><span class="bx-id">LPO-' + esc(String(lpo.id || '').slice(-4).toUpperCase()) + '</span> &middot; ' + fmt(lpo.totalAmount) +
             ' &middot; ' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + '</div>' +
           '<div class="mt-1.5 text-[12.5px]" style="color:var(--tx2);">' + (o.disputeReason ? '&ldquo;' + esc(o.disputeReason) + '&rdquo;' : '<span style="color:var(--tx4);">No reason given</span>') + '</div>' +
           '<div class="mono mt-1 text-[11px]" style="color:var(--tx4);">Disputed ' + fmtDateTime(o.updatedAt) + ' &middot; delivery ' + esc(o.delivery ? o.delivery.status : '—') + ' &middot; invoice ' + esc(o.invoice ? o.invoice.status : '—') + '</div>' +
@@ -4668,7 +4672,7 @@ function renderAdminRfqs(){
         '<div class="min-w-[220px] flex-1">' +
           '<div class="font-semibold" style="color:var(--tx);">' + esc(r.title) +
             (r.buyerCompany && r.buyerCompany.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
-          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + ' &middot; ' + esc(r.buyerCompany ? r.buyerCompany.name : '—') + ' &middot; ' + (r._count ? r._count.quotes : 0) + ' quote(s) &middot; ' + fmtDate(r.createdAt) + '</div>' +
+          '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span> &middot; ' + esc(r.buyerCompany ? r.buyerCompany.name : '—') + ' &middot; ' + (r._count ? r._count.quotes : 0) + ' quote(s) &middot; ' + fmtDate(r.createdAt) + '</div>' +
         '</div>' +
         '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + (RFQ_STATUS_LABELS[r.status] || r.status) + '</span>' +
       '</div>').join('') + '</div>') +
@@ -4698,7 +4702,7 @@ function renderAdminOrdersAll(){
       return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel); cursor:pointer;" onclick="openAdminOrder(\'' + o.id + '\')">' +
         '<div class="min-w-[220px] flex-1">' +
           '<div class="font-semibold" style="color:var(--tx);">' + esc(lpo.rfq ? lpo.rfq.title : 'Order') + '</div>' +
-          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">LPO-' + esc(String(lpo.id || '').slice(-4).toUpperCase()) + ' &middot; ' + fmt(lpo.totalAmount) +
+          '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);"><span class="bx-id">LPO-' + esc(String(lpo.id || '').slice(-4).toUpperCase()) + '</span> &middot; ' + fmt(lpo.totalAmount) +
             ' &middot; ' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + '</div>' +
           '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">delivery ' + esc(o.delivery ? o.delivery.status : '—') + ' &middot; invoice ' + esc(o.invoice ? o.invoice.status : '—') +
             (o.invoice && o.invoice.status === 'OVERDUE' ? ' (' + overdueDaysLabel(o.invoice.dueDate) + ')' : '') + '</div>' +
