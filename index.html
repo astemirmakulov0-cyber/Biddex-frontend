@@ -25,7 +25,7 @@
     --bg:#FAF7F2; --panel:#FFFFFF; --tx:#1B1A17; --tx2:#6B665E; --line:#ECE6DC;
     --danger:#B42318; --danger-soft:#FDECEA;
     --pend:#8A4A0B; --pend-soft:#FCEFD9;               /* waiting / awarded pills, both roles */
-    --acc:#0F766E; --acc-soft:#E3F2EF; --acc-ink:#0B5A54; --on-acc:#FFFFFF;
+    --acc:#0F766E; --acc-soft:#E3F2EF; --acc-ink:#0B5A54; --on-acc:#FFFFFF; --logo-base:#1B1A17;
     /* names used throughout the markup, mapped onto the tokens above */
     --bd:var(--line); --bd2:#DDD5C7;
     --tx3:var(--tx2); --tx4:var(--tx2);
@@ -43,7 +43,7 @@
     --danger:#F97066; --danger-soft:#3A1A17;
     --pend:#F6C98A; --pend-soft:#3A2A14;
     --acc:#34B3A2; --acc-soft:#16312D; --acc-ink:#8FE0D3; --on-acc:#0B1F1C;
-    --bd2:#3D3730; --inset:#181614; --sunken:#26221E;
+    --bd2:#3D3730; --inset:#181614; --sunken:#26221E; --logo-base:#FAF7F2;
   }
   :root[data-theme="dark"][data-role="supplier"] { --acc:#F0A24A; --acc-soft:#3A2A14; --acc-ink:#F6C98A; --on-acc:#2A1805; }
   body { margin:0; font-family:"Readex Pro", system-ui, sans-serif; background:var(--bg); color:var(--tx2); -webkit-font-smoothing:antialiased; }
@@ -145,6 +145,7 @@
     .bx-overlay > .bx-modal { max-width: none !important; width: 100%; border-radius: 16px 16px 0 0 !important; border-bottom-width: 0; max-height: 88vh; max-height: 88dvh; animation: bxSheet .2s cubic-bezier(.22, 1, .36, 1) both; }
   }
   @media (prefers-reduced-motion: reduce) { .bx-sheet, .bx-overlay, .bx-overlay > .bx-modal { animation: none !important; } }
+  .bx-rolechip { display:inline-block; background:var(--acc-soft); color:var(--acc-ink); border-radius:999px; padding:3px 10px; font-size:12px; font-weight:600; line-height:1.4; white-space:nowrap; }
   .eyebrow { font-family:inherit; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
@@ -343,6 +344,8 @@ const I18N = {
     bhd:"BHD", sizeMb:"{n} MB", sizeKb:"{n} KB",
     acctBuyer:"Buyer account",
     acctSupplier:"Supplier account",
+    roleBuyer:"Buyer",
+    roleSupplier:"Supplier",
     themeLight:"☀️ Light mode",
     themeDark:"🌙 Dark mode",
     themeToggleTitle:"Toggle dark mode",
@@ -979,6 +982,8 @@ const I18N = {
     bhd:"د.ب", sizeMb:"{n} ميغابايت", sizeKb:"{n} كيلوبايت",
     acctBuyer:"حساب مشترٍ",
     acctSupplier:"حساب مورّد",
+    roleBuyer:"مشترٍ",
+    roleSupplier:"مورّد",
     themeLight:"☀️ الوضع الفاتح",
     themeDark:"🌙 الوضع الداكن",
     themeToggleTitle:"تبديل الوضع الداكن",
@@ -3318,8 +3323,13 @@ function render(){
   scheduleHistorySync();
 }
 
-function logo(sub){
-  return '<div class="flex items-center gap-2 sm:gap-2.5 shrink-0"><svg class="h-8 w-8 sm:h-9 sm:w-9 shrink-0" viewBox="0 0 40 40" fill="none" role="img" aria-label="Biddex"><rect x="1" y="1" width="38" height="38" rx="11" style="fill:var(--inset); stroke:var(--bd);" stroke-width="1.5"/><path d="M10 10V30M10 10H18a4.5 4.5 0 0 1 0 9H10M10 19H19a5.5 5.5 0 0 1 0 11H10" style="stroke:var(--acc);" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M26.5 25l5 5M31.5 25l-5 5" style="stroke:var(--tx4);" stroke-width="2.4" stroke-linecap="round"/></svg><div class="leading-tight"><div class="font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">Biddex</div><div class="eyebrow hidden sm:block" style="font-size:9.5px; color:var(--tx4);">' + (sub || t('logoTagline')) + '</div></div></div>';
+// The mark is not mirrored in RTL. Its base follows the theme (--logo-base); the teal and amber are fixed.
+// role ('buyer'|'supplier'): a small role chip beside the wordmark (signed-in header) instead of the tagline.
+function logo(sub, role){
+  const chip = role ? '<span class="bx-rolechip">' + t(role === 'supplier' ? 'roleSupplier' : 'roleBuyer') + '</span>' : '';
+  const line = role ? '' : '<div class="eyebrow hidden sm:block" style="font-size:9.5px; color:var(--tx4);">' + (sub || t('logoTagline')) + '</div>';
+  return '<div class="flex items-center gap-2 sm:gap-2.5 shrink-0"><svg class="h-9 w-9 sm:h-10 sm:w-10 shrink-0" viewBox="0 0 56 56" role="img" aria-label="Biddex"><rect x="8" y="5" width="11" height="46" rx="3" style="fill:var(--logo-base);"/><path d="M19 5 H31 a11.5 11.5 0 0 1 0 23 H19 Z" fill="#0F766E"/><path d="M19 28 H34 a11.5 11.5 0 0 1 0 23 H19 Z" fill="#E9A23B"/></svg>' +
+    '<div class="leading-tight"><div class="flex items-center gap-2"><span class="font-extrabold text-[19px] sm:text-[20px]" style="color:var(--tx);">Biddex</span>' + chip + '</div>' + line + '</div></div>';
 }
 
 function toastHtml(){
@@ -3468,7 +3478,7 @@ function renderDashboard(role){
   const isBuyer = role === 'buyer';
   const walletLabel = (state.wallet ? Number(state.wallet.balance).toFixed(3) : '—') + ' ' + t('walletCredits');
   const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
-    '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo(t(isBuyer ? 'acctBuyer' : 'acctSupplier')) +
+    '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo(null, isBuyer ? 'buyer' : 'supplier') +
     '<div class="relative flex items-center gap-1.5 sm:gap-2.5">' +
       '<span class="hidden sm:contents"><div class="text-[13px] font-semibold mr-1" style="color:var(--tx3);">' + esc(state.company ? state.company.name : '') + '</div></span>' +
       verificationBadge() +
