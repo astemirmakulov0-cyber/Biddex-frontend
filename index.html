@@ -3634,9 +3634,9 @@ function statusPill(status){
 
 function renderBuyerRfqsPage(){
   const rfqs = state.rfqs || [];
-  return '<div class="flex items-center justify-between mb-6">' +
+  return '<div class="flex flex-wrap items-center justify-between gap-3 mb-6">' +
     '<div><div class="eyebrow mb-1.5">' + t('rfqsAllRequests') + '</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('rfqsPageTitle') + hint('rfq') + '</h1></div>' +
-    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc);">' + t('rfqsCreateNew') + '</button>' +
+    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc); white-space:nowrap;">' + t('rfqsCreateNew') + '</button>' +
   '</div>' +
   (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTable(rfqs));
 }
