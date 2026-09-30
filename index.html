@@ -2,11 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+/* Runs before any CSS is parsed: the first paint is already in the right theme and role accent (no flash), and
+   theme-color matches the page background. Theme: saved choice, else the OS setting. Role: from the saved session
+   (signed-out screens use the buyer accent); index.html keeps data-role in sync afterwards. */
+(function () {
+  var d = document.documentElement, th = null, role = 'buyer', stored = false;
+  try { th = localStorage.getItem('biddex_theme'); } catch (e) {}
+  if (th === 'dark' || th === 'light') stored = true;
+  else th = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  d.setAttribute('data-theme', th);
+  try { var ses = JSON.parse(localStorage.getItem('biddex_session') || 'null'); if (ses && ses.company && ses.company.type === 'SUPPLIER') role = 'supplier'; } catch (e) {}
+  d.setAttribute('data-role', role);
+  var m = document.createElement('meta'); m.name = 'theme-color'; m.content = th === 'dark' ? '#141311' : '#FAF7F2'; document.head.appendChild(m);
+  if (!stored && window.matchMedia) {
+    var mq = matchMedia('(prefers-color-scheme: dark)'), follow = function (e) {
+      var sv = null; try { sv = localStorage.getItem('biddex_theme'); } catch (x) {}
+      if (sv === 'dark' || sv === 'light') return;
+      d.setAttribute('data-theme', e.matches ? 'dark' : 'light'); m.setAttribute('content', e.matches ? '#141311' : '#FAF7F2');
+    };
+    if (mq.addEventListener) mq.addEventListener('change', follow); else if (mq.addListener) mq.addListener(follow);
+  }
+})();
+</script>
 <title>Biddex — Bahrain B2B Procurement</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#F6F8FC" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0A0E17" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Biddex">
@@ -1503,7 +1524,7 @@ function initTheme(){
   } catch(e) {}
 }
 function applyThemeColor(dark){
-  document.querySelectorAll('meta[name=theme-color]').forEach(m => m.setAttribute('content', dark ? '#0A0E17' : '#F6F8FC'));
+  document.querySelectorAll('meta[name=theme-color]').forEach(m => m.setAttribute('content', dark ? '#141311' : '#FAF7F2'));
 }
 function isDarkNow(){
   const cur = document.documentElement.getAttribute('data-theme');
@@ -3327,6 +3348,7 @@ function stageTrackerHtml(currentIndex){
 // ---------- Render ----------
 
 function render(){
+  document.documentElement.setAttribute('data-role', state.view === 'supplier' ? 'supplier' : 'buyer'); // accent by role; admin and signed-out: buyer
   const app = document.getElementById('app');
   app.innerHTML = state.view === 'landing' ? renderLanding()
     : state.view === 'auth' ? renderAuth()
