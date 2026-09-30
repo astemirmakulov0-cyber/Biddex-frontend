@@ -130,6 +130,21 @@
   .bx-more-row:active { background: var(--sunken); }
   .bx-chev { flex-shrink: 0; color: var(--tx4); }
   html[dir=rtl] .bx-chev { transform: scaleX(-1); }
+  /* Components (brand Mix 1) */
+  /* cards: --panel, 1px --line, 18px */
+  .rounded-xl[style*="background:var(--panel)"], .rounded-2xl[style*="background:var(--panel)"], .bx-modal { border-radius:18px; }
+  /* buttons: 16px (12px for small inline actions); primary actions are at least 48px tall, all filled ones on phones / touch */
+  button.rounded-xl, a.rounded-xl { border-radius:16px; }
+  button.rounded-lg, a.rounded-lg { border-radius:12px; }
+  button.w-full, button.py-3, a.py-3, button.py-2.5[style*="background:var(--acc)"] { min-height:48px; }
+  @media (max-width: 639px), (pointer: coarse) { button[style*="background:var(--acc)"], a[style*="background:var(--acc)"] { min-height:48px; } }
+  /* text on an accent fill: white in the light theme, dark ink in the dark theme (set per role in the tokens) */
+  [style*="background:var(--acc)"], [style*="background: var(--acc)"] { color:var(--on-acc) !important; }
+  button:disabled { cursor:not-allowed; }
+  /* active bottom-nav tab: accent on accent-soft (the supplier's light-theme accent is too dim on its soft fill: use the ink) */
+  .bx-bottomnav button { border-radius:16px; }
+  .bx-bottomnav button[aria-current=page] { background:var(--acc-soft); }
+  :root:not([data-theme="dark"])[data-role="supplier"] .bx-bottomnav button[aria-current=page] { color:var(--acc-ink); }
   .bx-tapcard { cursor: pointer; }
   @keyframes bxFlash { 0%, 60% { box-shadow: 0 0 0 3px var(--acc); } 100% { box-shadow: 0 0 0 0 transparent; } }
   .bx-flash { animation: bxFlash 2.4s ease both; }
@@ -2202,7 +2217,7 @@ function renderDocumentsPanel(opts){
         const mine = !!myCompanyId && d.uploadedByCompanyId === myCompanyId;
         return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd);">' +
           '<div class="min-w-0 flex-1">' +
-            '<div class="flex items-center gap-2"><span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx3);">' + esc(docKindLabel(d.kind)) + '</span>' +
+            '<div class="flex items-center gap-2"><span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold shrink-0" style="background:var(--line); color:var(--tx2);">' + esc(docKindLabel(d.kind)) + '</span>' +
             '<span class="truncate font-semibold" style="color:var(--tx);">' + esc(d.fileName) + '</span></div>' +
             '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">' + fmtBytes(d.sizeBytes) + ' &middot; ' + companyLabel(d.uploadedByCompany) + ' &middot; ' + fmtDateTime(d.createdAt) + '</div>' +
           '</div>' +
@@ -3685,12 +3700,12 @@ function rfqTable(rfqs){
 function statusPill(status){
   const map = {
     PUBLISHED: ['background:var(--info-soft); color:var(--info);',t('stLive')],
-    DRAFT: ['background:var(--sunken); color:var(--tx3);',t('stDraft')],
-    AWARDED: ['background:var(--ok-soft); color:var(--ok);',t('stAwarded')],
-    QUOTING_CLOSED: ['background:var(--sunken); color:var(--tx4);',t('stClosed')],
+    DRAFT: ['background:var(--line); color:var(--tx2);',t('stDraft')],
+    AWARDED: ['background:var(--pend-soft); color:var(--pend);',t('stAwarded')],
+    QUOTING_CLOSED: ['background:var(--line); color:var(--tx2);',t('stClosed')],
     CANCELLED: ['background:var(--bad-soft); color:var(--bad);',t('stCancelled')]
   };
-  const [style,label] = map[status] || ['background:var(--sunken); color:var(--tx3);', status];
+  const [style,label] = map[status] || ['background:var(--line); color:var(--tx2);', status];
   return '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + label + '</span>';
 }
 
@@ -3744,7 +3759,7 @@ function renderClosedOrders(closed, isBuyer){
   return '<div class="mt-8">' +
     '<button onclick="toggleClosedOrders()" class="mb-3 flex items-center gap-2 text-[14px] font-bold" style="color:var(--tx);">' +
       '<span style="display:inline-block; width:12px; color:var(--tx4);">' + (state.showClosedOrders ? '&#9662;' : '&#9656;') + '</span>' +
-      t('lpoClosedGroup') + ' <span class="mono text-[12px] font-semibold rounded-full px-2 py-0.5" style="background:var(--sunken); color:var(--tx3);">' + closed.length + '</span>' +
+      t('lpoClosedGroup') + ' <span class="mono text-[12px] font-semibold rounded-full px-2 py-0.5" style="background:var(--line); color:var(--tx2);">' + closed.length + '</span>' +
     '</button>' +
     (state.showClosedOrders ? '<div class="flex flex-col gap-3">' + closed.map(o => lpoTrackerRow(o, isBuyer)).join('') + '</div>' : '') +
   '</div>';
@@ -3843,8 +3858,8 @@ function opportunityCard(r){
   const quotedLabel = !ownQuote ? '' : ({
     SHORTLISTED: [t('oppShortlisted'), 'background:var(--info-soft); color:var(--info);'],
     REJECTED: [t('oppNotSelected'), 'background:var(--bad-soft); color:var(--bad);'],
-    AWARDED: [t('stAwarded'), 'background:var(--ok-soft); color:var(--ok);'],
-  })[ownQuote.status] || [t('oppQuoted'), 'background:var(--sunken); color:var(--tx4);'];
+    AWARDED: [t('stAwarded'), 'background:var(--pend-soft); color:var(--pend);'],
+  })[ownQuote.status] || [t('oppQuoted'), 'background:var(--line); color:var(--tx2);'];
   return '<div data-rfq="' + esc(r.id) + '" class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-center gap-4">' +
       (r.imageUrl ? '<img src="' + esc(r.imageUrl) + '" class="h-10 w-10 shrink-0 rounded-xl object-cover border" style="border-color:var(--bd);" />' : avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40)) +
@@ -3863,7 +3878,7 @@ function opportunityCard(r){
         ? '<div class="flex items-center gap-2 shrink-0"><button onclick="openAttachments(\'' + r.id + '\')" class="rounded-lg border px-3 py-2 text-[12px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">' + tpl('oppFiles', { n: (ownQuote._count && ownQuote._count.attachments) || 0 }) + '</button>' +
           '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold" style="' + quotedLabel[1] + '">' + quotedLabel[0] + '</span></div>'
         : tl.past
-        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--sunken); color:var(--tx4);">' + t('oppBiddingClosed') + '</span>'
+        ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--line); color:var(--tx2);">' + t('oppBiddingClosed') + '</span>'
         : '<button onclick="openSubmitQuote(\'' + r.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('oppSubmitQuote') + '</button>') +
     '</div>' +
   '</div>';
@@ -4362,17 +4377,17 @@ function renderOrderDetail(){
   let payAction = '';
   if (!isSupplier && invoice.id && ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'].includes(invoice.status) && order.status !== 'CANCELLED') {
     payAction = !order.receivedAt
-      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + t('odPayableAfter') + '</span>'
+      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--line); color:var(--tx2);">' + t('odPayableAfter') + '</span>'
       : totals.outstanding > 0
       ? actionBtn(tpl('odPay', { amount: fmt(totals.outstanding) }), 'openPayModal(\'' + invoice.id + '\',' + totals.outstanding + ')', false)
-      : '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + t('odAwaitingSupplierConfirm') + '</span>';
+      : '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--line); color:var(--tx2);">' + t('odAwaitingSupplierConfirm') + '</span>';
   }
 
   // once shipped, the buyer confirms receipt (or reports a problem, which opens a dispute)
   const receiptAction = !isSupplier && awaitingReceipt
     ? actionBtn(t('odConfirmReceipt'), "openReceiptModal('" + order.id + "')", false)
     : isSupplier && awaitingReceipt
-      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + t('odAwaitingBuyerReceipt') + '</span>'
+      ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--line); color:var(--tx2);">' + t('odAwaitingBuyerReceipt') + '</span>'
       : '';
   // the buyer can dispute an order that is still open and not yet received; an admin then resumes or cancels it
   const disputeAction = !isSupplier && !order.receivedAt && ['CONFIRMED', 'IN_PROGRESS', 'SHIPPED', 'DELIVERED'].includes(order.status)
@@ -4430,7 +4445,7 @@ function renderOrderDetail(){
 function renderPaymentsPanel(invoice, isSupplier){
   const list = (invoice.payments || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   if (!invoice.id) return '';
-  const label = { PENDING: [t('payPending'),'background:var(--warn-soft); color:var(--warn);'], COMPLETED: [t('payCompleted'),'background:var(--ok-soft); color:var(--ok);'], FAILED: [t('payFailed'),'background:var(--bad-soft); color:var(--bad);'], REFUNDED: [t('payRefunded'),'background:var(--sunken); color:var(--tx3);'] };
+  const label = { PENDING: [t('payPending'),'background:var(--warn-soft); color:var(--warn);'], COMPLETED: [t('payCompleted'),'background:var(--ok-soft); color:var(--ok);'], FAILED: [t('payFailed'),'background:var(--bad-soft); color:var(--bad);'], REFUNDED: [t('payRefunded'),'background:var(--line); color:var(--tx2);'] };
   return '<div class="mt-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">' + t('payTitle') + '</div>' +
     (list.length === 0 ? '<div class="text-[12px]" style="color:var(--tx4);">' + t('payNone') + '</div>' :
@@ -4562,7 +4577,7 @@ function renderAdmin(){
   const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
     '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo('ADMIN CONSOLE') +
     '<div class="relative flex items-center gap-1.5 sm:gap-3">' +
-      '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">Admin</span>' +
+      '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--line); color:var(--tx2);">Admin</span>' +
       '<span class="hidden sm:contents">' + langToggleBtn() + themeToggleBtn() +
         '<button onclick="logout()" class="rounded-lg px-3 py-1.5 text-[12px] font-semibold border" style="border-color:var(--bd2); color:var(--tx3);">' + t('signOut') + '</button>' +
       '</span>' +
@@ -4684,7 +4699,7 @@ function renderAdminRfqs(){
             (r.buyerCompany && r.buyerCompany.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
           '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span> &middot; ' + esc(r.buyerCompany ? r.buyerCompany.name : '—') + ' &middot; ' + (r._count ? r._count.quotes : 0) + ' quote(s) &middot; ' + fmtDate(r.createdAt) + '</div>' +
         '</div>' +
-        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + (RFQ_STATUS_LABELS[r.status] || r.status) + '</span>' +
+        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--line); color:var(--tx2);">' + (RFQ_STATUS_LABELS[r.status] || r.status) + '</span>' +
       '</div>').join('') + '</div>') +
   pagerHtml(state.adminRfqsPage, 20, state.adminRfqsTotal, 'setAdminRfqsPage');
 }
@@ -4717,7 +4732,7 @@ function renderAdminOrdersAll(){
           '<div class="mono mt-0.5 text-[11px]" style="color:var(--tx4);">delivery ' + esc(o.delivery ? o.delivery.status : '—') + ' &middot; invoice ' + esc(o.invoice ? o.invoice.status : '—') +
             (o.invoice && o.invoice.status === 'OVERDUE' ? ' (' + overdueDaysLabel(o.invoice.dueDate) + ')' : '') + '</div>' +
         '</div>' +
-        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--sunken); color:var(--tx3);">' + (ORDER_STATUS_LABELS[o.status] || o.status) + '</span>' +
+        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--line); color:var(--tx2);">' + (ORDER_STATUS_LABELS[o.status] || o.status) + '</span>' +
       '</div>';
     }).join('') + '</div>') +
   pagerHtml(state.adminOrdersAllPage, 20, state.adminOrdersAllTotal, 'setAdminOrdersAllPage');
@@ -4750,9 +4765,9 @@ function renderAdminOrderModal(){
       '<button onclick="closeAdminOrder()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">' + esc(lpo.buyerCompany ? lpo.buyerCompany.name : '—') + ' (buyer) &rarr; ' + esc(lpo.supplierCompany ? lpo.supplierCompany.name : '—') + ' (supplier) &middot; ' + fmt(lpo.totalAmount) + '</div>' +
       '<div class="mt-3 flex flex-wrap gap-2 text-[11px]">' +
-        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--sunken); color:var(--tx3);">Order: ' + (ORDER_STATUS_LABELS[o.status] || o.status) + '</span>' +
-        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--sunken); color:var(--tx3);">Delivery: ' + esc(o.delivery ? o.delivery.status : '—') + '</span>' +
-        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--sunken); color:var(--tx3);">Invoice: ' + esc(o.invoice ? o.invoice.status : '—') + (o.invoice && o.invoice.status === 'OVERDUE' ? ' &middot; ' + overdueDaysLabel(o.invoice.dueDate) : '') + '</span>' +
+        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--line); color:var(--tx2);">Order: ' + (ORDER_STATUS_LABELS[o.status] || o.status) + '</span>' +
+        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--line); color:var(--tx2);">Delivery: ' + esc(o.delivery ? o.delivery.status : '—') + '</span>' +
+        '<span class="rounded-full px-2.5 py-1 font-semibold" style="background:var(--line); color:var(--tx2);">Invoice: ' + esc(o.invoice ? o.invoice.status : '—') + (o.invoice && o.invoice.status === 'OVERDUE' ? ' &middot; ' + overdueDaysLabel(o.invoice.dueDate) : '') + '</span>' +
       '</div>' +
       '<div class="mt-4 text-[12px] font-bold" style="color:var(--tx);">Order chat</div>' +
       '<div class="mt-2 flex max-h-[220px] flex-col gap-2 overflow-y-auto bx-scroll rounded-xl border p-3" style="border-color:var(--bd); background:var(--inset);">' +
@@ -5178,9 +5193,9 @@ function renderModals(){
     const evaluating = !compareRfq || ['PUBLISHED', 'QUOTING_CLOSED'].includes(compareRfq.status);
     const pill = (txt, style) => '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + txt + '</span>';
     const quoteActions = (x) => {
-      if (x.status === 'AWARDED') return pill(t('stAwarded'), 'background:var(--ok-soft); color:var(--ok);');
+      if (x.status === 'AWARDED') return pill(t('stAwarded'), 'background:var(--pend-soft); color:var(--pend);');
       if (x.status === 'REJECTED') return pill(t('stRejected'), 'background:var(--bad-soft); color:var(--bad);');
-      if (x.status === 'WITHDRAWN') return pill(t('stWithdrawn'), 'background:var(--sunken); color:var(--tx4);');
+      if (x.status === 'WITHDRAWN') return pill(t('stWithdrawn'), 'background:var(--line); color:var(--tx2);');
       const busy = state.compareBusyId === x.id;
       const shortlisted = x.status === 'SHORTLISTED' ? pill(t('stShortlisted'), 'background:var(--info-soft); color:var(--info);') : '';
       if (!evaluating) return shortlisted;
