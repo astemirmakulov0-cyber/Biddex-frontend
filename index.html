@@ -3421,7 +3421,7 @@ function renderLanding(){
       '<h2 class="text-[26px] font-extrabold mb-8" style="color:var(--tx); letter-spacing:-0.01em;">' + t('builtFor') + '</h2>' +
       '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">' +
         ACTIVE_CATEGORIES.map(n => ({ n, live: true })).concat(COMING_SOON_CATEGORIES.map(n => ({ n, live: false }))).map(c =>
-         '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--inset); opacity:' + (c.live?'1':'0.5') + ';"><div class="text-[13px] font-bold" style="color:var(--tx);">' + esc(categoryOptionLabel(c.n)) + (c.live?'':' <span style=\'font-weight:400;font-size:11px;\'>' + t('lpComingSoon') + '</span>') + '</div></div>'
+         '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--inset);' + (c.live ? '' : ' border-style:dashed; color:var(--tx2);') + '"><div class="text-[13px] font-bold" style="color:var(--tx);">' + esc(categoryOptionLabel(c.n)) + (c.live?'':' <span style=\'font-weight:400;font-size:11px;\'>' + t('lpComingSoon') + '</span>') + '</div></div>'
         ).join('') +
       '</div>' +
     '</div>' +
@@ -3911,7 +3911,7 @@ function renderOpportunityFeedPage(){
   return '<h1 class="text-[22px] font-extrabold mb-5" style="color:var(--tx);">' + t('oppTitle') + '</h1>' +
   '<div class="flex gap-2 overflow-x-auto pb-1 mb-5">' +
     ACTIVE_CATEGORIES.map(c => '<span onclick="setOppCategory(' + jsAttr(c) + ')" class="chip' + (state.opportunityCategory===c?' active':'') + '">' + esc(categoryOptionLabel(c)) + '</span>').join('') +
-    COMING_SOON_CATEGORIES.map(c => '<span class="chip" title="' + t('comingSoon') + '" style="opacity:0.45; cursor:not-allowed;">' + tpl('chipComingSoon', { name: esc(categoryOptionLabel(c)) }) + '</span>').join('') + '</div>' +
+    COMING_SOON_CATEGORIES.map(c => '<span class="chip" title="' + t('comingSoon') + '" style="border-style:dashed; background:var(--inset); cursor:not-allowed;">' + tpl('chipComingSoon', { name: esc(categoryOptionLabel(c)) }) + '</span>').join('') + '</div>' +
   (rfqs.length === 0 ? emptyState(t('oppEmptyTitle'), t('oppEmptyBody')) :
     '<div class="flex flex-col gap-3">' + rfqs.filter(r => !state.opportunityCategory || categoryLabel(r.category) === state.opportunityCategory).map(opportunityCard).join('') + '</div>');
 }
