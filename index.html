@@ -18,26 +18,34 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
+  /* Brand "Mix 1": warm light by default, dark on request. The accent follows the role: <html data-role="buyer|supplier">
+     switches only --acc / --acc-soft / --acc-ink / --on-acc (admin and signed-out screens use the buyer accent). */
   :root {
-    --acc:#BE123C; --acc-soft:rgba(190,18,60,0.1); --acc-soft2:rgba(190,18,60,0.06);
-    --bg:#F6F8FC; --panel:#FFFFFF; --inset:#F8FAFC;
-    --sunken:#EEF2F8; --bd:#E4E9F1; --bd2:#CBD5E1;
-    --tx:#0B1220; --tx2:#334155; --tx3:#475569; --tx4:#64748B;
-    --ok:#15803D; --ok-soft:#DCFCE7; --warn:#92400E; --warn-soft:#FEF3C7;
-    --info:#1D4ED8; --info-soft:#DBEAFE; --bad:#B91C1C; --bad-soft:#FEE2E2;
+    color-scheme:light;
+    --bg:#FAF7F2; --panel:#FFFFFF; --tx:#1B1A17; --tx2:#6B665E; --line:#ECE6DC;
+    --danger:#B42318; --danger-soft:#FDECEA;
+    --pend:#8A4A0B; --pend-soft:#FCEFD9;               /* waiting / awarded pills, both roles */
+    --acc:#0F766E; --acc-soft:#E3F2EF; --acc-ink:#0B5A54; --on-acc:#FFFFFF;
+    /* names used throughout the markup, mapped onto the tokens above */
+    --bd:var(--line); --bd2:#DDD5C7;
+    --tx3:var(--tx2); --tx4:var(--tx2);
+    --inset:#F6F2EA; --sunken:#F0EADF;
+    --acc-soft2:color-mix(in srgb, var(--acc-soft) 55%, transparent);
+    --ok:var(--acc-ink); --ok-soft:var(--acc-soft);
+    --warn:var(--pend); --warn-soft:var(--pend-soft);
+    --info:var(--acc-ink); --info-soft:var(--acc-soft);
+    --bad:var(--danger); --bad-soft:var(--danger-soft);
   }
-  :root:not([data-theme="light"]) {
-    @media (prefers-color-scheme: dark) {
-      --bg:#0A0E17; --panel:#111826; --inset:#0D1320;
-      --sunken:#1B2434; --bd:#1E293B; --bd2:#334155;
-      --tx:#F1F5F9; --tx2:#CBD5E1; --tx3:#94A3B8; --tx4:#64748B;
-    }
-  }
+  :root[data-role="supplier"] { --acc:#B45309; --acc-soft:#FCEFD9; --acc-ink:#8A4A0B; }
   :root[data-theme="dark"] {
-    --bg:#0A0E17; --panel:#111826; --inset:#0D1320;
-    --sunken:#1B2434; --bd:#1E293B; --bd2:#334155;
-    --tx:#F1F5F9; --tx2:#CBD5E1; --tx3:#94A3B8; --tx4:#64748B;
+    color-scheme:dark;
+    --bg:#141311; --panel:#1D1B18; --tx:#F3EFE8; --tx2:#A59E92; --line:#2E2A25;
+    --danger:#F97066; --danger-soft:#3A1A17;
+    --pend:#F6C98A; --pend-soft:#3A2A14;
+    --acc:#34B3A2; --acc-soft:#16312D; --acc-ink:#8FE0D3; --on-acc:#0B1F1C;
+    --bd2:#3D3730; --inset:#181614; --sunken:#26221E;
   }
+  :root[data-theme="dark"][data-role="supplier"] { --acc:#F0A24A; --acc-soft:#3A2A14; --acc-ink:#F6C98A; --on-acc:#2A1805; }
   body { margin:0; font-family:"Inter", system-ui, sans-serif; background:var(--bg); color:var(--tx2); -webkit-font-smoothing:antialiased; }
   a { color:var(--acc); text-decoration:none; }
   .mono { font-family:"JetBrains Mono", ui-monospace, monospace; letter-spacing:-0.01em; }
@@ -172,9 +180,9 @@ const categoryLabel = (c) => c === 'Restaurant Groceries' ? 'Restaurants & Café
 const categoryDisplay = (c) => categoryOptionLabel(categoryLabel(c));
 // Catalog units — the same fixed list the server accepts (src/controllers/catalog.controller.js CATALOG_UNITS)
 const CATALOG_UNITS = ['kg', 'pcs', 'box', 'carton', 'litre', 'ton'];
+// Brand pairs only (accent of the current role, waiting-amber, neutral); they follow the theme.
 const AVATAR_PALETTE = [
-  {bg:'#FDE9E1', fg:'#B45309'}, {bg:'#DFF3EC', fg:'#0F766E'}, {bg:'#E6E9FB', fg:'#4338CA'},
-  {bg:'#FCE7F3', fg:'#BE185D'}, {bg:'#E0F2FE', fg:'#0369A1'}, {bg:'#FEF3C7', fg:'#92400E'}
+  {bg:'var(--acc-soft)', fg:'var(--acc-ink)'}, {bg:'var(--pend-soft)', fg:'var(--pend)'}, {bg:'var(--line)', fg:'var(--tx2)'}
 ];
 
 // ---------- i18n (English / Arabic — covers navigation, headers and primary actions;
