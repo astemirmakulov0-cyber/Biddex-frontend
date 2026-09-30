@@ -116,6 +116,10 @@
   }
   .bx-more-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 48px; padding: 0 14px; border: 0; border-radius: 12px; background: none; color: var(--tx2); font-size: 15px; font-weight: 600; text-align: start; }
   .bx-more-row:active { background: var(--sunken); }
+  .bx-chev { flex-shrink: 0; color: var(--tx4); }
+  html[dir=rtl] .bx-chev { transform: scaleX(-1); }
+  .bx-tapcard { cursor: pointer; }
+  .bx-tapcard:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
   .eyebrow { font-family:"JetBrains Mono",monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; color:var(--acc); }
   .stage-seg { height:6px; border-radius:99px; background:var(--sunken); flex:1; overflow:hidden; }
   .stage-seg > span { display:block; height:100%; background:var(--acc); }
@@ -785,7 +789,14 @@ const I18N = {
     hidePassword:"Hide password",
     navHomeShort:"Home",
     navOrdersShort:"Orders",
-    navMoreShort:"More"
+    navMoreShort:"More",
+    dashTitleBuyerShort:"Overview",
+    attnTitle:"Needs attention",
+    attnQuotes:"RFQs with bids to review",
+    attnReceipts:"Orders to confirm as received",
+    attnOverdue:"Overdue invoices",
+    attnPay:"Invoices to pay",
+    attnLowStock:"Items low in stock"
   },
   ar: {
     buyerSignIn:'دخول المشتري', supplierSignIn:'دخول المورد', signOut:'تسجيل الخروج',
@@ -1409,7 +1420,14 @@ const I18N = {
     hidePassword:"إخفاء كلمة المرور",
     navHomeShort:"الرئيسية",
     navOrdersShort:"الطلبيات",
-    navMoreShort:"المزيد"
+    navMoreShort:"المزيد",
+    dashTitleBuyerShort:"نظرة عامة",
+    attnTitle:"يتطلب انتباهك",
+    attnQuotes:"طلبات تسعير فيها عروض للمراجعة",
+    attnReceipts:"طلبيات بانتظار تأكيد الاستلام",
+    attnOverdue:"فواتير متأخرة",
+    attnPay:"فواتير مستحقة الدفع",
+    attnLowStock:"أصناف توشك على النفاد"
   }
 };
 function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key; }
@@ -3496,6 +3514,29 @@ function statsBar(pairs){
 
 // ---------- Buyer: Hub (overview) ----------
 
+// Things the buyer has to act on, counted from data the app already holds; empty when there is nothing
+function buyerAttentionItems(){
+  const rfqs = state.rfqs || [], orders = state.orders || [];
+  const pending = orders.filter(o => o.invoice && o.invoice.id && ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'].includes(o.invoice.status) && o.status !== 'CANCELLED');
+  return [
+    ['attnOverdue', pending.filter(o => o.invoice.status === 'OVERDUE').length, "setSection('lpos')", true],
+    ['attnReceipts', orders.filter(o => ['SHIPPED', 'DELIVERED'].includes(o.status) && !o.receivedAt).length, "setSection('lpos')", false],
+    ['attnQuotes', rfqs.filter(r => ['PUBLISHED', 'QUOTING_CLOSED'].includes(r.status) && rfqBidCount(r) > 0).length, "setSection('rfqs')", false],
+    ['attnPay', pending.filter(o => o.receivedAt && invoiceTotals(o.invoice).outstanding > 0 && o.invoice.status !== 'OVERDUE').length, "setSection('lpos')", false],
+    ['attnLowStock', (state.stock || []).filter(isLowStock).length, "setSection('stock')", false]
+  ].filter(x => x[1] > 0);
+}
+function attentionBlock(){
+  const items = buyerAttentionItems();
+  if (!items.length) return '';
+  return '<div class="mb-6 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-1.5 px-1 text-[13px] font-bold" style="color:var(--tx);">' + t('attnTitle') + '</div>' +
+    items.map(([key, n, go, urgent]) => '<button type="button" onclick="' + go + '" class="bx-tap flex w-full min-h-[44px] items-center justify-between gap-3 rounded-lg px-1 text-start text-[13px]" style="color:var(--tx2);">' +
+      '<span class="min-w-0">' + t(key) + '</span>' +
+      '<span class="flex shrink-0 items-center gap-2"><span class="mono rounded-full px-2.5 py-0.5 text-[12px] font-bold" style="' + (urgent ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--acc-soft); color:var(--acc);') + '">' + n + '</span>' + CHEVRON + '</span></button>').join('') +
+  '</div>';
+}
+
 function renderBuyerHub(){
   const rfqs = state.rfqs || [];
   const active = rfqs.filter(r => r.status === 'PUBLISHED').length;
@@ -3505,10 +3546,10 @@ function renderBuyerHub(){
 
   return onboardingCard() +
   '<div class="flex flex-wrap items-start justify-between gap-4 mb-6">' +
-    '<div><h1 class="text-[26px] font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;">' + t('dashTitleBuyer') + '</h1>' +
-    '<p class="mt-1 text-[13.5px] max-w-[520px]" style="color:var(--tx3);">' + t('dashSubBuyer') + '</p></div>' +
-    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('createRfq') + '</button>' +
-  '</div>' +
+    '<div><h1 class="text-[26px] font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;"><span class="hidden md:inline">' + t('dashTitleBuyer') + '</span><span class="md:hidden">' + t('dashTitleBuyerShort') + '</span></h1>' +
+    '<p class="mt-1 hidden md:block text-[13.5px] max-w-[520px]" style="color:var(--tx3);">' + t('dashSubBuyer') + '</p></div>' +
+    '<button onclick="openPostRfq()" class="w-full md:w-auto rounded-xl px-4 py-3 md:py-2.5 text-[14px] md:text-[13px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('createRfq') + '</button>' +
+  '</div>' + attentionBlock() +
   statsBar([[t('statActiveRfqs'), active], [t('statTotalQuotes'), totalQuotes], [t('statAwarded'), awarded], [t('statOpenOrders'), openOrders]]) +
   '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentRfqs') + hint('rfq') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
   (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTable(rfqs.slice(0,5))) +
@@ -3518,12 +3559,22 @@ function renderBuyerHub(){
 
 // Table on sm: and up; a stack of cards below 640px (a 6-column table has no good way to shrink —
 // see the mobile audit notes). Both read from the same per-row `actions`/`tl` so they never drift apart.
+const rfqBidCount = (r) => (r._count ? r._count.quotes : 0);
+// What tapping a phone card does: compare the bids if there are any, otherwise edit if that is still possible.
+// null = nothing to open, so the card is not styled or behaves as tappable.
+function rfqCardTap(r){
+  if (rfqBidCount(r) > 0) return "openCompare('" + r.id + "')";
+  if (canEditRfq(r)) return "openEditRfq('" + r.id + "')";
+  return null;
+}
+const CHEVRON = '<svg class="bx-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+
 function rfqTable(rfqs){
   const rows = rfqs.map(r => ({ r, tl: timeLeftLabel(r.deadline), actions:
-    (canEditRfq(r) ? '<button onclick="openEditRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnEdit') + '</button>' : '') +
-    (r.status === 'PUBLISHED' ? '<button onclick="openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnCloseBidding') + '</button>' : '') +
-    (canCancelRfq(r) ? '<button onclick="openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">' + t('btnCancel') + '</button>' : '') +
-    '<button onclick="openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('btnCompare') + '</button>'
+    (canEditRfq(r) ? '<button onclick="event.stopPropagation(); openEditRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnEdit') + '</button>' : '') +
+    (r.status === 'PUBLISHED' ? '<button onclick="event.stopPropagation(); openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnCloseBidding') + '</button>' : '') +
+    (canCancelRfq(r) ? '<button onclick="event.stopPropagation(); openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">' + t('btnCancel') + '</button>' : '') +
+    (rfqBidCount(r) > 0 && r.status !== 'CANCELLED' ? '<button onclick="event.stopPropagation(); openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('btnCompare') + '</button>' : '')
   }));
 
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
@@ -3539,20 +3590,20 @@ function rfqTable(rfqs){
   '</tbody></table></div>';
 
   const cards = '<div class="sm:hidden flex flex-col gap-3">' +
-    rows.map(({r,tl,actions}) =>
-      '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
+    rows.map(({r,tl,actions}) => { const tap = rfqCardTap(r); const oneCategory = ACTIVE_CATEGORIES.length === 1;
+      return '<div class="rounded-xl border p-3.5' + (tap ? ' bx-tap bx-tapcard' : '') + '" style="border-color:var(--bd); background:var(--panel);"' + (tap ? ' role="button" tabindex="0" onclick="' + tap + '"' : '') + '>' +
         '<div class="flex items-start gap-2.5">' + avatarHtml(r.title, 32) +
           '<div class="min-w-0 flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
           '<div class="mono text-[11px]" style="color:var(--tx4);">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</div></div>' +
-          '<div class="shrink-0">' + statusPill(r.status) + '</div>' +
+          '<div class="shrink-0">' + statusPill(r.status) + '</div>' + (tap ? CHEVRON : '') +
         '</div>' +
-        '<div class="mt-3 grid grid-cols-3 gap-2 text-[12px]">' +
-          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobCategory') + '</div><div class="mt-0.5" style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</div></div>' +
+        '<div class="mt-3 grid ' + (oneCategory ? 'grid-cols-2' : 'grid-cols-3') + ' gap-2 text-[12px]">' +
+          (oneCategory ? '' : '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobCategory') + '</div><div class="mt-0.5" style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</div></div>') +
           '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobBids') + '</div><div class="mono mt-0.5 font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</div></div>' +
           '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobClosing') + '</div><div class="mono mt-0.5" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</div></div>' +
         '</div>' +
-        '<div class="mt-3 flex flex-wrap gap-2">' + actions + '</div>' +
-      '</div>'
+        (actions ? '<div class="mt-3 flex flex-wrap gap-2">' + actions + '</div>' : '') +
+      '</div>'; }
     ).join('') +
   '</div>';
 
