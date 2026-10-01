@@ -515,6 +515,14 @@ const I18N = {
     toastRfqCancelled:"RFQ cancelled.",
     toastRfqCancelledRefund:"RFQ cancelled. Bid fees refunded to {n} supplier(s).",
     cmpTitle:"Quotes",
+    rvTitle:"Rate this supplier", rvIntro:"How was the delivery? Your answers help other buyers. Nothing changes for the order.", rvStars:"Overall", rvOnTime:"Was it delivered on time?", rvMatches:"Is it what you ordered?",
+    rvYes:"Yes", rvNo:"No", rvComment:"Comment (optional)", rvSubmit:"Send review", rvSending:"Sending…", rvChooseAll:"Choose the stars and answer both questions.", rvThanks:"Thank you. Your review was sent.",
+    rvYourReview:"Your review", rvBuyerReview:"Buyer’s review", rvOnTimeShort:"On time", rvMatchesShort:"As ordered", rvHiddenComment:"The comment was hidden by an admin.", rvHiddenForSupplier:"Your comment is hidden from the supplier by an admin.",
+    rvReply:"Supplier’s reply", rvReplyPh:"Reply to this review…", rvReplySend:"Send reply", rvReplyEdit:"Update reply", rvReplySaved:"Reply saved.",
+    rtOrders:"{n} orders", rtNoClaims:"no claims {p}%", rtOnTime:"on time {p}%", rtHint:"Based on this supplier’s received orders on Biddex.",
+    rpTitle:"My ratings", rpIntro:"Buyers see your rating once {n} orders are counted.", rpOrders:"Counted orders", rpNoClaims:"No claims", rpStars:"Average stars", rpOnTime:"Delivered on time", rpReviews:"Reviews",
+    rpVisible:"Visible to buyers", rpMissing:"{n} more counted order(s) until buyers see it.", rpView:"View reviews", rpNone:"No reviews yet.", rpHint:"Counted: received orders and orders that had a dispute, also if they were cancelled afterwards.",
+    notifOpenOrder:"Open order",
     viaLink:"Via invitation link", viaLinkHint:"Sent through a private link issued by Biddex, not from the supplier's own sign-in. The supplier is a verified company.", quoteRevised:"Updated {date}",
     notifOpenRfq:"Open request",
     stWithdrawn:"Withdrawn",
@@ -1155,6 +1163,14 @@ const I18N = {
     toastRfqCancelled:"تم إلغاء طلب التسعير.",
     toastRfqCancelledRefund:"تم إلغاء طلب التسعير. أُعيدت رسوم العروض إلى {n} من الموردين.",
     cmpTitle:"العروض",
+    rvTitle:"قيّم المورّد", rvIntro:"كيف كان التسليم؟ تساعد إجاباتك المشترين الآخرين. لا يتغير شيء في الطلبية.", rvStars:"التقييم العام", rvOnTime:"هل وصل في الموعد؟", rvMatches:"هل هو مطابق لما طلبته؟",
+    rvYes:"نعم", rvNo:"لا", rvComment:"تعليق (اختياري)", rvSubmit:"إرسال التقييم", rvSending:"جارٍ الإرسال…", rvChooseAll:"اختر عدد النجوم وأجب عن السؤالين.", rvThanks:"شكرًا. تم إرسال تقييمك.",
+    rvYourReview:"تقييمك", rvBuyerReview:"تقييم المشتري", rvOnTimeShort:"في الموعد", rvMatchesShort:"مطابق للطلب", rvHiddenComment:"أخفى المسؤول هذا التعليق.", rvHiddenForSupplier:"أخفى المسؤول تعليقك عن المورّد.",
+    rvReply:"ردّ المورّد", rvReplyPh:"اكتب ردًا على التقييم…", rvReplySend:"إرسال الرد", rvReplyEdit:"تحديث الرد", rvReplySaved:"تم حفظ الرد.",
+    rtOrders:"عدد الطلبيات {n}", rtNoClaims:"بلا مطالبات {p}%", rtOnTime:"في الموعد {p}%", rtHint:"استنادًا إلى طلبيات هذا المورّد المستلمة على Biddex.",
+    rpTitle:"تقييماتي", rpIntro:"يرى المشترون تقييمك عندما يبلغ عدد الطلبيات المحتسبة {n}.", rpOrders:"الطلبيات المحتسبة", rpNoClaims:"بلا مطالبات", rpStars:"متوسط النجوم", rpOnTime:"التسليم في الموعد", rpReviews:"التقييمات",
+    rpVisible:"ظاهر للمشترين", rpMissing:"يلزم {n} طلبية محتسبة أخرى ليظهر للمشترين.", rpView:"عرض التقييمات", rpNone:"لا توجد تقييمات بعد.", rpHint:"المحتسبة: الطلبيات المستلمة والطلبيات التي شهدت نزاعًا، حتى لو أُلغيت لاحقًا.",
+    notifOpenOrder:"فتح الطلبية",
     viaLink:"عبر رابط دعوة", viaLinkHint:"أُرسل عبر رابط خاص أصدره Biddex، وليس من تسجيل دخول المورّد نفسه. المورّد شركة موثّقة.", quoteRevised:"تم التحديث في {date}",
     notifOpenRfq:"فتح الطلب",
     stWithdrawn:"مسحوب",
@@ -1632,6 +1648,8 @@ let state = {
   adminRfqs: [], adminRfqsTotal: 0, adminRfqsPage: 1, adminRfqsLoading: false,
   adminRfqsFilters: { status:'', buyerCompanyId:'', dateFrom:'', dateTo:'', q:'' },
   // admin: bid links of one RFQ (a supplier quotes through a private link, no sign-in)
+  // supplier reviews
+  reviewForm: { stars:0, onTime:null, matches:null, comment:'' }, reviewBusy: false, reviewReplyDraft: null, ratings: null, showRatings: false, ratingDrafts: {}, adminReviews: [],
   bidLinkRfq: null, bidLinks: [], bidLinkSupplierId: '', bidLinkContact: undefined, bidLinkForm: { phone:'', consent:false, note:'' }, bidLinkCreated: null, bidLinkBusy: false, bidLinkErr: '',
   // admin: All orders tab
   adminOrdersAll: [], adminOrdersAllTotal: 0, adminOrdersAllPage: 1, adminOrdersAllLoading: false,
@@ -1945,7 +1963,7 @@ function logout(){
 }
 
 async function refreshAll(){
-  await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications(), refreshOnboarding() ]);
+  await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications(), refreshOnboarding(), refreshRatings() ]);
 }
 
 // ---------- Background refresh errors ----------
@@ -2067,6 +2085,7 @@ function setAdminTab(tab){
   if (tab === 'disputes') refreshAdminDisputes();
   else if (tab === 'rfqs') refreshAdminRfqs();
   else if (tab === 'orders') refreshAdminOrdersAll();
+  else if (tab === 'reviews') refreshAdminReviews();
   else if (tab === 'analytics') refreshAdminAnalytics();
 }
 
@@ -2092,6 +2111,148 @@ async function refreshAdminRfqs(){
 }
 function setAdminRfqsFilter(patch){ setState({ adminRfqsFilters: { ...state.adminRfqsFilters, ...patch }, adminRfqsPage: 1 }); refreshAdminRfqs(); }
 function setAdminRfqsPage(page){ setState({ adminRfqsPage: page }); refreshAdminRfqs(); }
+
+// ---------- Supplier reviews ----------
+// After the receipt the buyer rates the supplier for the order: 1-5 stars, on time?, as ordered?, a comment.
+// The supplier can reply; an admin can hide a comment. Buyers see a supplier's figures in Compare bids once at
+// least 5 orders are counted (the server decides; `supplierRating` is null before that).
+const starsText = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+function setReviewStars(n){ state.reviewForm.stars = n; render(); }
+function setReviewAnswer(k, v){ state.reviewForm[k] = v; render(); }
+async function submitReview(orderId){
+  const f = state.reviewForm;
+  if (!f.stars || f.onTime === null || f.matches === null) { showToast(t('rvChooseAll')); return; }
+  setState({ reviewBusy: true });
+  try {
+    await api('/api/orders/' + encodeURIComponent(orderId) + '/review', { method: 'POST', body: JSON.stringify({ stars: f.stars, onTime: f.onTime, matchesOrder: f.matches, comment: f.comment }) });
+    setState({ reviewBusy: false, reviewForm: { stars:0, onTime:null, matches:null, comment:'' } });
+    showToast(t('rvThanks'));
+    openOrderDetail(orderId);
+  } catch(e) { setState({ reviewBusy: false }); showToast(e.message); }
+}
+async function submitReviewReply(reviewId, text, after){
+  if (!String(text || '').trim()) return;
+  setState({ reviewBusy: true });
+  try {
+    await api('/api/reviews/' + encodeURIComponent(reviewId) + '/reply', { method: 'POST', body: JSON.stringify({ reply: text }) });
+    setState({ reviewBusy: false, reviewReplyDraft: null, ratingDrafts: {} });
+    showToast(t('rvReplySaved'));
+    after();
+  } catch(e) { setState({ reviewBusy: false }); showToast(e.message); }
+}
+async function refreshRatings(){
+  if (!state.token || !state.company || state.company.type !== 'SUPPLIER') return;
+  try { setIfChanged('ratings', await api('/api/reviews/mine')); } catch(e) { /* a nicety: the card just stays as it was */ }
+}
+function openRatings(){ setState({ showRatings: true }); refreshRatings(); }
+function closeRatings(){ setState({ showRatings: false, ratingDrafts: {} }); }
+function openNotifOrder(orderId, notifId){
+  setState({ showNotifDropdown: false });
+  api('/api/notifications/' + encodeURIComponent(notifId) + '/read', { method: 'PATCH' }).then(() => refreshNotifications()).catch(() => {});
+  openOrderDetail(orderId);
+}
+
+const yesNoText = (b) => t(b ? 'rvYes' : 'rvNo');
+function reviewBodyHtml(rv, viewer){
+  const hidden = rv.commentHidden;
+  return '<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">' +
+      '<span class="font-bold" style="color:var(--pend); letter-spacing:.08em;" dir="ltr">' + starsText(rv.stars) + '</span>' +
+      '<span style="color:var(--tx2);">' + t('rvOnTimeShort') + ': <b style="color:' + (rv.onTime ? 'var(--ok)' : 'var(--bad)') + ';">' + yesNoText(rv.onTime) + '</b></span>' +
+      '<span style="color:var(--tx2);">' + t('rvMatchesShort') + ': <b style="color:' + (rv.matchesOrder ? 'var(--ok)' : 'var(--bad)') + ';">' + yesNoText(rv.matchesOrder) + '</b></span></div>' +
+    (rv.comment ? '<div class="mt-2 text-[13px]" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(rv.comment) + '</div>' : '') +
+    (hidden ? '<div class="mt-2 text-[12px]" style="color:var(--tx4);">' + t(viewer === 'SUPPLIER' ? 'rvHiddenComment' : 'rvHiddenForSupplier') + '</div>' : '') +
+    (rv.supplierReply ? '<div class="mt-3 rounded-lg border px-3 py-2 text-[12.5px]" style="border-color:var(--bd); background:var(--inset);"><div class="text-[11px] font-semibold" style="color:var(--tx4);">' + t('rvReply') + '</div>' + esc(rv.supplierReply) + '</div>' : '');
+}
+// The card on an order: the form for the buyer once the goods are received, then the review (and the reply).
+function renderReviewPanel(order, isSupplier){
+  const rv = order.review;
+  const canRate = !isSupplier && order.receivedAt && ['DELIVERED', 'COMPLETED'].includes(order.status) && !rv;
+  if (!rv && !canRate) return '';
+  const card = (inner) => '<div class="mt-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' + inner + '</div>';
+  if (rv) {
+    const draft = state.reviewReplyDraft != null ? state.reviewReplyDraft : (rv.supplierReply || '');
+    return card('<div class="mb-2 text-[13px] font-bold" style="color:var(--tx);">' + t(isSupplier ? 'rvBuyerReview' : 'rvYourReview') + '</div>' + reviewBodyHtml(rv, isSupplier ? 'SUPPLIER' : 'BUYER') +
+      (isSupplier ? '<div class="mt-3"><textarea oninput="state.reviewReplyDraft=this.value" maxlength="1000" rows="2" placeholder="' + esc(t('rvReplyPh')) + '" class="w-full rounded-lg border px-3 py-2 text-[13px] outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(draft) + '</textarea>' +
+        '<div class="mt-2">' + actionBtn(t(rv.supplierReply ? 'rvReplyEdit' : 'rvReplySend'), "submitReviewReply('" + rv.id + "', state.reviewReplyDraft != null ? state.reviewReplyDraft : " + jsAttr(rv.supplierReply || '') + ", () => openOrderDetail('" + order.id + "'))", state.reviewBusy) + '</div></div>' : ''));
+  }
+  const f = state.reviewForm;
+  const yn = (key, label) => '<div class="mt-3"><div class="text-[12.5px] font-semibold" style="color:var(--tx2);">' + label + '</div><div class="mt-1.5 flex gap-2">' +
+    [[true, 'rvYes'], [false, 'rvNo']].map(([v, k]) => '<button type="button" onclick="setReviewAnswer(\'' + key + '\',' + v + ')" class="rounded-lg border px-4 py-1.5 text-[13px] font-bold" style="' + (f[key] === v ? 'border-color:var(--acc); background:var(--acc-soft); color:var(--acc-ink);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t(k) + '</button>').join('') + '</div></div>';
+  return card('<div class="text-[14px] font-bold" style="color:var(--tx);">' + t('rvTitle') + '</div><p class="mt-1 text-[12.5px]" style="color:var(--tx3);">' + t('rvIntro') + '</p>' +
+    '<div class="mt-3 text-[12.5px] font-semibold" style="color:var(--tx2);">' + t('rvStars') + '</div><div class="mt-1 flex gap-1" dir="ltr">' +
+      [1, 2, 3, 4, 5].map((n) => '<button type="button" aria-label="' + n + '" onclick="setReviewStars(' + n + ')" class="text-[28px] leading-none" style="color:' + (n <= f.stars ? 'var(--pend)' : 'var(--bd2)') + ';">★</button>').join('') + '</div>' +
+    yn('onTime', t('rvOnTime')) + yn('matches', t('rvMatches')) +
+    '<label class="mt-3 block text-[12.5px] font-semibold" style="color:var(--tx2);">' + t('rvComment') + '<textarea oninput="state.reviewForm.comment=this.value" maxlength="1000" rows="2" class="mt-1 w-full rounded-lg border px-3 py-2 text-[13px] outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(f.comment) + '</textarea></label>' +
+    '<div class="mt-3">' + actionBtn(state.reviewBusy ? t('rvSending') : t('rvSubmit'), "submitReview('" + order.id + "')", state.reviewBusy) + '</div>');
+}
+// The figures line under a supplier's name in Compare bids (only when the server sends supplierRating).
+function supplierRatingLine(r){
+  if (!r) return '';
+  const parts = [];
+  if (r.avgStars != null) parts.push('<b style="color:var(--pend);">★ ' + Number(r.avgStars).toFixed(1) + '</b>');
+  parts.push(tpl('rtOrders', { n: r.orders }));
+  parts.push(tpl('rtNoClaims', { p: r.claimFreePercent }));
+  if (r.onTimePercent != null) parts.push(tpl('rtOnTime', { p: r.onTimePercent }));
+  return '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx3);" title="' + esc(t('rtHint')) + '">' + parts.join(' &middot; ') + '</div>';
+}
+// Supplier hub card: its own figures, always (also before buyers can see them)
+function ratingsCard(){
+  const R = state.ratings;
+  if (!R) return '';
+  const f = R.figures;
+  const cell = (label, value) => '<div><div class="eyebrow" style="color:var(--tx4);">' + label + '</div><div class="mono text-[16px] font-bold" style="color:var(--tx);">' + value + '</div></div>';
+  return '<div class="mb-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="flex flex-wrap items-center justify-between gap-2"><div class="text-[14px] font-bold" style="color:var(--tx);">' + t('rpTitle') + '</div>' +
+      '<button onclick="openRatings()" class="text-[12px] font-bold" style="color:var(--acc);">' + t('rpView') + '</button></div>' +
+    '<div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">' +
+      cell(t('rpOrders'), f.orders) + cell(t('rpNoClaims'), f.claimFreePercent != null ? f.claimFreePercent + '%' : '—') +
+      cell(t('rpStars'), f.avgStars != null ? '★ ' + Number(f.avgStars).toFixed(1) : '—') + cell(t('rpOnTime'), f.onTimePercent != null ? f.onTimePercent + '%' : '—') + '</div>' +
+    '<div class="mt-2 text-[11.5px]" style="color:var(--tx4);">' + (f.visibleToBuyers ? t('rpVisible') : tpl('rpMissing', { n: f.ordersToVisible })) + ' &middot; ' + t('rpHint') + '</div></div>';
+}
+function renderRatingsModal(){
+  if (!state.showRatings) return '';
+  const R = state.ratings;
+  const list = R ? R.reviews : null;
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('rpTitle') + '</h3><button onclick="closeRatings()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
+    (!R ? '<div class="py-8 text-center text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>' :
+      list.length === 0 ? '<div class="py-8 text-center text-[13px]" style="color:var(--tx4);">' + t('rpNone') + '</div>' :
+      '<div class="mt-4 flex flex-col gap-3">' + list.map((rv) => {
+        const draft = state.ratingDrafts[rv.id] != null ? state.ratingDrafts[rv.id] : (rv.supplierReply || '');
+        return '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="mb-1 text-[11.5px]" style="color:var(--tx4);">' + esc(rv.rfqTitle || '') + ' &middot; ' + esc(rv.buyerName) + ' &middot; ' + esc(fmtDate(rv.createdAt)) + '</div>' + reviewBodyHtml(rv, 'SUPPLIER') +
+          '<textarea oninput="state.ratingDrafts[\'' + rv.id + '\']=this.value" maxlength="1000" rows="2" placeholder="' + esc(t('rvReplyPh')) + '" class="mt-3 w-full rounded-lg border px-3 py-2 text-[13px] outline-none" style="border-color:var(--bd); background:var(--panel); color:var(--tx);">' + esc(draft) + '</textarea>' +
+          '<div class="mt-2">' + actionBtn(t(rv.supplierReply ? 'rvReplyEdit' : 'rvReplySend'), "submitReviewReply('" + rv.id + "', state.ratingDrafts['" + rv.id + "'] != null ? state.ratingDrafts['" + rv.id + "'] : " + jsAttr(rv.supplierReply || '') + ", refreshRatings)", state.reviewBusy) + '</div></div>';
+      }).join('') + '</div>') +
+  '</div></div>';
+}
+
+// ---------- Admin: reviews ----------
+async function refreshAdminReviews(){
+  if (!state.token || state.view !== 'admin') return;
+  try { setState({ adminReviews: await api('/api/admin/reviews?withComment=1') }); syncOk('adminReviews'); } catch(e) { syncFailed('adminReviews', e); }
+}
+async function hideReviewComment(id, hidden){
+  let reason = '';
+  if (hidden) { reason = prompt('Why is the comment hidden? (optional, shown to admins only)', '') ; if (reason === null) return; }
+  try { await api('/api/admin/reviews/' + encodeURIComponent(id) + '/hide', { method: 'PATCH', body: JSON.stringify({ hidden, reason }) }); showToast(hidden ? 'Comment hidden' : 'Comment shown'); refreshAdminReviews(); }
+  catch(e) { showToast(e.message); }
+}
+function renderAdminReviews(){
+  const list = state.adminReviews || [];
+  return '<div class="eyebrow mb-1.5">REVIEWS</div><h1 class="mb-5 text-[22px] font-extrabold" style="color:var(--tx);">Review comments</h1>' +
+    (list.length === 0 ? emptyState('No comments yet', 'Reviews with a comment appear here; you can hide a comment.') :
+      '<div class="flex flex-col gap-3">' + list.map((rv) =>
+        '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+          '<div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-[220px] flex-1">' +
+            '<div class="text-[12px]" style="color:var(--tx3);">' + esc(rv.buyerName) + ' &rarr; <b style="color:var(--tx);">' + esc(rv.supplierName) + '</b> &middot; ' + esc(rv.rfqTitle || '') + ' &middot; ' + esc(fmtDateTime(rv.createdAt)) + '</div>' +
+            '<div class="mt-1 text-[13px]"><b style="color:var(--pend);" dir="ltr">' + starsText(rv.stars) + '</b> &middot; on time: ' + (rv.onTime ? 'yes' : 'no') + ' &middot; as ordered: ' + (rv.matchesOrder ? 'yes' : 'no') + '</div>' +
+            '<div class="mt-1.5 text-[13px]" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(rv.comment || '') + '</div>' +
+            (rv.supplierReply ? '<div class="mt-1.5 text-[12px]" style="color:var(--tx3);">Reply: ' + esc(rv.supplierReply) + '</div>' : '') +
+            (rv.commentHidden ? '<div class="mt-1.5 text-[12px] font-semibold" style="color:var(--bad);">Hidden from the supplier' + (rv.commentHideReason ? ': ' + esc(rv.commentHideReason) : '') + '</div>' : '') +
+          '</div><div>' + (rv.commentHidden
+            ? '<button onclick="hideReviewComment(\'' + rv.id + '\', false)" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">Show comment</button>'
+            : '<button onclick="hideReviewComment(\'' + rv.id + '\', true)" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Hide comment</button>') + '</div></div></div>').join('') + '</div>');
+}
 
 // ---------- Admin: bid links ----------
 // An admin lets one verified supplier quote on one RFQ through a private link (no sign-in). The link is shown
@@ -3730,7 +3891,7 @@ function renderDashboard(role){
 
   return '<div>' + header + '<div class="bx-page mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + suspensionBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
     bottomNav(role) + moreSheet(role, walletLabel) +
-    renderModals() + renderWalletModal() + renderLightbox() + renderEraseAccountModal() + toastHtml();
+    renderModals() + renderWalletModal() + renderRatingsModal() + renderLightbox() + renderEraseAccountModal() + toastHtml();
 }
 
 // Shown on every page while the company is admin-suspended: it can still work on orders already in
@@ -4054,7 +4215,7 @@ function renderSupplierHub(){
   const rfqs = state.rfqs || [];
   const myCatalog = state.myCatalog || [];
   const activeOrders = activeOrderCount();
-  return onboardingCard() +
+  return onboardingCard() + ratingsCard() +
   '<h1 class="text-[26px] font-extrabold mb-2" style="color:var(--tx); letter-spacing:-0.01em;">' + t('dashTitleSupplier') + '</h1>' +
   '<p class="mb-6 text-[13.5px] max-w-[560px]" style="color:var(--tx3);">' + t('dashSubSupplier') + '</p>' +
   statsBar([[t('statOpenRequests'), rfqs.length], [t('statCatalogItems'), myCatalog.length], [t('statActiveOrders'), activeOrders]]) +
@@ -4653,6 +4814,7 @@ function renderOrderDetail(){
     ]) +
   '</div>' +
   renderPaymentsPanel(invoice, isSupplier) +
+  renderReviewPanel(order, isSupplier) +
   renderDocumentsPanel({ order, isSupplier, canUpload: true }) +
   renderChatPanel();
 }
@@ -4744,11 +4906,11 @@ function notifBell(){
         (state.notifUnread > 0 ? '<button onclick="markAllNotifRead()" class="text-[11px] font-semibold" style="color:var(--acc);">' + t('notifMarkAll') + '</button>' : '') +
         '</div>' +
         (list.length === 0 ? '<div class="px-3.5 py-8 text-center text-[12px]" style="color:var(--tx4);">' + t('notifEmpty') + '</div>' :
-          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + (n.relatedRfqId ? ' cursor:pointer;" onclick="openNotifRfq(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : '') + '">' +
+          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + (n.relatedRfqId ? ' cursor:pointer;" onclick="openNotifRfq(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? ' cursor:pointer;" onclick="openNotifOrder(\'' + esc(n.relatedOrderId) + '\',\'' + esc(n.id) + '\')' : '')) + '">' +
             '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
             (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
             (n.type === 'STOCK_RECEIPT_UNMATCHED' && n.relatedOrderId ? '<button onclick="createStockFromNotification(\'' + n.relatedOrderId + '\')" class="mt-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('addToStock') + '</button>' : '') +
-            (n.relatedRfqId ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenRfq') + '</div>' : '') +
+            (n.relatedRfqId ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenRfq') + '</div>' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenOrder') + '</div>' : '')) +
             '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + fmtDateTime(n.createdAt) + '</div>' +
           '</div>').join('')) +
       '</div>' : '') +
@@ -4820,6 +4982,7 @@ function renderAdmin(){
     '<button onclick="setAdminTab(\'disputes\')" class="chip' + (state.adminTab === 'disputes' ? ' active' : '') + '">Disputes' + (disputes.length ? ' (' + disputes.length + ')' : '') + '</button>' +
     '<button onclick="setAdminTab(\'rfqs\')" class="chip' + (state.adminTab === 'rfqs' ? ' active' : '') + '">All RFQs</button>' +
     '<button onclick="setAdminTab(\'orders\')" class="chip' + (state.adminTab === 'orders' ? ' active' : '') + '">All orders</button>' +
+    '<button onclick="setAdminTab(\'reviews\')" class="chip' + (state.adminTab === 'reviews' ? ' active' : '') + '">Reviews</button>' +
     '<button onclick="setAdminTab(\'analytics\')" class="chip' + (state.adminTab === 'analytics' ? ' active' : '') + '">Analytics</button>' +
   '</div>';
 
@@ -4827,6 +4990,7 @@ function renderAdmin(){
     state.adminTab === 'disputes' ? renderAdminDisputes() :
     state.adminTab === 'rfqs' ? renderAdminRfqs() :
     state.adminTab === 'orders' ? renderAdminOrdersAll() :
+    state.adminTab === 'reviews' ? renderAdminReviews() :
     state.adminTab === 'analytics' ? renderAdminAnalyticsPage() :
     '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
@@ -5461,7 +5625,7 @@ function renderModals(){
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') +
               (x.source === 'BID_LINK' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--pend-soft); color:var(--pend);" title="' + esc(t('viaLinkHint')) + '">' + esc(t('viaLink')) + '</span>' : '') + '</div>' +
-              (x.revisedAt ? '<div class="text-[11px]" style="color:var(--tx4);">' + tpl('quoteRevised', { date: fmtDateTime(x.revisedAt) }) + '</div>' : '') +
+              (x.revisedAt ? '<div class="text-[11px]" style="color:var(--tx4);">' + tpl('quoteRevised', { date: fmtDateTime(x.revisedAt) }) + '</div>' : '') + supplierRatingLine(x.supplierRating) +
             '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>' +
             (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">' + (x.lpo.declineReason ? tpl('cmpDeclinedReason', { reason: esc(x.lpo.declineReason) }) : t('cmpDeclined')) + '</div>' : '') +
             '</div></div>' +
@@ -5829,6 +5993,7 @@ const OVERLAYS = [
   ['decline', s => !!s.declineLpoId, () => closeDeclineLpo()],
   ['pay', s => !!s.showPayModal, () => closePayModal()],
   ['wallet', s => !!s.showWalletModal, () => closeWalletModal()],
+  ['ratings', s => !!s.showRatings, () => closeRatings()],
   ['erase', s => !!s.showEraseModal, () => closeEraseModal()],
   ['forgot', s => !!s.showForgotModal, () => closeForgotModal()]
 ];
