@@ -2254,6 +2254,23 @@ function renderAdminReviews(){
             : '<button onclick="hideReviewComment(\'' + rv.id + '\', true)" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Hide comment</button>') + '</div></div></div>').join('') + '</div>');
 }
 
+// The link in the admin's "new company registered" e-mail: Companies tab, the tab that fits the company's state
+// (PENDING / IN_REVIEW, else ALL, or DELETED), its card scrolled into view and flashed.
+async function openAdminCompany(id){
+  setState({ adminTab: 'companies' });
+  let list;
+  try { list = await api('/api/admin/companies?includeDeleted=1'); } catch(e) { showToast(e.message); return; }
+  const c = list.find(x => x.id === id);
+  if (!c) { showToast('Company not found'); return; }
+  const filter = c.deleted ? 'DELETED' : (['PENDING', 'IN_REVIEW'].includes(c.verificationStatus) ? c.verificationStatus : 'ALL');
+  if (filter !== state.adminFilter) setAdminFilter(filter);
+  setIfChanged('adminCompanies', c.deleted ? list.filter(x => x.deleted) : list.filter(x => !x.deleted));
+  setTimeout(() => {
+    const el = document.querySelector('[data-company="' + String(id).replace(/["\\]/g, '') + '"]');
+    if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('bx-flash'); }
+  }, 150);
+}
+
 // ---------- Admin: bid links ----------
 // An admin lets one verified supplier quote on one RFQ through a private link (no sign-in). The link is shown
 // once, when it is created (the server keeps only a hash); a lost link is reissued, not looked up.
@@ -5002,7 +5019,7 @@ function renderAdmin(){
   ).join('') + '</div>' +
   (list.length === 0 ? emptyState('No companies here', 'Nothing matches this filter yet.') :
     '<div class="flex flex-col gap-3">' + list.map(c => c.deleted ? deletedCompanyCardHtml(c) :
-      '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div data-company="' + esc(c.id) + '" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex min-w-[220px] flex-1 items-center gap-3">' + avatarHtml(c.name, 36) +
         '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
           (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' :
@@ -5030,7 +5047,7 @@ function renderAdmin(){
 // (an admin deletion keeps the wallet) are shown so they are not lost sight of; they cannot be used.
 function deletedCompanyCardHtml(c){
   const credits = c.wallet ? Number(c.wallet.balance) : 0;
-  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel); opacity:.8;">' +
+  return '<div data-company="' + esc(c.id) + '" class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel); opacity:.8;">' +
     '<div class="flex flex-wrap items-center gap-3">' + avatarHtml(c.name, 36) +
     '<div class="min-w-[220px] flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) + ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">Deleted</span></div>' +
     '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; ' + esc(c.user ? c.user.email : '—') + (c.deletedAt ? ' &middot; deleted ' + esc(fmtDateTime(c.deletedAt)) : '') +
@@ -6031,6 +6048,8 @@ function parseHash(h){
   if (m[1] === 'register') return { section: 'main', auth: 'register', role: new URLSearchParams(str.split('?')[1] || '').get('role') === 'supplier' ? 'SUPPLIER' : 'BUYER' };
   if (m[1] === 'rfq' && m[2]) return { section: 'rfqLink', rfqId: safeDecode(m[2]) };
   if (m[1] === 'order' && m[2]) return { section: 'orderDetail', orderId: safeDecode(m[2]) };
+  const am = str.match(/^#\/admin\/company\/([^/?#]+)/);
+  if (am) return { section: 'adminCompany', companyId: safeDecode(am[1]) }; // from the admin's registration e-mail
   return { section: ROUTE_NAMES[m[1]] || 'main' };
 }
 function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?(?:\?[^#]*)?$/); return !!m && (['order', 'rfq', 'login', 'register'].includes(m[1]) || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
@@ -6045,13 +6064,17 @@ function applyRoute(r){
 // A route from the address bar / a link. Sign-in and registration links only mean something signed out (signed in:
 // Home). Order and RFQ links from e-mails wait in pendingRoute until sign-in and take the user to the login screen.
 function applyDeepRoute(r){
-  if (state.view === 'admin') return;
+  if (state.view === 'admin') { if (r.section === 'adminCompany') openAdminCompany(r.companyId); return; }
+  if (r.section === 'adminCompany') { if (isDashboardView()) setSection('main'); else { pendingRoute = r; openAuth('BUYER', 'login'); } return; } // only an admin can use it
   if (r.auth) { if (!state.token) openAuth(r.role || 'BUYER', r.auth); else if (isDashboardView()) setSection('main'); return; }
   if (isDashboardView()) { applyRoute(r); return; }
   pendingRoute = r;
   if (r.section === 'orderDetail' || r.section === 'rfqLink') openAuth('BUYER', 'login');
 }
-function applyPendingRoute(){ if (pendingRoute && isDashboardView()) { const r = pendingRoute; pendingRoute = null; applyRoute(r); } }
+function applyPendingRoute(){
+  if (pendingRoute && state.view === 'admin') { const r = pendingRoute; pendingRoute = null; if (r.section === 'adminCompany') openAdminCompany(r.companyId); return; }
+  if (pendingRoute && pendingRoute.section === 'adminCompany') { pendingRoute = null; return; }
+  if (pendingRoute && isDashboardView()) { const r = pendingRoute; pendingRoute = null; applyRoute(r); } }
 
 function scheduleHistorySync(){ if (state.view === 'admin') return; clearTimeout(histTimer); histTimer = setTimeout(syncHistory, 0); }
 function syncHistory(){
