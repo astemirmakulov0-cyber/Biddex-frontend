@@ -1624,7 +1624,7 @@ let state = {
 
   showVerifyModal: false, verifyForm: { fileUrl:'', docType:'TRADE_LICENSE' }, verifyBusy: false,
 
-  adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
+  adminCompanies: [], adminBusyId: null, adminFilter: 'ALL', adminShowDeleted: false,
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
@@ -2021,7 +2021,7 @@ async function submitVerifyDoc(){
 
 async function refreshAdminCompanies(){
   if (!state.token) return;
-  try { const data = await api('/api/admin/companies'); setIfChanged('adminCompanies', data); syncOk('admin'); }
+  try { const data = await api('/api/admin/companies' + (state.adminShowDeleted ? '?includeDeleted=1' : '')); setIfChanged('adminCompanies', data); syncOk('admin'); }
   catch(e) { syncFailed('admin', e); }
 }
 
@@ -2035,6 +2035,8 @@ async function setCompanyVerification(companyId, status){
   } catch(e) { setState({ adminBusyId:null }); showToast(e.message); }
 }
 function setAdminFilter(f){ setState({ adminFilter: f }); }
+// Deleted companies (erased accounts kept for other companies' records) are hidden by the server; the toggle asks for them.
+function setAdminShowDeleted(on){ setState({ adminShowDeleted: !!on, adminCompanies: [] }); refreshAdmin(); }
 
 // ---------- Admin: disputes ----------
 
@@ -2089,7 +2091,7 @@ function setAdminRfqsPage(page){ setState({ adminRfqsPage: page }); refreshAdmin
 // An admin lets one verified supplier quote on one RFQ through a private link (no sign-in). The link is shown
 // once, when it is created (the server keeps only a hash); a lost link is reissued, not looked up.
 
-const verifiedSuppliersForLinks = () => (state.adminCompanies || []).filter(c => c.type === 'SUPPLIER' && c.verificationStatus === 'VERIFIED' && c.isActive !== false && !c.suspendedAt);
+const verifiedSuppliersForLinks = () => (state.adminCompanies || []).filter(c => c.type === 'SUPPLIER' && !c.deleted && c.verificationStatus === 'VERIFIED' && c.isActive !== false && !c.suspendedAt);
 async function openBidLinkModal(rfqId, title){
   setState({ bidLinkRfq: { id: rfqId, title }, bidLinks: [], bidLinkSupplierId: '', bidLinkContact: undefined, bidLinkForm: { phone:'', consent:false, note:'' }, bidLinkCreated: null, bidLinkErr: '' });
   await refreshBidLinks();
@@ -4826,9 +4828,10 @@ function renderAdmin(){
   '</div>' +
   '<div class="flex flex-wrap gap-2 mb-5">' + filters.map(f =>
     '<button onclick="setAdminFilter(\'' + f + '\')" class="chip' + (state.adminFilter===f?' active':'') + '">' + f + '</button>'
-  ).join('') + '</div>' +
+  ).join('') +
+    '<label class="ml-auto flex items-center gap-2 text-[12.5px] font-semibold" style="color:var(--tx2);"><input type="checkbox" ' + (state.adminShowDeleted ? 'checked ' : '') + 'onchange="setAdminShowDeleted(this.checked)"> Show deleted</label></div>' +
   (list.length === 0 ? emptyState('No companies here', 'Nothing matches this filter yet.') :
-    '<div class="flex flex-col gap-3">' + list.map(c =>
+    '<div class="flex flex-col gap-3">' + list.map(c => c.deleted ? deletedCompanyCardHtml(c) :
       '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex min-w-[220px] flex-1 items-center gap-3">' + avatarHtml(c.name, 36) +
         '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
@@ -4851,6 +4854,17 @@ function renderAdmin(){
       '</div>').join('') + '</div>');
 
   return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + renderBidLinkModal() + toastHtml();
+}
+
+// A deleted company is shown for reference only: no actions (the server refuses them too). Credits left on it
+// (an admin deletion keeps the wallet) are shown so they are not lost sight of; they cannot be used.
+function deletedCompanyCardHtml(c){
+  const credits = c.wallet ? Number(c.wallet.balance) : 0;
+  return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel); opacity:.8;">' +
+    '<div class="flex flex-wrap items-center gap-3">' + avatarHtml(c.name, 36) +
+    '<div class="min-w-[220px] flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) + ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">Deleted</span></div>' +
+    '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; ' + esc(c.user ? c.user.email : '—') + (c.deletedAt ? ' &middot; deleted ' + esc(fmtDateTime(c.deletedAt)) : '') +
+      (c.registrationNumber ? ' &middot; CR: ' + esc(c.registrationNumber) : '') + (credits > 0 ? ' &middot; ' + credits.toFixed(3) + ' credits left (cannot be used)' : '') + '</div></div></div></div>';
 }
 
 function renderAdminDisputes(){
@@ -5061,7 +5075,7 @@ function renderAdminDisputeModal(){
 function renderCreditModal(){
   if (!state.showCreditModal) return '';
   const f = state.creditForm;
-  const suppliers = (state.adminCompanies || []).filter(c => c.type === 'SUPPLIER');
+  const suppliers = (state.adminCompanies || []).filter(c => c.type === 'SUPPLIER' && !c.deleted);
   const c = suppliers.find(x => x.id === f.companyId);
   const bal = c && c.wallet ? Number(c.wallet.balance) : 0;
   const amount = Number(f.amount);
