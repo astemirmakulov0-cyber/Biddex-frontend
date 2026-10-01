@@ -1787,10 +1787,12 @@ function companyLabel(c){
 // escape for JS first, then HTML-escape so a '"' in the value can't close the attribute.
 function jsAttr(s){ return esc("'" + String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'\\r') + "'"); }
 
+// Company avatar: up to two LETTERS (any script; digits and punctuation are skipped) from the first letters of the
+// first two words. Only companies get initials: RFQs and products show a photo or an icon (rfqThumb / productThumb).
 function initials(name){
-  const s = String(name||'??').trim();
-  const parts = s.split(/\s+/).filter(Boolean);
-  const two = parts.length >= 2 ? (parts[0][0]+parts[1][0]) : s.slice(0,2);
+  const words = String(name||'').trim().split(/\s+/).map((w) => Array.from(w.replace(/[^\p{L}]/gu, ''))).filter((w) => w.length);
+  if (!words.length) return '?';
+  const two = words.length >= 2 ? words[0][0] + words[1][0] : words[0].slice(0, 2).join('');
   return two.toUpperCase();
 }
 function avatarColor(name){
@@ -1803,6 +1805,31 @@ function avatarHtml(name, size){
   const sz = size || 38;
   return '<div class="avatar2" style="width:' + sz + 'px; height:' + sz + 'px; background:' + c.bg + '; color:' + c.fg + '; font-size:' + Math.round(sz*0.34) + 'px;">' + esc(initials(name)) + '</div>';
 }
+
+// Neutral icons (24px, stroke) for RFQs and products without a photo: one per RFQ category, a box for anything else.
+const ICON_BOX = '<path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/>';
+const CATEGORY_ICON = {
+  'Restaurants & Cafés': '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>',
+  'Beauty & Salons': '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/>',
+  'Construction': '<path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2zM10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5M4 15v-3a6 6 0 0 1 6-6M14 6a6 6 0 0 1 6 6v3"/>',
+  'Generators & Machinery': '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  'Rental Cars': '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M9 17h6"/>',
+  'Office & Facilities': '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+};
+function iconAvatarHtml(category, size){
+  const sz = size || 38;
+  const path = CATEGORY_ICON[categoryLabel(category)] || ICON_BOX;
+  const ic = Math.round(sz * 0.5);
+  return '<div class="avatar2" aria-hidden="true" style="width:' + sz + 'px; height:' + sz + 'px; background:var(--line); color:var(--tx2);"><svg width="' + ic + '" height="' + ic + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg></div>';
+}
+function photoThumbHtml(url, size){
+  const sz = size || 38;
+  return '<img class="avatar2" alt="" src="' + esc(url) + '" style="width:' + sz + 'px; height:' + sz + 'px; object-fit:cover; border:1px solid var(--line);" />';
+}
+// An RFQ: its photo if it has one, else the icon of its category.
+function rfqThumb(r, size){ return r && r.imageUrl ? photoThumbHtml(r.imageUrl, size) : iconAvatarHtml(r && r.category, size); }
+// A catalog or stock item: its photo if it has one, else its category icon (or a box).
+function productThumb(p, size){ return p && p.imageUrl ? photoThumbHtml(p.imageUrl, size) : iconAvatarHtml(p && p.category, size); }
 
 function timeLeft(dateStr){
   if (!dateStr) return null;
@@ -3707,7 +3734,7 @@ function rfqTable(rfqs){
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>' + esc(t('thRfqTitleId')) + '</th><th>' + t('thCategory') + '</th><th>' + t('thBids') + '</th><th>' + t('thClosingIn') + '</th><th>' + t('thStatus') + '</th><th></th></tr></thead><tbody>' +
     rows.map(({r,tl,actions}) => '<tr>' +
-      '<td><div class="flex items-center gap-2.5">' + avatarHtml(r.title, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div></div></div></td>' +
+      '<td><div class="flex items-center gap-2.5">' + rfqThumb(r, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div></div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</td>' +
       '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
       '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' +
@@ -3719,7 +3746,7 @@ function rfqTable(rfqs){
   const cards = '<div class="sm:hidden flex flex-col gap-3">' +
     rows.map(({r,tl,actions}) => { const tap = rfqCardTap(r); const oneCategory = ACTIVE_CATEGORIES.length === 1;
       return '<div class="rounded-xl border p-3.5' + (tap ? ' bx-tap bx-tapcard' : '') + '" style="border-color:var(--bd); background:var(--panel);"' + (tap ? ' role="button" tabindex="0" onclick="' + tap + '"' : '') + '>' +
-        '<div class="flex items-start gap-2.5">' + avatarHtml(r.title, 32) +
+        '<div class="flex items-start gap-2.5">' + rfqThumb(r, 32) +
           '<div class="min-w-0 flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
           '<div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div></div>' +
           '<div class="shrink-0">' + statusPill(r.status) + '</div>' + (tap ? CHEVRON : '') +
@@ -3902,7 +3929,7 @@ function opportunityCard(r){
   })[ownQuote.status] || [t('oppQuoted'), 'background:var(--line); color:var(--tx2);'];
   return '<div data-rfq="' + esc(r.id) + '" class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-center gap-4">' +
-      (r.imageUrl ? '<img src="' + esc(r.imageUrl) + '" class="h-10 w-10 shrink-0 rounded-xl object-cover border" style="border-color:var(--bd);" />' : avatarHtml(r.buyerCompany ? r.buyerCompany.name : r.title, 40)) +
+      rfqThumb(r, 40) +
       '<div class="flex-1 min-w-[200px]">' +
         '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
         '<div class="text-[11.5px] mt-0.5" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span> &middot; ' + t('oppVerifiedBuyer') + ' &middot; ' + esc(categoryDisplay(r.category)) + '</div>' +
@@ -3972,7 +3999,7 @@ function catalogItemsList(items){
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>' + t('catColItem') + '</th><th>' + t('catColUnit') + '</th><th>' + t('catColPrice') + '</th><th></th></tr></thead><tbody>' +
     items.map(p => '<tr><td><div class="flex items-center gap-2.5">' +
-      (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : avatarHtml(p.name, 36)) +
+      (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productThumb(p, 36)) +
       '<div><span class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</span>' +
       (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(unitLabel(p.unit || 'pcs')) + '</td>' +
@@ -3984,7 +4011,7 @@ function catalogItemsList(items){
     items.map(p =>
       '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center gap-2.5">' +
-          (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-12 w-12 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : avatarHtml(p.name, 48)) +
+          (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-12 w-12 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productThumb(p, 48)) +
           '<div class="min-w-0 flex-1"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(p.name) + '</div>' +
           (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div>' +
         '</div>' +
@@ -4034,7 +4061,7 @@ function stockItemsList(items){
 
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>' + t('stockItemCol') + '</th><th>' + t('stockQuantityCol') + '</th><th>' + t('stockThresholdCol') + hint('lowstock') + '</th><th>' + t('stockStatusCol') + '</th><th></th></tr></thead><tbody>' +
-    items.map((it) => '<tr><td><div class="flex items-center gap-2.5">' + avatarHtml(it.name, 32) +
+    items.map((it) => '<tr><td><div class="flex items-center gap-2.5">' + productThumb(it, 32) +
       '<div><span class="font-semibold" style="color:var(--tx);">' + esc(it.name) + '</span>' +
       (it.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(it.brand) + '</div>' : '') + '</div></div></td>' +
       '<td class="mono" style="color:var(--tx2);">' + fmtQty(it.quantity) + ' ' + esc(unitLabel(it.unit)) + '</td>' +
@@ -4046,7 +4073,7 @@ function stockItemsList(items){
   const cards = '<div class="sm:hidden flex flex-col gap-3">' +
     items.map((it) =>
       '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div class="flex items-center gap-2.5">' + avatarHtml(it.name, 40) +
+        '<div class="flex items-center gap-2.5">' + productThumb(it, 40) +
           '<div class="min-w-0 flex-1"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(it.name) + '</div>' +
           (it.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(it.brand) + '</div>' : '') + '</div>' +
           stockBadge(it) +
