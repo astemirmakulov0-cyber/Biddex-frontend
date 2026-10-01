@@ -1624,7 +1624,7 @@ let state = {
 
   showVerifyModal: false, verifyForm: { fileUrl:'', docType:'TRADE_LICENSE' }, verifyBusy: false,
 
-  adminCompanies: [], adminBusyId: null, adminFilter: 'ALL', adminShowDeleted: false,
+  adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
@@ -2021,7 +2021,7 @@ async function submitVerifyDoc(){
 
 async function refreshAdminCompanies(){
   if (!state.token) return;
-  try { const data = await api('/api/admin/companies' + (state.adminShowDeleted ? '?includeDeleted=1' : '')); setIfChanged('adminCompanies', data); syncOk('admin'); }
+  try { const data = await api('/api/admin/companies' + (state.adminFilter === 'DELETED' ? '?deleted=only' : '')); setIfChanged('adminCompanies', data); syncOk('admin'); }
   catch(e) { syncFailed('admin', e); }
 }
 
@@ -2034,9 +2034,13 @@ async function setCompanyVerification(companyId, status){
     refreshAdminCompanies();
   } catch(e) { setState({ adminBusyId:null }); showToast(e.message); }
 }
-function setAdminFilter(f){ setState({ adminFilter: f }); }
-// Deleted companies (erased accounts kept for other companies' records) are hidden by the server; the toggle asks for them.
-function setAdminShowDeleted(on){ setState({ adminShowDeleted: !!on, adminCompanies: [] }); refreshAdmin(); }
+// The DELETED tab asks the server for deleted companies only (erased accounts kept for other companies' records);
+// every other tab, ALL included, lists live companies only.
+function setAdminFilter(f){
+  const switching = (f === 'DELETED') !== (state.adminFilter === 'DELETED');
+  setState(switching ? { adminFilter: f, adminCompanies: [] } : { adminFilter: f });
+  if (switching) refreshAdminCompanies();
+}
 
 // ---------- Admin: disputes ----------
 
@@ -2057,7 +2061,9 @@ async function refreshAdminDisputes(){
   } catch(e) { syncFailed('adminDisputes', e); }
 }
 function setAdminTab(tab){
-  setState({ adminTab: tab });
+  const backToLive = tab !== 'companies' && state.adminFilter === 'DELETED';
+  setState(backToLive ? { adminTab: tab, adminFilter: 'ALL', adminCompanies: [] } : { adminTab: tab });
+  if (backToLive) refreshAdminCompanies();
   if (tab === 'disputes') refreshAdminDisputes();
   else if (tab === 'rfqs') refreshAdminRfqs();
   else if (tab === 'orders') refreshAdminOrdersAll();
@@ -4804,8 +4810,9 @@ function renderAdmin(){
       ) +
     '</div></div></header>';
 
-  const filters = ['ALL','PENDING','IN_REVIEW','VERIFIED','REJECTED'];
-  const list = (state.adminCompanies || []).filter(c => state.adminFilter === 'ALL' || c.verificationStatus === state.adminFilter);
+  const filters = ['ALL','PENDING','IN_REVIEW','VERIFIED','REJECTED','DELETED'];
+  const onDeletedTab = state.adminFilter === 'DELETED';
+  const list = (state.adminCompanies || []).filter(c => onDeletedTab ? !!c.deleted : (!c.deleted && (state.adminFilter === 'ALL' || c.verificationStatus === state.adminFilter)));
 
   const disputes = state.adminDisputes || [];
   const tabs = '<div class="flex flex-wrap gap-2 mb-6">' +
@@ -4824,12 +4831,11 @@ function renderAdmin(){
     '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
     '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +
-    actionBtn('+ Add credits', 'openCreditModal()', false) +
+    (onDeletedTab ? '' : actionBtn('+ Add credits', 'openCreditModal()', false)) +
   '</div>' +
   '<div class="flex flex-wrap gap-2 mb-5">' + filters.map(f =>
     '<button onclick="setAdminFilter(\'' + f + '\')" class="chip' + (state.adminFilter===f?' active':'') + '">' + f + '</button>'
-  ).join('') +
-    '<label class="ml-auto flex items-center gap-2 text-[12.5px] font-semibold" style="color:var(--tx2);"><input type="checkbox" ' + (state.adminShowDeleted ? 'checked ' : '') + 'onchange="setAdminShowDeleted(this.checked)"> Show deleted</label></div>' +
+  ).join('') + '</div>' +
   (list.length === 0 ? emptyState('No companies here', 'Nothing matches this filter yet.') :
     '<div class="flex flex-col gap-3">' + list.map(c => c.deleted ? deletedCompanyCardHtml(c) :
       '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
