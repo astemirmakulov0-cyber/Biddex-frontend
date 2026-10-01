@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Send your quote - Biddex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>
+/* The private link carries its token in the address fragment (#t=...). Read it first and remove it from the address at
+   once, so it does not stay in the address bar, history or a copied URL. It lives only in this variable. */
+var BID_TOKEN = null;
+(function () {
+  var m = /(?:^#|&)t=([A-Za-z0-9_-]{43})(?:&|$)/.exec(location.hash);
+  if (m) BID_TOKEN = m[1];
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+})();
+/* before any CSS: theme = saved choice or the OS setting (same rule as index.html) */
+(function () {
+  var d = document.documentElement, th = null;
+  try { th = localStorage.getItem('biddex_theme'); } catch (e) {}
+  if (th !== 'dark' && th !== 'light') th = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  d.setAttribute('data-theme', th);
+  var m = document.createElement('meta'); m.name = 'theme-color'; m.content = th === 'dark' ? '#141311' : '#FAF7F2'; document.head.appendChild(m);
+})();
+</script>
+<style>
+  :root { color-scheme:light; --bg:#FAF7F2; --panel:#FFFFFF; --tx:#1B1A17; --tx2:#6B665E; --line:#ECE6DC; --acc:#0F766E; --acc-soft:#E3F2EF; --acc-ink:#0B5A54; --on-acc:#FFFFFF; --bad:#B42318; --bad-soft:#FDECEA; --pend:#B45309; --pend-soft:#FCEFD9; --ok-bg:#E3F2EF; --ok-tx:#0B5A54; --logo-base:#1B1A17; }
+  :root[data-theme="dark"] { color-scheme:dark; --bg:#141311; --panel:#1D1B18; --tx:#F3EFE8; --tx2:#A59E92; --line:#2E2A25; --acc:#34B3A2; --acc-soft:#16312D; --acc-ink:#8FE0D3; --on-acc:#0B1F1C; --bad:#F97066; --bad-soft:#3A1A17; --pend:#F0A24A; --pend-soft:#3A2A14; --ok-bg:#16312D; --ok-tx:#8FE0D3; --logo-base:#FAF7F2; }
+  /* the supplier amber, as in the app: this page is for suppliers */
+  :root { --acc:#B45309; --acc-soft:#FCEFD9; --acc-ink:#8A4A0B; }
+  :root[data-theme="dark"] { --acc:#F0A24A; --acc-soft:#3A2A14; --acc-ink:#F6C98A; --on-acc:#2A1805; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Readex Pro", system-ui, sans-serif; background: var(--bg); color: var(--tx); padding: 56px 16px 40px; -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  .box { max-width: 560px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .brand svg { width: 36px; height: 36px; }
+  .brand span, h1, h2 { font-family: "Bricolage Grotesque", "Readex Pro", system-ui, sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+  .brand span { font-size: 21px; }
+  h1 { font-size: 24px; margin: 0 0 8px; line-height: 1.25; }
+  h2 { font-size: 17px; margin: 0 0 12px; }
+  html[dir=rtl] h1, html[dir=rtl] h2, html[dir=rtl] .brand span { letter-spacing: 0; }
+  p { margin: 0 0 10px; }
+  .muted { color: var(--tx2); font-size: 14px; }
+  .chip { display: inline-block; background: var(--acc-soft); color: var(--acc-ink); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px; margin-bottom: 14px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 14px 0 0; }
+  .facts div > b { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--tx2); margin-bottom: 4px; }
+  html[dir=rtl] .facts div > b { letter-spacing: 0; text-transform: none; font-size: 12px; }
+  .photo { width: 72px; height: 72px; border-radius: 14px; object-fit: cover; border: 1px solid var(--line); float: inline-end; margin-inline-start: 12px; }
+  .specs { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 14px; margin-top: 12px; }
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--tx2); margin-bottom: 16px; }
+  input, textarea { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--tx); font: inherit; font-size: 16px; width: 100%; }
+  input:focus, textarea:focus { outline: 2px solid var(--acc); outline-offset: 1px; }
+  textarea { min-height: 84px; resize: vertical; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
+  .total { font-weight: 700; font-size: 17px; margin: 2px 0 14px; font-variant-numeric: tabular-nums; }
+  button.primary { width: 100%; min-height: 48px; padding: 12px; border: none; border-radius: 16px; background: var(--acc); color: var(--on-acc); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: default; }
+  button.linkbtn { background: none; border: none; padding: 0; color: var(--tx2); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+  .ok { background: var(--ok-bg); color: var(--ok-tx); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; font-weight: 600; font-size: 14px; }
+  .err { background: var(--bad-soft); color: var(--bad); border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; font-size: 14px; }
+  .pill { display: inline-block; border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; background: var(--pend-soft); color: var(--pend); }
+  .pill.good { background: var(--ok-bg); color: var(--ok-tx); }
+  .center { text-align: center; padding-top: 40px; }
+  .lang { position: absolute; top: 14px; inset-inline-end: 14px; background: none; border: 1px solid var(--line); border-radius: 12px; color: var(--tx2); padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+  a { color: var(--acc-ink); }
+</style>
+</head>
+<body>
+<button id="langBtn" class="lang" type="button"></button>
+<div class="box">
+  <div class="brand"><svg viewBox="0 0 56 56" role="img" aria-label="Biddex"><rect x="8" y="5" width="11" height="46" rx="3" style="fill:var(--logo-base);"/><path d="M19 5 H31 a11.5 11.5 0 0 1 0 23 H19 Z" fill="#0F766E"/><path d="M19 28 H34 a11.5 11.5 0 0 1 0 23 H19 Z" fill="#E9A23B"/></svg><span>Biddex</span></div>
+  <div id="view"></div>
+</div>
+
+<script src="server-errors.js?v=2"></script>
+<script>
+const API_URL = 'https://b2b-procurement-backend-production.up.railway.app';
+const APP_URL = 'https://app.biddex.online/';
+
+const I18N = {
+  en: {
+    title: 'Send your quote - Biddex', loading: 'Opening your request…',
+    invalidTitle: 'This link can’t be used', invalidBody: 'The link is not valid or is no longer active (the request may be closed). If you think this is a mistake, ask the Biddex team for a new link.',
+    noToken: 'Open the link from your message again. It is not kept in the address of this page.',
+    quotingAs: 'Quoting as {name}', quantity: 'Quantity', category: 'Category', brand: 'Brand', exactBrand: 'Exact brand only', equivalent: 'Equivalent accepted',
+    deadline: 'Deadline', specs: 'Specifications', linkUntil: 'This link works until {date}.',
+    yourQuote: 'Your quote', unitPrice: 'Price per unit (BHD)', total: 'Total for {qty} {unit}: {amount} BHD', delivery: 'Delivery time (days)', terms: 'Payment terms (days after receipt)',
+    notes: 'Notes (optional)', send: 'Send quote', update: 'Update quote', sending: 'Sending…',
+    sent: 'Your quote was sent. The buyer has been notified.', updated: 'Your quote was updated. The buyer has been notified.',
+    feeNote: 'Sending a quote uses {amount} BHD of your Biddex bid credits (changing it later is free).',
+    stSUBMITTED: 'Quote sent', stSHORTLISTED: 'Shortlisted by the buyer', stREJECTED: 'Not selected', stAWARDED: 'Awarded to you',
+    locked: 'The buyer has already started evaluating this quote, so it can’t be changed here.',
+    fromAccount: 'You already sent a quote on this request from your Biddex account. Sign in to see it.',
+    awardedHelp: 'Sign in to Biddex to see and accept the purchase order.', signIn: 'Sign in', revised: 'Changed on {date}',
+    consentTitle: 'WhatsApp messages', consentAsk: 'Biddex may contact me on WhatsApp at {phone} about new requests.', consentGive: 'I agree',
+    consentOn: 'You agreed to receive requests on WhatsApp at {phone}.', consentOptOut: 'Don’t write to me on WhatsApp',
+    consentOff: 'You will not receive WhatsApp messages from Biddex. Your number stays on file until you ask us to remove it.',
+    private: 'This is your private link. Please don’t share it.', errGeneric: 'Something went wrong. Please try again.', priceRequired: 'Enter the price per unit.',
+    cat_Restaurants_Cafes: 'Restaurants & Cafés'
+  },
+  ar: {
+    title: 'إرسال عرضك - Biddex', loading: 'جارٍ فتح الطلب…',
+    invalidTitle: 'لا يمكن استخدام هذا الرابط', invalidBody: 'الرابط غير صالح أو لم يعد نشطًا (قد يكون الطلب مغلقًا). إذا كنت تعتقد أن هذا خطأ، اطلب من فريق Biddex رابطًا جديدًا.',
+    noToken: 'افتح الرابط من رسالتك مرة أخرى. فهو لا يُحفظ في عنوان هذه الصفحة.',
+    quotingAs: 'تقدّم العرض باسم {name}', quantity: 'الكمية', category: 'الفئة', brand: 'العلامة التجارية', exactBrand: 'العلامة المحددة فقط', equivalent: 'يُقبل ما يعادله',
+    deadline: 'الموعد النهائي', specs: 'المواصفات', linkUntil: 'يعمل هذا الرابط حتى {date}.',
+    yourQuote: 'عرضك', unitPrice: 'سعر الوحدة (د.ب)', total: 'الإجمالي لـ {qty} {unit}: {amount} د.ب', delivery: 'مدة التوصيل (بالأيام)', terms: 'شروط الدفع (أيام بعد الاستلام)',
+    notes: 'ملاحظات (اختياري)', send: 'إرسال العرض', update: 'تحديث العرض', sending: 'جارٍ الإرسال…',
+    sent: 'تم إرسال عرضك. تم إشعار المشتري.', updated: 'تم تحديث عرضك. تم إشعار المشتري.',
+    feeNote: 'يخصم إرسال العرض {amount} د.ب من رصيد العروض في Biddex (التعديل لاحقًا مجاني).',
+    stSUBMITTED: 'تم إرسال العرض', stSHORTLISTED: 'في القائمة المختصرة لدى المشتري', stREJECTED: 'لم يتم اختيار العرض', stAWARDED: 'تمت ترسية الطلب عليك',
+    locked: 'بدأ المشتري بتقييم هذا العرض، لذا لا يمكن تعديله هنا.',
+    fromAccount: 'لقد أرسلت عرضًا على هذا الطلب من حسابك في Biddex. سجّل الدخول لعرضه.',
+    awardedHelp: 'سجّل الدخول إلى Biddex لعرض أمر الشراء وقبوله.', signIn: 'تسجيل الدخول', revised: 'تم التعديل في {date}',
+    consentTitle: 'رسائل واتساب', consentAsk: 'أوافق على أن يتواصل معي Biddex عبر واتساب على الرقم {phone} بخصوص الطلبات الجديدة.', consentGive: 'أوافق',
+    consentOn: 'وافقت على استلام الطلبات عبر واتساب على الرقم {phone}.', consentOptOut: 'لا تراسلوني على واتساب',
+    consentOff: 'لن تصلك رسائل واتساب من Biddex. يبقى رقمك محفوظًا حتى تطلب حذفه.',
+    private: 'هذا رابطك الخاص. يرجى عدم مشاركته.', errGeneric: 'حدث خطأ ما. حاول مرة أخرى.', priceRequired: 'أدخل سعر الوحدة.',
+    cat_Restaurants_Cafes: 'المطاعم والمقاهي'
+  }
+};
+const CATEGORY_AR = {"Restaurants & Cafés":"المطاعم والمقاهي","Beauty & Salons":"التجميل والصالونات","Construction":"المقاولات والبناء","Generators & Machinery":"المولدات والآلات","Rental Cars":"تأجير السيارات","Office & Facilities":"المكاتب والمرافق","General":"عام"};
+const UNIT_AR = { kg: 'كجم', pcs: 'قطعة', box: 'صندوق', carton: 'كرتون', litre: 'لتر', ton: 'طن' };
+
+let lang;
+try { lang = localStorage.getItem('biddex_lang'); } catch (e) {}
+if (lang !== 'ar' && lang !== 'en') lang = (navigator.language || '').toLowerCase().startsWith('ar') ? 'ar' : 'en';
+function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
+function tpl(key, vars) { return t(key).replace(/\{(\w+)\}/g, (m, k) => vars && vars[k] != null ? vars[k] : m); }
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const dateLocale = () => lang === 'ar' ? 'ar-BH-u-nu-latn' : undefined;
+const fmtDateTime = (d) => new Date(d).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' });
+const fmtNum = (n) => Number(n).toFixed(3);
+const unitLabel = (u) => (lang === 'ar' && UNIT_AR[u]) || u || '';
+const categoryLabel = (c) => (lang === 'ar' && CATEGORY_AR[c]) || c || '';
+
+// view state: phase = loading | invalid | noToken | ready; data = the GET answer
+const view = { phase: 'loading', data: null, busy: false, ok: '', error: '', formUnit: '', formDelivery: '', formTerms: '30', formNotes: '' };
+
+async function api(method, path, body) {
+  const res = await fetch(API_URL + '/api' + path, { method, headers: { 'Content-Type': 'application/json', Authorization: 'BidLink ' + BID_TOKEN }, body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => null);
+  return { status: res.status, data };
+}
+
+function fillForm(q) {
+  if (!q) return;
+  view.formUnit = q.unitPrice != null ? String(Number(q.unitPrice)) : '';
+  view.formDelivery = q.deliveryTimeDays != null ? String(q.deliveryTimeDays) : '';
+  view.formTerms = q.paymentTermsDays != null ? String(q.paymentTermsDays) : '30';
+  view.formNotes = q.notes || '';
+}
+
+async function load(keepMessages) {
+  if (!BID_TOKEN) { view.phase = 'noToken'; return render(); }
+  const r = await api('GET', '/public/bid-link');
+  if (r.status === 200) {
+    view.phase = 'ready'; view.data = r.data;
+    if (!keepMessages) { view.ok = ''; view.error = ''; }
+    fillForm(r.data.quote);
+  } else {
+    view.phase = 'invalid';
+  }
+  render();
+}
+
+function consentHtml(c) {
+  if (!c) return '';
+  const phone = '<bdi dir="ltr">' + esc(c.phoneHint) + '</bdi>';
+  let body;
+  if (c.given) body = '<p class="muted">' + tpl('consentOn', { phone }) + '</p><button class="linkbtn" type="button" onclick="setConsent(\'withdraw\')">' + esc(t('consentOptOut')) + '</button>';
+  else if (c.withdrawn) body = '<p class="muted">' + esc(t('consentOff')) + '</p>';
+  else body = '<p class="muted">' + tpl('consentAsk', { phone }) + '</p><button class="linkbtn" type="button" onclick="setConsent(\'give\')">' + esc(t('consentGive')) + '</button>';
+  return '<div class="card"><h2>' + esc(t('consentTitle')) + '</h2>' + body + '</div>';
+}
+
+function formHtml(d) {
+  const q = d.quote;
+  const editable = !q || q.editable;
+  if (q && !editable) {
+    const fromAccount = q.via !== 'BID_LINK';
+    return '<div class="card"><h2>' + esc(t('yourQuote')) + '</h2><p><span class="pill ' + (q.status === 'SUBMITTED' ? 'good' : '') + '">' + esc(t('st' + q.status)) + '</span></p>' +
+      '<p class="total">' + fmtNum(q.price) + ' ' + (lang === 'ar' ? 'د.ب' : 'BHD') + '</p>' +
+      '<p class="muted">' + esc(t(fromAccount ? 'fromAccount' : 'locked')) + '</p>' +
+      (q.status === 'AWARDED' ? '<p>' + esc(t('awardedHelp')) + ' <a href="' + APP_URL + '?lang=' + lang + '#/login">' + esc(t('signIn')) + '</a></p>' : '') + '</div>';
+  }
+  const qty = d.rfq.quantity || 0;
+  const total = Number(view.formUnit) > 0 ? fmtNum(Number(view.formUnit) * qty) : '—';
+  return '<form class="card" onsubmit="return submitQuote(event)" novalidate><h2>' + esc(t('yourQuote')) + '</h2>' +
+    (q ? '<p><span class="pill good">' + esc(t('st' + q.status)) + '</span>' + (q.revisedAt ? ' <span class="muted">' + tpl('revised', { date: esc(fmtDateTime(q.revisedAt)) }) + '</span>' : '') + '</p>' : '') +
+    '<label>' + esc(t('unitPrice')) + '<input id="fUnit" type="text" inputmode="decimal" dir="ltr" autocomplete="off" value="' + esc(view.formUnit) + '" oninput="onField()"></label>' +
+    '<div class="total" id="totalLine">' + tpl('total', { qty: qty, unit: esc(unitLabel(d.rfq.unit)), amount: total }) + '</div>' +
+    '<div class="row2"><label>' + esc(t('delivery')) + '<input id="fDelivery" type="text" inputmode="numeric" dir="ltr" value="' + esc(view.formDelivery) + '" oninput="onField()"></label>' +
+    '<label>' + esc(t('terms')) + '<input id="fTerms" type="text" inputmode="numeric" dir="ltr" value="' + esc(view.formTerms) + '" oninput="onField()"></label></div>' +
+    '<label>' + esc(t('notes')) + '<textarea id="fNotes" maxlength="1000" oninput="onField()">' + esc(view.formNotes) + '</textarea></label>' +
+    (!q && d.bidFeePercent > 0 ? '<p class="muted">' + tpl('feeNote', { amount: esc(d.bidCost) }) + '</p>' : '') +
+    '<button class="primary" type="submit"' + (view.busy ? ' disabled' : '') + '>' + esc(view.busy ? t('sending') : t(q ? 'update' : 'send')) + '</button></form>';
+}
+
+function render() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.title = t('title');
+  document.getElementById('langBtn').textContent = lang === 'ar' ? 'EN' : 'العربية';
+  const el = document.getElementById('view');
+  if (view.phase === 'loading') { el.innerHTML = '<p class="muted center">' + esc(t('loading')) + '</p>'; return; }
+  if (view.phase === 'invalid' || view.phase === 'noToken') {
+    el.innerHTML = '<div class="card center"><h1>' + esc(t('invalidTitle')) + '</h1><p class="muted">' + esc(t(view.phase === 'noToken' ? 'noToken' : 'invalidBody')) + '</p></div>';
+    return;
+  }
+  const d = view.data, r = d.rfq;
+  const facts = '<div><b>' + esc(t('quantity')) + '</b>' + esc(r.quantity || '—') + ' ' + esc(unitLabel(r.unit)) + '</div>' +
+    (r.category ? '<div><b>' + esc(t('category')) + '</b>' + esc(categoryLabel(r.category)) + '</div>' : '') +
+    (r.deadline ? '<div><b>' + esc(t('deadline')) + '</b>' + esc(fmtDateTime(r.deadline)) + '</div>' : '') +
+    (r.brand ? '<div><b>' + esc(t('brand')) + '</b>' + esc(r.brand) + '<br><span class="muted">' + esc(t(r.exactBrandOnly ? 'exactBrand' : 'equivalent')) + '</span></div>' : '');
+  el.innerHTML =
+    '<span class="chip">' + tpl('quotingAs', { name: esc(d.supplier.name) }) + '</span>' +
+    (view.ok ? '<div class="ok" role="status">' + esc(view.ok) + '</div>' : '') +
+    (view.error ? '<div class="err" role="alert">' + esc(view.error) + '</div>' : '') +
+    '<div class="card">' + (r.imageUrl ? '<img class="photo" alt="" src="' + esc(r.imageUrl) + '">' : '') + '<h1>' + esc(r.title) + '</h1>' +
+    (r.description ? '<p>' + esc(r.description) + '</p>' : '') +
+    '<div class="facts">' + facts + '</div>' +
+    (r.specifications ? '<div class="specs"><b class="muted">' + esc(t('specs')) + '</b><br>' + esc(r.specifications) + '</div>' : '') + '</div>' +
+    formHtml(d) + consentHtml(d.consent) +
+    '<p class="muted">' + tpl('linkUntil', { date: esc(fmtDateTime(d.expiresAt)) }) + ' ' + esc(t('private')) + '</p>';
+}
+
+function readForm() {
+  const g = (id) => { const e = document.getElementById(id); return e ? e.value : ''; };
+  view.formUnit = g('fUnit').trim().replace(',', '.'); view.formDelivery = g('fDelivery').trim(); view.formTerms = g('fTerms').trim(); view.formNotes = g('fNotes');
+}
+// keep the typed values, update only the live total (no re-render while typing)
+function onField() {
+  readForm();
+  const d = view.data; if (!d) return;
+  const total = Number(view.formUnit) > 0 ? fmtNum(Number(view.formUnit) * (d.rfq.quantity || 0)) : '—';
+  document.getElementById('totalLine').innerHTML = tpl('total', { qty: d.rfq.quantity || 0, unit: esc(unitLabel(d.rfq.unit)), amount: total });
+}
+
+async function submitQuote(e) {
+  e.preventDefault();
+  readForm();
+  const unit = Number(view.formUnit);
+  if (!(unit > 0)) { view.error = t('priceRequired'); view.ok = ''; render(); return false; }
+  const body = { unitPrice: unit };
+  if (view.formDelivery !== '') body.deliveryTimeDays = Number(view.formDelivery);
+  if (view.formTerms !== '') body.paymentTermsDays = Number(view.formTerms);
+  if (view.formNotes.trim()) body.notes = view.formNotes;
+  view.busy = true; view.error = ''; view.ok = ''; render();
+  const wasUpdate = !!(view.data && view.data.quote);
+  let r;
+  try { r = await api('PUT', '/public/bid-link/quote', body); } catch (err) { r = { status: 0, data: null }; }
+  view.busy = false;
+  if (r.status === 200 || r.status === 201) {
+    view.ok = t(wasUpdate ? 'updated' : 'sent');
+    await load(true);
+  } else if (r.status === 404) {
+    view.phase = 'invalid'; render();
+  } else {
+    view.error = (r.data && r.data.error) ? serverError(r.data.error, lang) : t('errGeneric');
+    render();
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  return false;
+}
+
+async function setConsent(action) {
+  const r = await api('POST', '/public/bid-link/consent', { action }).catch(() => ({ status: 0 }));
+  if (r.status === 200) { view.data.consent = r.data.consent; render(); }
+  else if (r.status === 404 && action === 'give') { view.phase = 'invalid'; render(); }
+  else { view.error = t('errGeneric'); render(); }
+}
+
+document.getElementById('langBtn').addEventListener('click', () => {
+  lang = lang === 'ar' ? 'en' : 'ar';
+  try { localStorage.setItem('biddex_lang', lang); } catch (e) {}
+  readForm(); render();
+});
+
+render();
+load();
+</script>
+</body>
+</html>

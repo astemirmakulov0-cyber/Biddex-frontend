@@ -35,7 +35,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=2">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
-<script src="server-errors.js?v=1"></script>
+<script src="server-errors.js?v=2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
@@ -515,6 +515,8 @@ const I18N = {
     toastRfqCancelled:"RFQ cancelled.",
     toastRfqCancelledRefund:"RFQ cancelled. Bid fees refunded to {n} supplier(s).",
     cmpTitle:"Quotes",
+    viaLink:"Via invitation link", viaLinkHint:"Sent through a private link issued by Biddex, not from the supplier's own sign-in. The supplier is a verified company.", quoteRevised:"Updated {date}",
+    notifOpenRfq:"Open request",
     stWithdrawn:"Withdrawn",
     stShortlisted:"Shortlisted",
     stRejected:"Rejected",
@@ -1153,6 +1155,8 @@ const I18N = {
     toastRfqCancelled:"تم إلغاء طلب التسعير.",
     toastRfqCancelledRefund:"تم إلغاء طلب التسعير. أُعيدت رسوم العروض إلى {n} من الموردين.",
     cmpTitle:"العروض",
+    viaLink:"عبر رابط دعوة", viaLinkHint:"أُرسل عبر رابط خاص أصدره Biddex، وليس من تسجيل دخول المورّد نفسه. المورّد شركة موثّقة.", quoteRevised:"تم التحديث في {date}",
+    notifOpenRfq:"فتح الطلب",
     stWithdrawn:"مسحوب",
     stShortlisted:"في القائمة المختصرة",
     stRejected:"مرفوض",
@@ -1627,6 +1631,8 @@ let state = {
   // admin: All RFQs tab (filters, page, results)
   adminRfqs: [], adminRfqsTotal: 0, adminRfqsPage: 1, adminRfqsLoading: false,
   adminRfqsFilters: { status:'', buyerCompanyId:'', dateFrom:'', dateTo:'', q:'' },
+  // admin: bid links of one RFQ (a supplier quotes through a private link, no sign-in)
+  bidLinkRfq: null, bidLinks: [], bidLinkSupplierId: '', bidLinkContact: undefined, bidLinkForm: { phone:'', consent:false, note:'' }, bidLinkCreated: null, bidLinkBusy: false, bidLinkErr: '',
   // admin: All orders tab
   adminOrdersAll: [], adminOrdersAllTotal: 0, adminOrdersAllPage: 1, adminOrdersAllLoading: false,
   adminOrdersAllFilters: { status:'', buyerCompanyId:'', supplierCompanyId:'', dateFrom:'', dateTo:'' },
@@ -2078,6 +2084,140 @@ async function refreshAdminRfqs(){
 }
 function setAdminRfqsFilter(patch){ setState({ adminRfqsFilters: { ...state.adminRfqsFilters, ...patch }, adminRfqsPage: 1 }); refreshAdminRfqs(); }
 function setAdminRfqsPage(page){ setState({ adminRfqsPage: page }); refreshAdminRfqs(); }
+
+// ---------- Admin: bid links ----------
+// An admin lets one verified supplier quote on one RFQ through a private link (no sign-in). The link is shown
+// once, when it is created (the server keeps only a hash); a lost link is reissued, not looked up.
+
+const verifiedSuppliersForLinks = () => (state.adminCompanies || []).filter(c => c.type === 'SUPPLIER' && c.verificationStatus === 'VERIFIED' && c.isActive !== false && !c.suspendedAt);
+async function openBidLinkModal(rfqId, title){
+  setState({ bidLinkRfq: { id: rfqId, title }, bidLinks: [], bidLinkSupplierId: '', bidLinkContact: undefined, bidLinkForm: { phone:'', consent:false, note:'' }, bidLinkCreated: null, bidLinkErr: '' });
+  await refreshBidLinks();
+}
+function closeBidLinkModal(){ setState({ bidLinkRfq: null, bidLinks: [], bidLinkCreated: null, bidLinkErr: '' }); refreshAdminRfqs(); }
+async function refreshBidLinks(){
+  if (!state.bidLinkRfq) return;
+  try { setState({ bidLinks: await api('/api/admin/bid-links?rfqId=' + encodeURIComponent(state.bidLinkRfq.id)) }); }
+  catch(e) { setState({ bidLinkErr: e.message }); }
+}
+async function selectBidLinkSupplier(id){
+  setState({ bidLinkSupplierId: id, bidLinkContact: undefined, bidLinkErr: '', bidLinkCreated: null });
+  if (!id) return;
+  try {
+    const d = await api('/api/admin/companies/' + encodeURIComponent(id) + '/contact');
+    if (state.bidLinkSupplierId === id) setState({ bidLinkContact: d.current || null, bidLinkForm: { phone: d.current ? d.current.phone : '', consent: false, note: '' } });
+  } catch(e) { setState({ bidLinkErr: e.message }); }
+}
+async function saveBidLinkContact(){
+  const f = state.bidLinkForm, id = state.bidLinkSupplierId;
+  setState({ bidLinkBusy: true, bidLinkErr: '' });
+  try {
+    const d = await api('/api/admin/companies/' + encodeURIComponent(id) + '/contact', { method: 'PUT', body: JSON.stringify({ phone: f.phone, consentGiven: !!f.consent, note: f.note }) });
+    setState({ bidLinkContact: d.current, bidLinkForm: { phone: d.current.phone, consent: false, note: '' }, bidLinkBusy: false });
+    showToast('Saved');
+  } catch(e) { setState({ bidLinkBusy: false, bidLinkErr: e.message }); }
+}
+async function withdrawBidLinkContact(){
+  if (!confirm('Record that the supplier withdrew consent? The WhatsApp button will be switched off for this number.')) return;
+  setState({ bidLinkBusy: true, bidLinkErr: '' });
+  try {
+    const d = await api('/api/admin/companies/' + encodeURIComponent(state.bidLinkSupplierId) + '/contact', { method: 'PUT', body: JSON.stringify({ withdraw: true }) });
+    setState({ bidLinkContact: d.current, bidLinkBusy: false });
+  } catch(e) { setState({ bidLinkBusy: false, bidLinkErr: e.message }); }
+}
+async function createBidLinkUi(){
+  setState({ bidLinkBusy: true, bidLinkErr: '', bidLinkCreated: null });
+  try {
+    const d = await api('/api/admin/bid-links', { method: 'POST', body: JSON.stringify({ rfqId: state.bidLinkRfq.id, supplierCompanyId: state.bidLinkSupplierId }) });
+    setState({ bidLinkCreated: d, bidLinkBusy: false });
+    refreshBidLinks();
+  } catch(e) { setState({ bidLinkBusy: false, bidLinkErr: e.message }); }
+}
+async function reissueBidLinkUi(id){
+  if (!confirm('Issue a new link? The old one stops working at once.')) return;
+  setState({ bidLinkBusy: true, bidLinkErr: '', bidLinkCreated: null });
+  try { const d = await api('/api/admin/bid-links/' + encodeURIComponent(id) + '/reissue', { method: 'POST' }); setState({ bidLinkCreated: d, bidLinkBusy: false }); refreshBidLinks(); }
+  catch(e) { setState({ bidLinkBusy: false, bidLinkErr: e.message }); }
+}
+async function revokeBidLinkUi(id){
+  if (!confirm('Revoke this link? The supplier will no longer be able to use it (a quote already sent stays).')) return;
+  try { await api('/api/admin/bid-links/' + encodeURIComponent(id) + '/revoke', { method: 'POST' }); refreshBidLinks(); showToast('Link revoked'); }
+  catch(e) { setState({ bidLinkErr: e.message }); }
+}
+function copyToClipboard(text){
+  const done = () => showToast('Copied');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => showToast('Copy failed: select the text and copy it'));
+  else { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch(e) { showToast('Copy failed'); } ta.remove(); }
+}
+const BIDLINK_STATUS_STYLE = { ACTIVE: 'background:var(--ok-soft); color:var(--ok);', EXPIRED: 'background:var(--line); color:var(--tx2);', REVOKED: 'background:var(--bad-soft); color:var(--bad);', CLOSED: 'background:var(--line); color:var(--tx2);' };
+
+function renderBidLinkModal(){
+  const rfq = state.bidLinkRfq;
+  if (!rfq) return '';
+  const sups = verifiedSuppliersForLinks();
+  const c = state.bidLinkContact, f = state.bidLinkForm, created = state.bidLinkCreated, busy = state.bidLinkBusy;
+  const inp = 'w-full rounded-lg border px-3 py-2 text-[13px] outline-none';
+  const inpStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  const btn = (label, onclick, primary, disabled) => '<button ' + (disabled ? 'disabled ' : '') + 'onclick="' + onclick + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold ' + (primary ? 'text-white' : 'border') + '" style="' + (primary ? 'background:var(--acc);' : 'border-color:var(--bd2); color:var(--tx);') + (disabled ? ' opacity:.55;' : '') + '">' + label + '</button>';
+
+  // the one-time result
+  const createdHtml = !created ? '' :
+    '<div class="mt-4 rounded-xl border p-3.5" style="border-color:var(--acc); background:var(--acc-soft);">' +
+      '<div class="text-[13px] font-bold" style="color:var(--acc-ink);">Link for ' + esc(created.supplierName) + ' &mdash; shown only once</div>' +
+      '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx3);">Valid until ' + esc(fmtDateTime(created.expiresAt)) + '. Copy it now; it can\'t be shown again (you can issue a new one).</div>' +
+      '<input readonly value="' + esc(created.url) + '" onclick="this.select()" dir="ltr" class="mt-2 ' + inp + '" style="' + inpStyle + '">' +
+      '<div class="mt-2 flex flex-wrap items-center gap-2">' +
+        btn('Copy link', 'copyToClipboard(' + jsAttr(created.url) + ')', true) +
+        btn('Copy message', 'copyToClipboard(' + jsAttr(created.message) + ')', false) +
+        (created.whatsapp.available
+          ? '<a href="' + esc(created.whatsapp.url) + '" target="_blank" rel="noopener" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:#25D366;">For WhatsApp</a>'
+          : '<span class="text-[11.5px]" style="color:var(--tx3);">WhatsApp is off: ' + esc({ NO_PHONE: 'no phone number on file', NO_CONSENT: 'the supplier has not agreed to WhatsApp messages', WITHDRAWN: 'the supplier withdrew consent' }[created.whatsapp.reason] || 'no consent') + '.</span>') +
+      '</div>' +
+      '<details class="mt-2 text-[11.5px]" style="color:var(--tx3);"><summary class="cursor-pointer">Message text</summary><pre class="mt-1 whitespace-pre-wrap rounded-lg border p-2" style="border-color:var(--bd); background:var(--panel); font-family:inherit;">' + esc(created.message) + '</pre></details>' +
+    '</div>';
+
+  // phone + consent of the chosen supplier
+  let contactHtml = '';
+  if (state.bidLinkSupplierId) {
+    if (c === undefined) contactHtml = '<div class="mt-3 text-[12px]" style="color:var(--tx4);">Loading…</div>';
+    else {
+      const status = !c ? 'No phone number on file.'
+        : c.withdrawnAt ? 'Consent <b>withdrawn</b> on ' + esc(fmtDateTime(c.withdrawnAt)) + ' &mdash; do not contact on WhatsApp.'
+        : c.consentGiven ? 'WhatsApp consent <b>given</b> on ' + esc(fmtDateTime(c.consentAt)) + ' (' + esc(c.consentSource === 'LINK_PAGE' ? 'ticked on the bid page' : 'recorded by an admin') + (c.consentNote && c.consentSource !== 'LINK_PAGE' ? ': ' + esc(c.consentNote) : '') + ').'
+        : 'Number on file, <b>no consent</b> to WhatsApp messages.';
+      contactHtml = '<div class="mt-3 rounded-xl border p-3" style="border-color:var(--bd); background:var(--inset);">' +
+        '<div class="text-[12px] font-semibold" style="color:var(--tx);">Phone &amp; consent (PDPL)</div>' +
+        '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + (c ? '<span class="mono">' + esc(c.phone) + '</span> &middot; ' : '') + status + '</div>' +
+        '<div class="mt-2 grid gap-2 sm:grid-cols-2"><label class="text-[11px] font-semibold" style="color:var(--tx4);">Phone number<input value="' + esc(f.phone) + '" oninput="state.bidLinkForm.phone=this.value" placeholder="+973 3332 7347" dir="ltr" class="mt-1 ' + inp + '" style="' + inpStyle + '"></label>' +
+        '<label class="flex items-start gap-2 text-[12px]" style="color:var(--tx2);"><input type="checkbox" ' + (f.consent ? 'checked ' : '') + 'onchange="state.bidLinkForm.consent=this.checked; render()" class="mt-0.5"> The supplier agreed to be contacted on WhatsApp at this number</label></div>' +
+        (f.consent ? '<label class="mt-2 block text-[11px] font-semibold" style="color:var(--tx4);">How and when did they agree? (required)<input value="' + esc(f.note) + '" oninput="state.bidLinkForm.note=this.value" placeholder="e.g. asked us on the phone on 1 Oct to send requests on WhatsApp" class="mt-1 ' + inp + '" style="' + inpStyle + '"></label>' : '') +
+        '<div class="mt-2 flex flex-wrap gap-2">' + btn('Save number' + (f.consent ? ' & consent' : ''), 'saveBidLinkContact()', false, busy) +
+        (c && c.active ? btn('Mark consent withdrawn', 'withdrawBidLinkContact()', false, busy) : '') + '</div></div>';
+    }
+  }
+
+  const rows = (state.bidLinks || []).map(l =>
+    '<div class="flex flex-wrap items-center justify-between gap-2 border-t py-2.5 text-[12px]" style="border-color:var(--bd);">' +
+      '<div class="min-w-[180px] flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(l.supplierName) + ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="' + (BIDLINK_STATUS_STYLE[l.status] || '') + '">' + l.status + '</span></div>' +
+      '<div style="color:var(--tx3);">Created ' + esc(fmtDateTime(l.createdAt)) + ' &middot; until ' + esc(fmtDateTime(l.expiresAt)) + ' &middot; opened ' + l.useCount + '&times;' +
+      (l.quote ? ' &middot; quote ' + esc(fmtNum(l.quote.price)) + ' BHD (' + (l.quote.source === 'BID_LINK' ? 'via link' : 'from account') + (l.quote.revisedAt ? ', updated' : '') + ', ' + esc(l.quote.status) + ')' : ' &middot; no quote yet') + '</div></div>' +
+      '<div class="flex gap-2">' + (l.status === 'ACTIVE' ? btn('Reissue', "reissueBidLinkUi('" + l.id + "')", false, busy) + btn('Revoke', "revokeBidLinkUi('" + l.id + "')", false, busy) : '') + '</div>' +
+    '</div>').join('');
+
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold" style="color:var(--tx);">Bid link</h3><div class="mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(rfq.title) + '</div></div>' +
+      '<button onclick="closeBidLinkModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
+      '<p class="mt-3 text-[12px]" style="color:var(--tx3);">A private link that lets one verified supplier see this request and send or change a quote without signing in. It works for this request only and stops when the request closes, expires (14 days at most) or you revoke it.</p>' +
+      (state.bidLinkErr ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12px]" style="background:var(--bad-soft); color:var(--bad);">' + esc(state.bidLinkErr) + '</div>' : '') +
+      '<label class="mt-4 block text-[11px] font-semibold" style="color:var(--tx4);">Supplier<select onchange="selectBidLinkSupplier(this.value)" class="mt-1 ' + inp + '" style="' + inpStyle + '"><option value="">Choose a verified supplier…</option>' +
+        sups.map(x => '<option value="' + esc(x.id) + '"' + (state.bidLinkSupplierId === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '</select></label>' +
+      contactHtml +
+      '<div class="mt-4">' + btn(busy ? 'Working…' : 'Create link', 'createBidLinkUi()', true, busy || !state.bidLinkSupplierId) + '</div>' +
+      createdHtml +
+      '<div class="mt-5"><div class="text-[12px] font-bold" style="color:var(--tx);">Links for this request</div>' + (rows || '<div class="mt-1 text-[12px]" style="color:var(--tx4);">None yet.</div>') + '</div>' +
+    '</div></div>';
+}
 
 // ---------- Admin: all orders ----------
 
@@ -4576,6 +4716,12 @@ function detailCard(title, rows){
 
 // ---------- Notifications, verification ----------
 
+function openNotifRfq(rfqId, notifId){
+  setState({ showNotifDropdown: false });
+  api('/api/notifications/' + encodeURIComponent(notifId) + '/read', { method: 'PATCH' }).then(() => refreshNotifications()).catch(() => {});
+  openRfqLink(rfqId);
+}
+
 function notifBell(){
   const list = state.notifications || [];
   return '<div class="relative" data-dropdown="notif">' +
@@ -4590,10 +4736,11 @@ function notifBell(){
         (state.notifUnread > 0 ? '<button onclick="markAllNotifRead()" class="text-[11px] font-semibold" style="color:var(--acc);">' + t('notifMarkAll') + '</button>' : '') +
         '</div>' +
         (list.length === 0 ? '<div class="px-3.5 py-8 text-center text-[12px]" style="color:var(--tx4);">' + t('notifEmpty') + '</div>' :
-          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + '">' +
+          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + (n.relatedRfqId ? ' cursor:pointer;" onclick="openNotifRfq(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : '') + '">' +
             '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
             (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
             (n.type === 'STOCK_RECEIPT_UNMATCHED' && n.relatedOrderId ? '<button onclick="createStockFromNotification(\'' + n.relatedOrderId + '\')" class="mt-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('addToStock') + '</button>' : '') +
+            (n.relatedRfqId ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenRfq') + '</div>' : '') +
             '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + fmtDateTime(n.createdAt) + '</div>' +
           '</div>').join('')) +
       '</div>' : '') +
@@ -4703,7 +4850,7 @@ function renderAdmin(){
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + renderBidLinkModal() + toastHtml();
 }
 
 function renderAdminDisputes(){
@@ -4766,7 +4913,11 @@ function renderAdminRfqs(){
             (r.buyerCompany && r.buyerCompany.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' : '') + '</div>' +
           '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span> &middot; ' + esc(r.buyerCompany ? r.buyerCompany.name : '—') + ' &middot; ' + (r._count ? r._count.quotes : 0) + ' quote(s) &middot; ' + fmtDate(r.createdAt) + '</div>' +
         '</div>' +
-        '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--line); color:var(--tx2);">' + (RFQ_STATUS_LABELS[r.status] || r.status) + '</span>' +
+        '<div class="flex flex-wrap items-center justify-end gap-2">' +
+          (r._count && r._count.bidLinks ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--pend-soft); color:var(--pend);">' + r._count.bidLinks + ' link' + (r._count.bidLinks === 1 ? '' : 's') + '</span>' : '') +
+          (r.status === 'PUBLISHED' ? '<button onclick="openBidLinkModal(\'' + r.id + '\',' + jsAttr(r.title) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold border" style="border-color:var(--bd2); color:var(--tx);">Bid link</button>' : '') +
+          '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--line); color:var(--tx2);">' + (RFQ_STATUS_LABELS[r.status] || r.status) + '</span>' +
+        '</div>' +
       '</div>').join('') + '</div>') +
   pagerHtml(state.adminRfqsPage, 20, state.adminRfqsTotal, 'setAdminRfqsPage');
 }
@@ -5288,7 +5439,9 @@ function renderModals(){
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">' + t('cmpNone') + '</div>' :
           q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
-            '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') + '</div>' +
+            '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') +
+              (x.source === 'BID_LINK' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--pend-soft); color:var(--pend);" title="' + esc(t('viaLinkHint')) + '">' + esc(t('viaLink')) + '</span>' : '') + '</div>' +
+              (x.revisedAt ? '<div class="text-[11px]" style="color:var(--tx4);">' + tpl('quoteRevised', { date: fmtDateTime(x.revisedAt) }) + '</div>' : '') +
             '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>' +
             (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">' + (x.lpo.declineReason ? tpl('cmpDeclinedReason', { reason: esc(x.lpo.declineReason) }) : t('cmpDeclined')) + '</div>' : '') +
             '</div></div>' +

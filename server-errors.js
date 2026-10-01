@@ -35,7 +35,21 @@
     'Too many password reset requests, please try again later.': 'tooManyReset',
     'Too many verification email requests, please try again later.': 'tooManyVerification',
     'Too many requests, please try again later.': 'tooMany',
-    'Internal server error': 'serverError'
+    'Internal server error': 'serverError',
+    // bid links (bid.html) and quotes
+    'This link is not valid or is no longer active': 'linkInvalid',
+    'RFQ is not open for quotes': 'rfqNotOpen',
+    'The deadline for this RFQ has passed': 'deadlinePassed',
+    'This quote can no longer be changed': 'quoteLocked',
+    'A quote from your company already exists for this request': 'quoteExists',
+    'You have already submitted a quote for this RFQ': 'quoteExists',
+    'Insufficient bid credits': 'noCredits',
+    'unitPrice must be a positive number': 'priceInvalid',
+    'unitPrice can have at most 3 decimal places': 'priceDecimals',
+    'The quote total (unit price × quantity) is too large': 'totalTooLarge',
+    'deliveryTimeDays must be a whole number between 0 and 365': 'deliveryInvalid',
+    'paymentTermsDays must be a whole number between 0 and 120': 'termsInvalid',
+    'notes must be text of at most 1000 characters': 'notesInvalid'
   };
   var AR = {
     invalidCredentials: 'بيانات الدخول غير صحيحة',
@@ -65,7 +79,19 @@
     tooManyVerification: 'طلبات إرسال بريد التأكيد كثيرة، حاول مرة أخرى لاحقًا',
     tooMany: 'طلبات كثيرة، حاول مرة أخرى لاحقًا',
     serverError: 'حدث خطأ في الخادم، حاول مرة أخرى لاحقًا',
-    accountSuspended: 'الحساب موقوف'
+    accountSuspended: 'الحساب موقوف',
+    linkInvalid: 'هذا الرابط غير صالح أو لم يعد نشطًا',
+    rfqNotOpen: 'طلب التسعير غير مفتوح لتلقي العروض',
+    deadlinePassed: 'انتهى الموعد النهائي لهذا الطلب',
+    quoteLocked: 'لا يمكن تعديل هذا العرض بعد الآن',
+    quoteExists: 'يوجد عرض من شركتك على هذا الطلب مسبقًا',
+    noCredits: 'رصيد العروض غير كافٍ',
+    priceInvalid: 'يجب أن يكون سعر الوحدة رقمًا موجبًا',
+    priceDecimals: 'يجب ألا يزيد سعر الوحدة عن ثلاث خانات عشرية',
+    totalTooLarge: 'إجمالي العرض كبير جدًا',
+    deliveryInvalid: 'يجب أن تكون مدة التوصيل عددًا صحيحًا بين 0 و365',
+    termsInvalid: 'يجب أن تكون شروط الدفع عددًا صحيحًا بين 0 و120',
+    notesInvalid: 'يجب ألا تتجاوز الملاحظات 1000 حرف'
   };
   var SUSPENDED_PREFIX = 'Account suspended: ';
 
