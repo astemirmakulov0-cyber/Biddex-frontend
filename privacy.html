@@ -4,21 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy Policy — Biddex</title>
+<link rel="canonical" href="https://biddex.online/privacy.html">
+<link rel="alternate" hreflang="en" href="https://app.biddex.online/privacy.html">
+<link rel="alternate" hreflang="ar" href="https://app.biddex.online/ar/privacy.html">
+<link rel="alternate" hreflang="x-default" href="https://app.biddex.online/privacy.html">
+<meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png?v=2">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1a1a;
-    --ink-soft: #4a4a4a;
-    --paper: #FAF7F2;
-    --rule: #dcdad4;
-    --accent: #0F766E;
+    color-scheme: light;
+    --paper: #FAF7F2; --ink: #1B1A17; --ink-soft: #6B665E; --rule: #ECE6DC;
+    --accent: #0B5A54; --pend-soft: #FCEFD9; --pend: #8A4A0B;
   }
-  @media (prefers-color-scheme: dark) { :root { --ink: #F3EFE8; --ink-soft: #A59E92; --paper: #141311; --rule: #2E2A25; --accent: #34B3A2; } }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --paper: #141311; --ink: #F3EFE8; --ink-soft: #A59E92; --rule: #2E2A25;
+      --accent: #8FE0D3; --pend-soft: #3A2A14; --pend: #F6C98A;
+    }
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--paper);
     color: var(--ink);
-    font-family: "Georgia", "Iowan Old Style", serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     line-height: 1.65;
   }
   .wrap {
@@ -27,11 +42,15 @@
     padding: 64px 24px 96px;
   }
   .kicker {
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 13px;
     letter-spacing: 0.02em;
     color: var(--accent);
     margin: 0 0 8px;
+  }
+  h1, h2 {
+    font-family: 'Bricolage Grotesque', 'Readex Pro', sans-serif;
+    letter-spacing: -0.02em;
   }
   h1 {
     font-size: 34px;
@@ -39,7 +58,7 @@
     margin: 0 0 6px;
   }
   .updated {
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 13px;
     color: var(--ink-soft);
     margin: 0 0 40px;
@@ -52,7 +71,7 @@
   }
   h2:first-of-type { border-top: none; padding-top: 0; }
   h3 {
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 14px;
     text-transform: none;
     color: var(--ink-soft);
@@ -66,7 +85,7 @@
     width: 100%;
     border-collapse: collapse;
     margin: 0 0 16px;
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 14px;
   }
   th, td {
@@ -80,79 +99,148 @@
     margin-top: 56px;
     padding-top: 24px;
     border-top: 1px solid var(--rule);
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 14px;
     color: var(--ink-soft);
   }
-  .placeholder {
-    background: #fff3d6;
-    padding: 1px 4px;
-    border-radius: 2px;
-  }
+
+  /* ---------- top bar and footer links ---------- */
+  .top { display: flex; align-items: baseline; gap: 16px; margin: 0 0 8px; }
+  .top .kicker { margin: 0; text-decoration: none; }
+  .top .langs { margin-left: auto; font-family: 'Readex Pro', system-ui, sans-serif; font-size: 13px; display: flex; gap: 12px; }
+  .top .langs a[aria-current] { font-weight: 700; text-decoration: none; color: var(--ink); }
+  .other { margin-top: 12px; font-family: 'Readex Pro', system-ui, sans-serif; font-size: 14px; }
+  .nowrap { white-space: nowrap; }
+  td, th { overflow-wrap: break-word; }
+  .tablewrap { overflow-x: auto; margin: 0 0 16px; }
+  .tablewrap table { margin: 0; }
+  @media (max-width: 640px) { .tablewrap table { min-width: 480px; font-size: 13px; } th, td { padding: 8px 6px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="kicker">Biddex</p>
+  <div class="top">
+    <a class="kicker" href="/">Biddex</a>
+    <nav class="langs" aria-label="Language"><a href="/privacy.html" hreflang="en" lang="en" aria-current="page">EN</a><a href="/ar/privacy.html" hreflang="ar" lang="ar">ع</a></nav>
+  </div>
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: <span class="placeholder">[date]</span></p>
+  <p class="updated">Effective from 6 October 2026</p>
 
-  <p>This policy explains how Biddex collects, uses, and protects personal data in connection with the Biddex B2B procurement marketplace, in line with Bahrain's Personal Data Protection Law (PDPL, Law No. 30 of 2018).</p>
+  <p>This policy explains what personal data Biddex collects, who processes it, where it goes, how long it is kept and how you can access or delete it. It is written in line with Bahrain’s Personal Data Protection Law (PDPL, Law No. 30 of 2018). It describes what the service actually does today.</p>
 
-  <h2>1. Who this applies to</h2>
-  <p>This policy covers personal data of individuals who register a company account on Biddex, act as a contact for a registered company, or otherwise interact with the platform (buyers, suppliers, and their staff).</p>
+  <h2>1. Who we are</h2>
+
+  <p>Biddex is a B2B procurement marketplace for Bahrain. It is operated by <strong>Astemir Makulov</strong>, an individual in the Kingdom of Bahrain (no company has been registered yet). In this policy “Biddex”, “we” and “us” mean the operator. Contact for anything in this policy: <a href="mailto:support@biddex.online">support@biddex.online</a> or WhatsApp <a class="nowrap" href="https://wa.me/97333327347">+973 3332 7347</a>.</p>
+
+  <p>This policy applies to people who register a company account, act as a contact of a registered company, receive an invitation link from us, or visit our websites (buyers, suppliers and their staff).</p>
 
   <h2>2. Data we collect</h2>
-  <table>
-    <tr><th>Category</th><th>Examples</th></tr>
-    <tr><td>Account data</td><td>Email, password (stored as a hash), role (buyer/supplier)</td></tr>
-    <tr><td>Company data</td><td>Company name, type, registration number, country, address, phone</td></tr>
-    <tr><td>Verification documents</td><td>Commercial registration and related files you upload</td></tr>
-    <tr><td>Transaction data</td><td>RFQs, quotes, LPOs, orders, invoices, wallet transactions</td></tr>
-    <tr><td>Communications</td><td>Messages and notifications sent through the platform</td></tr>
-    <tr><td>Usage data</td><td>Login times, basic technical data needed to operate the service</td></tr>
-  </table>
 
-  <h2>3. Why we process your data</h2>
-  <p>We process personal data to:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Category</th><th>What it includes</th></tr>
+    <tr><td>Account</td><td>E-mail address; password (stored only as a hash, never readable); role (buyer or supplier); whether the e-mail is verified; when you accepted the Terms and this policy.</td></tr>
+    <tr><td>Company</td><td>Company name, type, commercial registration (CR) number, country, address, phone; verification status and the notes of our review; your e-mail notification choices.</td></tr>
+    <tr><td>Verification documents</td><td>The files you upload to prove the company (for example a trade licence or CR certificate). Only the Biddex team can open them.</td></tr>
+    <tr><td>Catalog and stock</td><td>For suppliers: product names, prices, units and photos. For buyers: the buyer’s own stock list (never shown to anyone else).</td></tr>
+    <tr><td>Deals</td><td>Requests for quotation (title, description, quantity, budget, optional photo), quotes (prices, notes, attachments), purchase orders, orders, delivery details, documents added to an order, invoices, payments you report (amount, method, reference), chat messages on an order, reviews of suppliers, and bid-credit (wallet) transactions.</td></tr>
+    <tr><td>Notifications</td><td>The in-app notifications and e-mails we send you about your account and your deals.</td></tr>
+    <tr><td>Phone and WhatsApp consent</td><td>For suppliers we invite: the phone number recorded by the Biddex team and a record of the consent (when, how, and any withdrawal). We use it only to send you invitation links.</td></tr>
+    <tr><td>Technical data</td><td>Your IP address and the details of each request are handled by our servers to run and protect the service (for example to limit repeated requests). Our request log keeps the method, the address requested (secret tokens masked), the result and the time. We do not record login times, use analytics or advertising tools, or set cookies; your browser’s local storage keeps your session, theme and language.</td></tr>
+  </table></div>
+
+  <h2>3. Why we use your data, and on what basis</h2>
+
   <ul>
-    <li>Create and manage your account and company profile;</li>
-    <li>Operate the RFQ, quote, LPO, order, and payment workflow;</li>
-    <li>Verify companies and prevent fraud;</li>
-    <li>Send account-related and transactional notifications;</li>
-    <li>Meet legal and regulatory obligations in Bahrain;</li>
-    <li>Maintain the security of the platform.</li>
+    <li>to create and run your account and company profile;</li>
+    <li>to run the request, quote, purchase order, order, delivery, invoice and payment workflow between companies;</li>
+    <li>to verify companies and to prevent fraud and abuse;</li>
+    <li>to send you notifications about your account and deals;</li>
+    <li>to contact a supplier on WhatsApp, only after its consent;</li>
+    <li>to keep the platform secure and working;</li>
+    <li>to meet legal obligations in Bahrain.</li>
   </ul>
 
-  <h2>4. Legal basis</h2>
-  <p>We process your personal data on the basis of your consent (given at registration), the necessity of processing to perform our contract with you, and our legitimate interest in operating and securing the platform, consistent with the PDPL.</p>
+  <p>The basis is your consent, given when you register and recorded with the date; the need to provide the service you asked for; and our legitimate interest in operating and securing the platform. We do not sell personal data and we do not use it for advertising.</p>
 
-  <h2>5. Sharing your data</h2>
-  <p>Company profile information you choose to make visible (such as your company name and catalog) is shared with other companies on the platform as part of the RFQ and quoting process. We do not sell personal data. We may share data with service providers who help us run the platform (such as hosting and database providers) under appropriate safeguards, or where required by law.</p>
+  <h2>4. Who sees your data on the platform</h2>
 
-  <h2>6. Data storage and security</h2>
-  <p>Data is stored with reputable infrastructure providers and protected with measures including password hashing, access controls, and rate limiting on authentication endpoints. No system is completely secure, and we work to continuously improve these protections.</p>
-
-  <h2>7. Data retention and account deactivation</h2>
-  <p>When you deactivate your account, your company is marked inactive and you can no longer sign in or transact on the platform. We retain the underlying records for a period afterward where needed to meet legal, accounting, or dispute-resolution obligations, after which data is deleted or anonymized in line with our retention practice.</p>
-
-  <h2>8. Your rights under the PDPL</h2>
-  <p>Subject to the conditions set out in the PDPL, you may have the right to:</p>
   <ul>
-    <li>Access the personal data we hold about you;</li>
-    <li>Request correction of inaccurate data;</li>
-    <li>Withdraw consent and request deactivation of your account;</li>
-    <li>Request erasure of your data, subject to our legal retention obligations;</li>
-    <li>Object to certain processing.</li>
+    <li>A buyer’s identity is hidden from suppliers until the buyer awards that supplier’s quote. Suppliers never see each other’s quotes.</li>
+    <li>A buyer sees the company name, price and terms of every supplier that quotes on its request. After an award the two companies see each other’s company name and the data of their order (delivery, documents, chat, invoice, payments).</li>
+    <li>A supplier’s catalog is visible to buyers once the supplier is verified.</li>
+    <li>Buyers may see a supplier’s quality figures (number of orders, share without claims, average stars, on-time share) once enough orders are counted. The comment of a review is visible only to the reviewed supplier, to its author and to the Biddex team.</li>
+    <li>The Biddex team can see accounts, verification documents, deals and order chats, in order to verify companies, support users and resolve disputes.</li>
   </ul>
-  <p>To exercise these rights, contact us using the details below.</p>
 
-  <h2>9. Changes to this policy</h2>
-  <p>We may update this policy from time to time. Material changes will be indicated by an updated "Last updated" date above.</p>
+  <h2>5. Service providers that process data for us</h2>
 
-  <div class="contact">
-    Questions about this policy or your data? Contact us at <span class="placeholder">privacy@biddex.example</span>.
-  </div>
+  <p>We use the following providers. They process data on our behalf under their own standard terms (see section 6).</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>Provider</th><th>What it does for us</th><th>Data involved</th><th>Where</th></tr>
+    <tr><td>Neon</td><td>Database</td><td>All account, company and deal data, notification texts</td><td>USA — AWS US East 2 (Ohio)</td></tr>
+    <tr><td>Railway</td><td>Application server; private file storage; scheduled backup of the files</td><td>Everything the server handles; uploaded files (verification documents, order documents, quote attachments, product and request photos); request logs</td><td>USA — servers and main file storage: US East (Virginia); backup copy of the files: US West (California)</td></tr>
+    <tr><td>Resend</td><td>Sending e-mail</td><td>Recipient e-mail address and the text of the e-mail (for example request titles, amounts, the start of a chat message, verification and password-reset links)</td><td>Japan — Tokyo (ap-northeast-1)</td></tr>
+    <tr><td>Sentry</td><td>Error monitoring</td><td>Technical details of errors; a report can include parts of the request that failed (for example a company name or a text you entered)</td><td>European Union</td></tr>
+    <tr><td>GitHub Pages</td><td>Hosting the websites biddex.online and app.biddex.online</td><td>Your IP address and browser details when you open a page</td><td>Global network of GitHub</td></tr>
+    <tr><td>Google Fonts</td><td>Fonts used by our pages</td><td>Your IP address and browser details when a page loads</td><td>Google’s global network</td></tr>
+    <tr><td>jsDelivr</td><td>Delivers the interface library of the app (and, only when you import an Excel catalog, a spreadsheet library)</td><td>Your IP address and browser details when the app loads</td><td>Global content-delivery network</td></tr>
+    <tr><td>WhatsApp</td><td>Only when the Biddex team sends an invitation link to a supplier that agreed to it: the team opens a WhatsApp chat by hand</td><td>The supplier’s phone number and the message</td><td>Under WhatsApp’s own terms</td></tr>
+  </table></div>
+
+  <h2>6. Transfers outside Bahrain</h2>
+
+  <p>None of these providers stores your data in Bahrain. Your data is processed in the United States (Neon, Railway and the file backup), in Japan (Resend) and in the European Union (Sentry); the website, font and library providers serve pages from their global networks. We cannot offer the service without these transfers.</p>
+
+  <p>By registering and accepting this policy you consent to these transfers. We have not signed separate data-processing agreements with these providers: they process data under their own standard terms and security commitments. You can ask us about this at any time and you can withdraw your consent by deleting your account (section 8); we will then no longer process your data except as section 9 describes.</p>
+
+  <h2>7. How we protect data</h2>
+
+  <ul>
+    <li>passwords are stored as hashes only, and an account is protected against repeated login attempts;</li>
+    <li>every request is checked for the signed-in company: you can open only your own data and the data of your own deals;</li>
+    <li>verification documents and order files are private and are opened only through short-lived links, after the system has checked that you are allowed to see them;</li>
+    <li>connections to our websites and servers are encrypted (HTTPS).</li>
+  </ul>
+
+  <p>No system is completely secure.</p>
+
+  <h2>8. Your rights and how to use them</h2>
+
+  <p>Under the PDPL you may have rights over your personal data. In the app (sign in, then open <a href="https://app.biddex.online/?lang=en#/settings">Settings</a>) you can do the following yourself:</p>
+
+  <ul>
+    <li><strong>Access.</strong> Settings → Privacy &amp; data → “Download my data” gives you a file with your profile, company, uploaded-file list (names, types, dates), requests, quotes, purchase orders, orders, invoices and payments, notifications, stock, phone and consent records, invitation links and reviews.</li>
+    <li><strong>Correction.</strong> In Settings you can edit your company name, CR number, country, address and phone (changing the name or CR number sends a verified company back to review). To correct anything else, including your e-mail address, contact us.</li>
+    <li><strong>Deletion.</strong> Settings → Privacy &amp; data → “Delete account” (you confirm with your password and company name). It erases your personal data as described in section 9. It is refused while the company has open orders, a dispute, an unpaid invoice or a payment waiting for confirmation, and any remaining bid credits are lost. A purchase order that the supplier has not accepted yet is cancelled automatically and the other company is told.</li>
+    <li><strong>Deactivation.</strong> Ask us (<a href="mailto:support@biddex.online">support@biddex.online</a>). A deactivated account cannot sign in; this alone does not delete data. It is normally refused while there are open orders.</li>
+    <li><strong>E-mail choices.</strong> In Settings you can switch off e-mails about new requests and e-mails about other notifications. E-mails needed for your account (verification, password reset, account notices) are always sent.</li>
+    <li><strong>WhatsApp consent.</strong> A supplier can withdraw it on the invitation page or by telling us.</li>
+    <li><strong>Anything else</strong>, including objecting to a use of your data or asking a question about it: contact us. We will reply as soon as we can.</li>
+  </ul>
+
+  <h2>9. How long we keep data</h2>
+
+  <ul>
+    <li><strong>Active account:</strong> as long as the account exists.</li>
+    <li><strong>After you delete your account:</strong> we erase your name, your e-mail address (replaced by a technical address), phone, address, our verification notes, the verification documents and catalog photos (deleted from file storage), your notifications, your stock list, your phone and consent records, the text of reviews you wrote or answered, and your invitation links stop working.</li>
+    <li><strong>What stays after deletion:</strong> the company name, CR number and country, and the records shared with the other company — purchase orders, orders, delivery details, invoices, payments, chat messages, documents added to an order, and review ratings (without your comments). They stay for as long as the other company needs them and the law requires; there is no automatic clean-up yet.</li>
+    <li><strong>Deactivated accounts</strong> keep their data until deletion is requested.</li>
+    <li><strong>File backup:</strong> a second copy of uploaded files is kept in separate storage; a file that changes or is deleted stays in that backup for 30 more days.</li>
+    <li><strong>Database backups and logs:</strong> kept according to the settings of the providers (Neon, Railway, Sentry).</li>
+    <li><strong>Short-lived data:</strong> an e-mail verification link works for 24 hours, a password-reset link for one hour, an invitation link for at most 14 days.</li>
+  </ul>
+
+  <h2>10. Changes to this policy</h2>
+
+  <p>We may update this policy. The date at the top shows when the current version took effect. If we start to use your data in a materially different way, we will say so here and, where we can, in the app.</p>
+
+  <h2>11. Language</h2>
+
+  <p>This policy is published in English and Arabic. If they differ, the English version prevails.</p>
+
+  <p class="contact">Questions about this policy or your data: <a href="mailto:support@biddex.online">support@biddex.online</a> · WhatsApp <a class="nowrap" href="https://wa.me/97333327347">+973 3332 7347</a></p>
+  <p class="other"><a href="/terms.html">Terms of Service</a></p>
 </div>
 </body>
 </html>

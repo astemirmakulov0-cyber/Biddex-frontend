@@ -4,21 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Terms of Service — Biddex</title>
+<link rel="canonical" href="https://biddex.online/terms.html">
+<link rel="alternate" hreflang="en" href="https://app.biddex.online/terms.html">
+<link rel="alternate" hreflang="ar" href="https://app.biddex.online/ar/terms.html">
+<link rel="alternate" hreflang="x-default" href="https://app.biddex.online/terms.html">
+<meta name="theme-color" content="#FAF7F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png?v=2">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1a1a;
-    --ink-soft: #4a4a4a;
-    --paper: #FAF7F2;
-    --rule: #dcdad4;
-    --accent: #0F766E;
+    color-scheme: light;
+    --paper: #FAF7F2; --ink: #1B1A17; --ink-soft: #6B665E; --rule: #ECE6DC;
+    --accent: #0B5A54; --pend-soft: #FCEFD9; --pend: #8A4A0B;
   }
-  @media (prefers-color-scheme: dark) { :root { --ink: #F3EFE8; --ink-soft: #A59E92; --paper: #141311; --rule: #2E2A25; --accent: #34B3A2; } }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --paper: #141311; --ink: #F3EFE8; --ink-soft: #A59E92; --rule: #2E2A25;
+      --accent: #8FE0D3; --pend-soft: #3A2A14; --pend: #F6C98A;
+    }
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--paper);
     color: var(--ink);
-    font-family: "Georgia", "Iowan Old Style", serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     line-height: 1.65;
   }
   .wrap {
@@ -27,11 +42,15 @@
     padding: 64px 24px 96px;
   }
   .kicker {
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 13px;
     letter-spacing: 0.02em;
     color: var(--accent);
     margin: 0 0 8px;
+  }
+  h1, h2 {
+    font-family: 'Bricolage Grotesque', 'Readex Pro', sans-serif;
+    letter-spacing: -0.02em;
   }
   h1 {
     font-size: 34px;
@@ -39,7 +58,7 @@
     margin: 0 0 6px;
   }
   .updated {
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 13px;
     color: var(--ink-soft);
     margin: 0 0 40px;
@@ -51,76 +70,139 @@
     border-top: 1px solid var(--rule);
   }
   h2:first-of-type { border-top: none; padding-top: 0; }
+  h3 {
+    font-family: 'Readex Pro', system-ui, sans-serif;
+    font-size: 14px;
+    text-transform: none;
+    color: var(--ink-soft);
+    margin: 20px 0 8px;
+  }
   p { margin: 0 0 16px; color: var(--ink); }
   ul { margin: 0 0 16px; padding-left: 22px; }
   li { margin-bottom: 8px; }
   a { color: var(--accent); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 16px;
+    font-family: 'Readex Pro', system-ui, sans-serif;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th { color: var(--ink-soft); font-weight: 600; }
   .contact {
     margin-top: 56px;
     padding-top: 24px;
     border-top: 1px solid var(--rule);
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Readex Pro', system-ui, sans-serif;
     font-size: 14px;
     color: var(--ink-soft);
   }
-  .placeholder {
-    background: #fff3d6;
-    padding: 1px 4px;
-    border-radius: 2px;
-  }
+
+  /* ---------- top bar and footer links ---------- */
+  .top { display: flex; align-items: baseline; gap: 16px; margin: 0 0 8px; }
+  .top .kicker { margin: 0; text-decoration: none; }
+  .top .langs { margin-left: auto; font-family: 'Readex Pro', system-ui, sans-serif; font-size: 13px; display: flex; gap: 12px; }
+  .top .langs a[aria-current] { font-weight: 700; text-decoration: none; color: var(--ink); }
+  .other { margin-top: 12px; font-family: 'Readex Pro', system-ui, sans-serif; font-size: 14px; }
+  .nowrap { white-space: nowrap; }
+  td, th { overflow-wrap: break-word; }
+  .tablewrap { overflow-x: auto; margin: 0 0 16px; }
+  .tablewrap table { margin: 0; }
+  @media (max-width: 640px) { .tablewrap table { min-width: 480px; font-size: 13px; } th, td { padding: 8px 6px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="kicker">Biddex</p>
+  <div class="top">
+    <a class="kicker" href="/">Biddex</a>
+    <nav class="langs" aria-label="Language"><a href="/terms.html" hreflang="en" lang="en" aria-current="page">EN</a><a href="/ar/terms.html" hreflang="ar" lang="ar">ع</a></nav>
+  </div>
   <h1>Terms of Service</h1>
-  <p class="updated">Last updated: <span class="placeholder">[date]</span></p>
+  <p class="updated">Effective from 6 October 2026</p>
 
   <h2>1. Who we are</h2>
-  <p>Biddex ("Biddex," "we," "us," or "our") operates an online B2B procurement marketplace connecting buyers and suppliers in Bahrain, covering the process from request for quotation (RFQ) through quotes, local purchase orders (LPOs), delivery, invoicing, and payment.</p>
+
+  <p>Biddex is an online B2B procurement marketplace for Bahrain. It is operated by <strong>Astemir Makulov</strong>, an individual in the Kingdom of Bahrain (no company has been registered yet). “Biddex”, “we” and “us” mean the operator. Contact: <a href="mailto:support@biddex.online">support@biddex.online</a> or WhatsApp <a class="nowrap" href="https://wa.me/97333327347">+973 3332 7347</a>.</p>
 
   <h2>2. Acceptance of these terms</h2>
-  <p>By creating an account or using Biddex, you agree to these Terms of Service and to our <a href="privacy.html">Privacy Policy</a>. If you are registering on behalf of a company, you confirm that you are authorized to bind that company to these terms.</p>
+
+  <p>By creating an account or using Biddex you agree to these Terms of Service and to our Privacy Policy. If you register on behalf of a company, you confirm that you are authorised to bind that company to these terms.</p>
 
   <h2>3. Accounts and eligibility</h2>
-  <p>You must provide accurate information when registering a company account, including a valid company name and, where applicable, a commercial registration number. You are responsible for keeping your login credentials confidential and for all activity that occurs under your account.</p>
+
+  <p>You must give accurate information when you register a company account, including a valid company name and, where applicable, a commercial registration (CR) number. You are responsible for keeping your login credentials confidential and for everything done under your account.</p>
 
   <h2>4. Buyers and suppliers</h2>
-  <p>Biddex allows registered companies to post RFQs as buyers and to submit quotes as suppliers. Biddex is a marketplace and communication platform: it does not itself buy or sell the goods or services exchanged between users, and is not a party to the underlying commercial agreement formed between a buyer and a supplier.</p>
 
-  <h2>5. Fees</h2>
-  <p>Submitting a quote against an RFQ may incur a fee, calculated as a percentage of the RFQ budget, deducted from the supplier's wallet balance. Fee amounts and any changes to them will be shown in the product before you take the relevant action.</p>
+  <p>Registered companies can post requests for quotation (RFQs) as buyers and submit quotes as suppliers. A buyer compares quotes, awards one, and a purchase order (LPO) is issued; when the supplier accepts it, an order follows, with delivery, receipt, invoice and payment recorded on Biddex.</p>
 
-  <h2>6. Verification</h2>
-  <p>Biddex may request supporting documents (such as a commercial registration certificate) to verify a company's identity before enabling certain features. We may suspend or limit an account pending verification.</p>
+  <p>Biddex is a marketplace and communication platform. It does not buy or sell the goods or services exchanged between users and is not a party to the agreement formed between a buyer and a supplier.</p>
 
-  <h2>7. Acceptable use</h2>
+  <h2>5. Payments</h2>
+
+  <p>Money moves directly between the buyer and the supplier. Biddex does not hold, receive or transfer your money; it only records payments. The buyer reports a payment and the supplier confirms or rejects it. An invoice can be paid only after the buyer has confirmed that it received the goods, and is due after the payment term agreed in the quote.</p>
+
+  <h2>6. Fees</h2>
+
+  <p>At launch, submitting quotes is free. If a fee is introduced (a percentage of the request’s budget, taken from the supplier’s bid credits), it will be shown in the product before you take the action it applies to.</p>
+
+  <h2>7. Verification and who sees what</h2>
+
+  <p>Biddex may ask for supporting documents (such as a CR certificate) to verify a company before enabling features. Only verified companies can post requests and submit quotes. A buyer’s identity stays hidden from suppliers until it awards a quote; after that the two companies see each other’s details for that order. The Privacy Policy explains this in full.</p>
+
+  <h2>8. Reviews</h2>
+
+  <p>After a buyer confirms receipt it can rate the supplier. Ratings and the quality figures built from them are informational and carry no penalty or charge by themselves. Comments must be truthful and respectful; the Biddex team may hide a comment that breaks these terms.</p>
+
+  <h2>9. Invitation links and contact by WhatsApp</h2>
+
+  <p>The Biddex team may send a verified supplier a private link to quote on one request without signing in. The link is personal: do not forward it. Biddex contacts a supplier by phone or WhatsApp only after the supplier’s consent, which can be withdrawn at any time.</p>
+
+  <h2>10. Acceptable use</h2>
+
   <p>You agree not to:</p>
+
   <ul>
-    <li>Post false, misleading, or fraudulent RFQs, quotes, or company information;</li>
-    <li>Use the platform to circumvent agreed fees;</li>
-    <li>Attempt to gain unauthorized access to other accounts or to the platform's systems;</li>
-    <li>Use the platform for any unlawful purpose.</li>
+    <li>post false, misleading or fraudulent requests, quotes, reviews or company information;</li>
+    <li>use the platform to avoid agreed fees;</li>
+    <li>try to gain unauthorised access to other accounts or to our systems;</li>
+    <li>use the platform for any unlawful purpose.</li>
   </ul>
 
-  <h2>8. Account deactivation</h2>
-  <p>You may deactivate your own account at any time from your account settings. Deactivation disables your ability to sign in and marks your company as inactive; it does not delete your data outright — see our <a href="privacy.html">Privacy Policy</a> for how we handle data after deactivation. We may also suspend or deactivate an account that violates these terms.</p>
+  <h2>11. Suspension, deactivation and deletion</h2>
 
-  <h2>9. Disclaimers</h2>
-  <p>Biddex is provided "as is." We do not guarantee the accuracy of information posted by other users, the successful completion of any transaction, or that the platform will be uninterrupted or error-free.</p>
+  <p>We may suspend or deactivate an account that breaks these terms. A suspended company can still sign in and finish the orders already in progress, but cannot post requests, submit quotes or edit its catalog; a purchase order that has not been accepted yet is cancelled. An admin can suspend a company even while orders are in progress; those orders then carry on.</p>
 
-  <h2>10. Limitation of liability</h2>
-  <p>To the maximum extent permitted by Bahraini law, Biddex is not liable for indirect, incidental, or consequential damages arising from your use of the platform, or for disputes between buyers and suppliers.</p>
+  <p>You can delete your account yourself in the app (Settings → Privacy &amp; data → “Delete account”), or ask us (<a href="mailto:support@biddex.online">support@biddex.online</a>) to deactivate it. Both are refused while the company has open orders; a purchase order that has not been accepted yet is cancelled. What happens to your data is described in the Privacy Policy.</p>
 
-  <h2>11. Governing law</h2>
+  <h2>12. Disclaimers</h2>
+
+  <p>Biddex is provided “as is”. We do not guarantee the accuracy of information posted by other users, the successful completion of any transaction, or that the platform will be uninterrupted or error-free.</p>
+
+  <h2>13. Limitation of liability</h2>
+
+  <p>To the maximum extent permitted by Bahraini law, Biddex is not liable for indirect, incidental or consequential damages arising from your use of the platform, or for disputes between buyers and suppliers.</p>
+
+  <h2>14. Governing law</h2>
+
   <p>These terms are governed by the laws of the Kingdom of Bahrain.</p>
 
-  <h2>12. Changes to these terms</h2>
-  <p>We may update these terms from time to time. Material changes will be indicated by an updated "Last updated" date above.</p>
+  <h2>15. Changes to these terms</h2>
 
-  <div class="contact">
-    Questions about these terms? Contact us at <span class="placeholder">legal@biddex.example</span>.
-  </div>
+  <p>We may update these terms. The date at the top shows when the current version took effect. If you keep using Biddex after a change, you accept the new version.</p>
+
+  <h2>16. Language</h2>
+
+  <p>These terms are published in English and Arabic. If they differ, the English version prevails.</p>
+
+  <p class="contact">Questions about these terms: <a href="mailto:support@biddex.online">support@biddex.online</a> · WhatsApp <a class="nowrap" href="https://wa.me/97333327347">+973 3332 7347</a></p>
+  <p class="other"><a href="/privacy.html">Privacy Policy</a></p>
 </div>
 </body>
 </html>
