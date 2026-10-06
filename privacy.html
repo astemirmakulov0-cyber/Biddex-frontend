@@ -179,7 +179,7 @@
   <div class="tablewrap"><table>
     <tr><th>Provider</th><th>What it does for us</th><th>Data involved</th><th>Where</th></tr>
     <tr><td>Neon</td><td>Database</td><td>All account, company and deal data, notification texts</td><td>USA — AWS US East 2 (Ohio)</td></tr>
-    <tr><td>Railway</td><td>Application server; private file storage; scheduled backup of the files</td><td>Everything the server handles; uploaded files (verification documents, order documents, quote attachments, product and request photos); request logs</td><td>USA — servers and main file storage: US East (Virginia); backup copy of the files: US West (California)</td></tr>
+    <tr><td>Railway</td><td>Application server; private file storage; scheduled backups of the files and of the database</td><td>Everything the server handles; uploaded files (verification documents, order documents, quote attachments, product and request photos); a daily copy of the whole database; request logs</td><td>USA — servers and main file storage: US East (Virginia); backup copies of the files and of the database: US West (California)</td></tr>
     <tr><td>Resend</td><td>Sending e-mail</td><td>Recipient e-mail address and the text of the e-mail (for example request titles, amounts, the start of a chat message, verification and password-reset links)</td><td>Japan — Tokyo (ap-northeast-1)</td></tr>
     <tr><td>Sentry</td><td>Error monitoring</td><td>Technical details of errors; a report can include parts of the request that failed (for example a company name or a text you entered)</td><td>European Union</td></tr>
     <tr><td>GitHub Pages</td><td>Hosting the websites biddex.online and app.biddex.online</td><td>Your IP address and browser details when you open a page</td><td>Global network of GitHub</td></tr>
@@ -226,8 +226,8 @@
     <li><strong>After you delete your account:</strong> we erase your name, your e-mail address (replaced by a technical address), phone, address, our verification notes, the verification documents and catalog photos (deleted from file storage), your notifications, your stock list, your phone and consent records, the text of reviews you wrote or answered, and your invitation links stop working.</li>
     <li><strong>What stays after deletion:</strong> the company name, CR number and country, and the records shared with the other company — purchase orders, orders, delivery details, invoices, payments, chat messages, documents added to an order, and review ratings (without your comments). They stay for as long as the other company needs them and the law requires; there is no automatic clean-up yet.</li>
     <li><strong>Deactivated accounts</strong> keep their data until deletion is requested.</li>
-    <li><strong>File backup:</strong> a second copy of uploaded files is kept in separate storage; a file that changes or is deleted stays in that backup for 30 more days.</li>
-    <li><strong>Database backups and logs:</strong> kept according to the settings of the providers (Neon, Railway, Sentry).</li>
+    <li><strong>Backups:</strong> a second copy of uploaded files and a daily copy of the whole database are kept in separate private storage (US West, California). A file that changes or is deleted stays in the backup for 30 more days; each database copy is kept for 30 days. We do not encrypt these copies separately. Data you erase can therefore remain in these copies for up to 30 days.</li>
+    <li><strong>The providers’ own database backups and logs:</strong> kept according to the settings of the providers (Neon, Railway, Sentry).</li>
     <li><strong>Short-lived data:</strong> an e-mail verification link works for 24 hours, a password-reset link for one hour, an invitation link for at most 14 days.</li>
   </ul>
 
