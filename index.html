@@ -1962,7 +1962,9 @@ function logout(){
   setState({ token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
+let lastPollAt = Date.now(); // when the data was last refreshed (see the polling block at the end of the script)
 async function refreshAll(){
+  lastPollAt = Date.now();
   await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications(), refreshOnboarding(), refreshRatings() ]);
 }
 
@@ -6164,9 +6166,17 @@ function tickCountdowns(){
 }
 setInterval(tickCountdowns, 1000);
 
-// Keep RFQs / orders / notifications / chat fresh without requiring a relogin
-setInterval(() => {
-  if (!state.token) return;
+// Keep RFQs / orders / notifications / chat fresh without requiring a relogin.
+// A visible tab polls every 30 s; a hidden one only every 5 minutes (it still notices a new notification or an
+// ended session, but a pile of background tabs no longer eats the API's per-user request budget). Coming back
+// to the tab refreshes at once: a light poll after 30 s away, everything after 5 minutes.
+/* poll-plan:start */
+const POLL_VISIBLE_MS = 30000, POLL_HIDDEN_MS = 300000, POLL_SLACK_MS = 1000;
+function pollDue(now, last, hidden){ return now - last >= (hidden ? POLL_HIDDEN_MS : POLL_VISIBLE_MS) - POLL_SLACK_MS; }
+function returnAction(now, last){ const away = now - last; return away >= POLL_HIDDEN_MS ? 'full' : away >= POLL_VISIBLE_MS ? 'poll' : 'none'; }
+/* poll-plan:end */
+function pollNow(){
+  lastPollAt = Date.now();
   if (state.view === 'buyer' || state.view === 'supplier') {
     refreshRfqs();
     refreshOrders();
@@ -6177,7 +6187,11 @@ setInterval(() => {
   } else if (state.view === 'admin') {
     refreshAdmin();
   }
-}, 30000);
+}
+setInterval(() => {
+  if (!state.token) return;
+  if (pollDue(Date.now(), lastPollAt, document.hidden)) pollNow();
+}, POLL_VISIBLE_MS);
 
 checkForNewVersion();
 setInterval(checkForNewVersion, 5 * 60 * 1000);
@@ -6185,8 +6199,10 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !state.token) return;
-  if (state.view === 'buyer' || state.view === 'supplier') refreshAll();
-  else if (state.view === 'admin') refreshAdmin();
+  const action = returnAction(Date.now(), lastPollAt);
+  if (action === 'none') return;
+  if (action === 'full' && (state.view === 'buyer' || state.view === 'supplier')) refreshAll();
+  else pollNow();
 });
 
 // Tapping/clicking outside an open header dropdown (notifications, the mobile "more" menu) closes it.
