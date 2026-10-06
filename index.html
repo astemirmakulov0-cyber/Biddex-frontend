@@ -1688,10 +1688,10 @@ let state = {
 
   showResetModal: null, resetBusy: false, resetResult: null,
 
-  showDeleteModal: null, deleteCompanyName: '', deleteBusy: false,
+  showDeleteModal: null, deleteCompanyName: '', deleteBusy: false, deleteBlockers: null,
 
   // admin: deactivate/reactivate a company (reversible suspension, reason required to deactivate)
-  showDeactivateModal: null, deactivateCompanyName: '', deactivateReason: '', deactivateBusy: false,
+  showDeactivateModal: null, deactivateCompanyName: '', deactivateReason: '', deactivateBusy: false, deactivateBlockers: null,
   reactivateBusyId: null,
 
   showWalletModal: false,
@@ -2864,8 +2864,14 @@ async function confirmResetPassword(){
   } catch(e) { setState({ resetBusy:false }); showToast(e.message); }
 }
 
-function openDeleteModal(companyId, companyName){ setState({ showDeleteModal: companyId, deleteCompanyName: companyName }); }
-function closeDeleteModal(){ setState({ showDeleteModal: null, deleteCompanyName: '' }); }
+// Orders in the way of closing a company (the server answers 409 with { blockers }): shown inside the dialog
+function openOrderBlockersHtml(blockers){
+  if (!blockers || !blockers.length) return '';
+  return '<div class="mt-4 rounded-lg border p-3 text-[12px]" style="border-color:var(--bad); background:var(--bad-soft); color:var(--tx);"><div class="font-bold">' + blockers.length + ' open order(s) in the way:</div><ul class="mt-1.5 list-disc pl-4">' +
+    blockers.map(b => '<li>' + esc(b.rfqTitle) + ' — ' + esc(String(b.status).toLowerCase().replace('_', ' ')) + ', ' + (b.role === 'buyer' ? 'supplier' : 'buyer') + ': ' + esc(b.counterparty && b.counterparty.name) + '</li>').join('') + '</ul></div>';
+}
+function openDeleteModal(companyId, companyName){ setState({ showDeleteModal: companyId, deleteCompanyName: companyName, deleteBlockers: null }); }
+function closeDeleteModal(){ setState({ showDeleteModal: null, deleteCompanyName: '', deleteBlockers: null }); }
 
 async function confirmDeleteCompany(){
   setState({ deleteBusy:true });
@@ -2874,22 +2880,30 @@ async function confirmDeleteCompany(){
     setState({ deleteBusy:false, showDeleteModal:null, deleteCompanyName:'' });
     showToast(data && data.mode === 'anonymized' ? 'Company deactivated and anonymized; shared orders and invoices were kept.' : 'Company deleted.');
     refreshAdminCompanies();
-  } catch(e) { setState({ deleteBusy:false }); showToast(e.message); }
+  } catch(e) {
+    // 409: orders still in flight — listed in the dialog, nothing was changed
+    if (e.status === 409 && e.data && e.data.blockers) setState({ deleteBusy:false, deleteBlockers: e.data.blockers });
+    else { setState({ deleteBusy:false }); showToast(e.message); }
+  }
 }
 
-function openDeactivateModal(companyId, companyName){ setState({ showDeactivateModal: companyId, deactivateCompanyName: companyName, deactivateReason: '' }); }
-function closeDeactivateModal(){ setState({ showDeactivateModal: null, deactivateCompanyName: '', deactivateReason: '' }); }
+function openDeactivateModal(companyId, companyName){ setState({ showDeactivateModal: companyId, deactivateCompanyName: companyName, deactivateReason: '', deactivateBlockers: null }); }
+function closeDeactivateModal(){ setState({ showDeactivateModal: null, deactivateCompanyName: '', deactivateReason: '', deactivateBlockers: null }); }
 
-async function confirmDeactivateCompany(){
+async function confirmDeactivateCompany(force){
   const reason = state.deactivateReason.trim();
   if (!reason) { showToast('A reason is required.'); return; }
   setState({ deactivateBusy:true });
   try {
-    await api('/api/admin/companies/' + state.showDeactivateModal + '/deactivate', { method:'POST', body: JSON.stringify({ reason }) });
-    setState({ deactivateBusy:false, showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'' });
+    await api('/api/admin/companies/' + state.showDeactivateModal + '/deactivate', { method:'POST', body: JSON.stringify(force === true ? { reason, force: true } : { reason }) });
+    setState({ deactivateBusy:false, showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', deactivateBlockers: null });
     showToast('Company deactivated. Its open RFQs were closed and pending quotes withdrawn.');
     refreshAdminCompanies();
-  } catch(e) { setState({ deactivateBusy:false }); showToast(e.message); }
+  } catch(e) {
+    // 409: orders still in flight — listed in the dialog; the admin may deactivate anyway (they carry on as they are)
+    if (e.status === 409 && e.data && e.data.blockers) setState({ deactivateBusy:false, deactivateBlockers: e.data.blockers });
+    else { setState({ deactivateBusy:false }); showToast(e.message); }
+  }
 }
 
 async function reactivateCompany(companyId){
@@ -5323,6 +5337,8 @@ function renderDeleteModal(){
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--bad);">Delete company</h3>' +
       '<button onclick="closeDeleteModal()" class="text-[13px] font-semibold" style="color:var(--tx4);">Close</button></div>' +
       '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Are you sure you want to permanently delete <b style="color:var(--tx);">' + esc(state.deleteCompanyName) + '</b>? Its open RFQs are cancelled' + (bidFeePercent() > 0 ? ' (bid fees refunded to suppliers)' : '') + ' and its data is removed. If it has purchase orders with other companies, those orders, invoices and payments are kept for the counterparties and the company is anonymized instead. This cannot be undone.</p>' +
+      openOrderBlockersHtml(state.deleteBlockers) +
+      (state.deleteBlockers ? '<p class="mt-2 text-[12px]" style="color:var(--tx3);">A company cannot be deleted while it has open orders. Close or cancel them first.</p>' : '') +
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="closeDeleteModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
         '<button onclick="confirmDeleteCompany()" ' + (state.deleteBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deleteBusy?'0.6':'1') + ';">' + (state.deleteBusy ? 'Deleting…' : 'Yes, delete') + '</button>' +
@@ -5339,9 +5355,11 @@ function renderDeactivateModal(){
       '<p class="mt-4 text-[13px]" style="color:var(--tx3);">Deactivate <b style="color:var(--tx);">' + esc(state.deactivateCompanyName) + '</b>? It can still sign in and manage orders already in progress, but cannot post/edit RFQs, submit quotes or edit its catalog until reactivated. Its open RFQs are closed (bid fees refunded) and its pending quotes are withdrawn. This is reversible.</p>' +
       '<label class="mt-4 flex flex-col gap-1.5 text-[12px] font-semibold" style="color:var(--tx3);">Reason (shown to the company, required)' +
         '<textarea data-deactivate="reason" maxlength="500" rows="3" class="rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="e.g. Repeated late deliveries under review">' + esc(state.deactivateReason) + '</textarea></label>' +
+      openOrderBlockersHtml(state.deactivateBlockers) +
+      (state.deactivateBlockers ? '<p class="mt-2 text-[12px]" style="color:var(--tx3);">Deactivating anyway keeps these orders running as they are; only purchase orders not yet accepted are cancelled.</p>' : '') +
       '<div class="mt-5 flex gap-2">' +
         '<button onclick="closeDeactivateModal()" class="flex-1 rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">Cancel</button>' +
-        '<button onclick="confirmDeactivateCompany()" ' + (state.deactivateBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deactivateBusy?'0.6':'1') + ';">' + (state.deactivateBusy ? 'Deactivating…' : 'Deactivate') + '</button>' +
+        '<button onclick="confirmDeactivateCompany(' + (state.deactivateBlockers ? 'true' : '') + ')" ' + (state.deactivateBusy?'disabled':'') + ' class="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (state.deactivateBusy?'0.6':'1') + ';">' + (state.deactivateBusy ? 'Deactivating…' : (state.deactivateBlockers ? 'Deactivate anyway' : 'Deactivate')) + '</button>' +
       '</div>' +
     '</div></div>';
 }
