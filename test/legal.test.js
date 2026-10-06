@@ -26,7 +26,7 @@ check('terms: the same number of sections in English and Arabic', h2(read('terms
 check('privacy names the processors and their regions (English)', ['Neon', 'Railway', 'Resend', 'Sentry', 'Ohio', 'Virginia', 'California', 'Tokyo', 'European Union'].every((x) => en.includes(x)));
 check('privacy names the processors and their regions (Arabic)', ['Neon', 'Railway', 'Resend', 'Sentry', 'أوهايو', 'فرجينيا', 'كاليفورنيا', 'طوكيو', 'الاتحاد الأوروبي'].every((x) => ar.includes(x)));
 check('privacy: transfers outside Bahrain, no separate agreements, the 30-day backup', /Transfers outside Bahrain/.test(en) && /not signed separate data-processing agreements/.test(en) && /30 more days/.test(en) && /30 يومًا/.test(ar));
-check('privacy: daily database copies, 30 days, US West, not separately encrypted (English and Arabic)', /daily copy of the whole database/.test(en) && /each database copy is kept for 30 days/.test(en) && /do not encrypt these copies/.test(en) && /US West[ (,]+California/.test(en) && /نسخة يومية من قاعدة البيانات كاملة/.test(ar) && /ولا نشفّر هذه النسخ/.test(ar));
+check('privacy: daily database copies, 30 days, US West, not separately encrypted (English and Arabic)', /daily copy of the Biddex database/.test(en) && /each database copy is kept for 30 days/.test(en) && /do not encrypt these copies/.test(en) && /US West[ (,]+California/.test(en) && /نسخة يومية من قاعدة بيانات Biddex/.test(ar) && /ولا نشفّر هذه النسخ/.test(ar));
 check('privacy: rights point at the real buttons', /Download my data/.test(en) && /Delete account/.test(en) && /تنزيل بياناتي/.test(ar) && /حذف الحساب/.test(ar));
 check('both languages say the English version prevails', /English version prevails/.test(en) && /النسخة الإنجليزية/.test(ar));
 
