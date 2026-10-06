@@ -49,9 +49,13 @@
     'The quote total (unit price × quantity) is too large': 'totalTooLarge',
     'deliveryTimeDays must be a whole number between 0 and 365': 'deliveryInvalid',
     'paymentTermsDays must be a whole number between 0 and 120': 'termsInvalid',
-    'notes must be text of at most 1000 characters': 'notesInvalid'
+    'notes must be text of at most 1000 characters': 'notesInvalid',
+    'Request body is too large': 'bodyTooLarge',
+    'Invalid JSON body': 'badJson'
   };
   var AR = {
+    bodyTooLarge: 'حجم الطلب كبير جدًا',
+    badJson: 'تعذّرت قراءة الطلب',
     invalidCredentials: 'بيانات الدخول غير صحيحة',
     verifyEmailFirst: 'يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول',
     accountDeactivated: 'تم تعطيل هذا الحساب',
@@ -93,6 +97,28 @@
     termsInvalid: 'يجب أن تكون شروط الدفع عددًا صحيحًا بين 0 و120',
     notesInvalid: 'يجب ألا تتجاوز الملاحظات 1000 حرف'
   };
+  // Input checks (src/utils/validate.js, money.js): the English texts have a few fixed shapes, so they are translated by
+  // shape; the field name is shown in Arabic when it is known here, as it is otherwise. Exact texts in KEYS win.
+  var FIELDS = {
+    title: 'العنوان', description: 'الوصف', quantity: 'الكمية', unit: 'الوحدة', specifications: 'المواصفات', brand: 'العلامة التجارية',
+    companyName: 'اسم الشركة', name: 'الاسم', country: 'الدولة', address: 'عنوان الشركة', phone: 'الهاتف', registrationNumber: 'رقم السجل التجاري',
+    notes: 'الملاحظات', terms: 'الشروط', trackingInfo: 'معلومات التتبع', body: 'الرسالة', category: 'الفئة', reference: 'المرجع',
+    password: 'كلمة المرور', currentPassword: 'كلمة المرور الحالية', newPassword: 'كلمة المرور الجديدة', reason: 'السبب', comment: 'التعليق', q: 'نص البحث',
+    publish: 'النشر', isActive: 'الحالة', exactBrandOnly: 'العلامة التجارية بالضبط', productId: 'المنتج', duplicateFromId: 'المنتج', companyId: 'الشركة',
+    deliveryTimeDays: 'مدة التسليم', paymentTermsDays: 'مهلة الدفع', price: 'السعر', unitPrice: 'سعر الوحدة', budget: 'الميزانية', amount: 'المبلغ'
+  };
+  var field = function (f) { return '«' + (FIELDS[f] || f) + '»'; };
+  var SHAPES = [
+    [/^(\w+) must be at most (\d+) characters$/, function (m) { return 'يجب ألا يزيد الحقل ' + field(m[1]) + ' عن ' + m[2] + ' حرفًا'; }],
+    [/^(\w+) must be text$/, function (m) { return 'يجب أن يكون الحقل ' + field(m[1]) + ' نصًا'; }],
+    [/^(\w+) is required$/, function (m) { return 'الحقل ' + field(m[1]) + ' مطلوب'; }],
+    [/^(\w+) must be a whole number between (\d+) and (\d+)$/, function (m) { return 'يجب أن يكون الحقل ' + field(m[1]) + ' عددًا صحيحًا بين ' + m[2] + ' و' + m[3]; }],
+    [/^(\w+) must be true or false$/, function (m) { return 'يجب أن تكون قيمة الحقل ' + field(m[1]) + ' نعم أو لا'; }],
+    [/^(\w+) must be a positive number$/, function (m) { return 'يجب أن يكون الحقل ' + field(m[1]) + ' رقمًا أكبر من صفر'; }],
+    [/^(\w+) can have at most 3 decimal places$/, function (m) { return 'يمكن أن يحتوي الحقل ' + field(m[1]) + ' على 3 خانات عشرية كحد أقصى'; }],
+    [/^(\w+) is too large$/, function (m) { return 'قيمة الحقل ' + field(m[1]) + ' كبيرة جدًا'; }]
+  ];
+
   var SUSPENDED_PREFIX = 'Account suspended: ';
 
   // English (or an unknown language): the server text unchanged. Arabic: the translation when the text is known.
@@ -101,6 +127,8 @@
     var key = KEYS[text.trim()];
     if (key) return AR[key];
     if (text.indexOf(SUSPENDED_PREFIX) === 0) return AR.accountSuspended + ': ' + text.slice(SUSPENDED_PREFIX.length); // the reason stays as written
+    var trimmed = text.trim();
+    for (var i = 0; i < SHAPES.length; i++) { var m = SHAPES[i][0].exec(trimmed); if (m) return SHAPES[i][1](m); }
     return text;
   }
 
