@@ -1,6 +1,7 @@
 # CI of the frontend: the tests are plain Node scripts without dependencies (test/*.test.js): the polling schedule, the
 # admin dialogs, the legal pages, the Arabic wording of server errors, and the syntax of every inline script.
-# No secrets, no network: nothing is built or published here (GitHub Pages publishes the repository by itself).
+# No secrets, no network. On a push to main the site is published to GitHub Pages by the `deploy` job, and only when the tests
+# are green (Settings → Pages → Source must be "GitHub Actions"). Only the files listed in tools/build-site.js are published.
 name: CI
 
 on:
@@ -32,3 +33,34 @@ jobs:
             node "$f" || status=1
           done
           exit $status
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # a separate group: a newer deploy waits for the running one instead of cancelling it half way
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build the site folder (only the site files, CNAME included)
+        run: node tools/build-site.js _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

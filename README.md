@@ -1,6 +1,6 @@
 # Biddex frontend
 
-The whole cabinet of [app.biddex.online](https://app.biddex.online) (login, buyer, supplier and admin screens): plain HTML, CSS and JavaScript, no build step. `bid.html`, `verify.html`, `reset-password.html`, `privacy.html` and `terms.html` are separate pages. GitHub Pages publishes the `main` branch as it is.
+The whole cabinet of [app.biddex.online](https://app.biddex.online) (login, buyer, supplier and admin screens): plain HTML, CSS and JavaScript, no build step. `bid.html`, `verify.html`, `reset-password.html`, `privacy.html` and `terms.html` are separate pages. On every push to `main` the CI workflow (`.github/workflows/ci.yml`) runs the tests and only if they are green the `deploy` job publishes the site to GitHub Pages (Settings → Pages → Source: GitHub Actions). Only the files listed in `tools/build-site.js` are published (`node tools/build-site.js` builds the same folder `_site/` locally).
 
 More about the project (architecture, API, process): `docs/PROJECT_CONTEXT.md` in the backend repository (`b2b-procurement-backend`).
 
