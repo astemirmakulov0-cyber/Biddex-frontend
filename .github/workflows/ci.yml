@@ -1,0 +1,34 @@
+# CI of the frontend: the tests are plain Node scripts without dependencies (test/*.test.js): the polling schedule, the
+# admin dialogs, the legal pages, the Arabic wording of server errors, and the syntax of every inline script.
+# No secrets, no network: nothing is built or published here (GitHub Pages publishes the repository by itself).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run test/*.test.js
+        run: |
+          status=0
+          for f in test/*.test.js; do
+            echo "=== $f"
+            node "$f" || status=1
+          done
+          exit $status
