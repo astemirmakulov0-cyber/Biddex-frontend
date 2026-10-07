@@ -33,6 +33,9 @@ jobs:
             node "$f" || status=1
           done
           exit $status
+      # the same build the deploy job runs: a missing file or a broken link shows up in the pull request, not after the merge
+      - name: Build the site folder (dry run of the deploy)
+        run: node tools/build-site.js _site
 
   deploy:
     name: Deploy to GitHub Pages
