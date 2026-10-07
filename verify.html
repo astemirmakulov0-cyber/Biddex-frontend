@@ -48,6 +48,7 @@
   <p><a id="homeLink" href="index.html#/login"></a></p>
 </div>
 
+<script src="config.js?v=1"></script>
 <script src="server-errors.js?v=3"></script>
 <script>
 const I18N = {
@@ -95,7 +96,7 @@ document.getElementById('langBtn').addEventListener('click', () => {
 
 const params = new URLSearchParams(window.location.search);
 const token = params.get('token');
-const API_URL = 'https://b2b-procurement-backend-production.up.railway.app';
+const API_URL = window.BIDDEX_API; // config.js: production API on the real domains, the local backend on localhost
 
 render();
 if (!token) {

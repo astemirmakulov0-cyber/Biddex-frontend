@@ -76,9 +76,10 @@ var BID_TOKEN = null;
   <div id="view"></div>
 </div>
 
+<script src="config.js?v=1"></script>
 <script src="server-errors.js?v=3"></script>
 <script>
-const API_URL = 'https://b2b-procurement-backend-production.up.railway.app';
+const API_URL = window.BIDDEX_API; // config.js: production API on the real domains, the local backend on localhost
 const APP_URL = 'https://app.biddex.online/';
 
 const I18N = {
