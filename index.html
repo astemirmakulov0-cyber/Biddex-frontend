@@ -1655,6 +1655,9 @@ let state = {
   // admin: All orders tab
   adminOrdersAll: [], adminOrdersAllTotal: 0, adminOrdersAllPage: 1, adminOrdersAllLoading: false,
   adminOrdersAllFilters: { status:'', buyerCompanyId:'', supplierCompanyId:'', dateFrom:'', dateTo:'' },
+  // admin: Audit log tab (what administrators did; read only)
+  adminAuditItems: [], adminAuditTotal: 0, adminAuditPage: 1, adminAuditLoading: false, adminAuditActions: [], adminAuditCompanies: [],
+  adminAuditFilters: { action:'', companyId:'', dateFrom:'', dateTo:'' },
   // admin: analytics dashboard
   adminAnalytics: null, adminAnalyticsLoading: false,
   // admin: read-only order card opened from the "All orders" list
@@ -1962,7 +1965,7 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 let lastPollAt = Date.now(); // when the data was last refreshed (see the polling block at the end of the script)
@@ -2091,6 +2094,7 @@ function setAdminTab(tab){
   else if (tab === 'rfqs') refreshAdminRfqs();
   else if (tab === 'orders') refreshAdminOrdersAll();
   else if (tab === 'reviews') refreshAdminReviews();
+  else if (tab === 'audit') refreshAdminAudit();
   else if (tab === 'analytics') refreshAdminAnalytics();
 }
 
@@ -2432,6 +2436,90 @@ async function refreshAdminOrdersAll(){
 }
 function setAdminOrdersAllFilter(patch){ setState({ adminOrdersAllFilters: { ...state.adminOrdersAllFilters, ...patch }, adminOrdersAllPage: 1 }); refreshAdminOrdersAll(); }
 function setAdminOrdersAllPage(page){ setState({ adminOrdersAllPage: page }); refreshAdminOrdersAll(); }
+
+// ---------- Admin: audit log ----------
+// What administrators did, newest first. The server only reads it: rows can be neither changed nor deleted.
+const AUDIT_PAGE_SIZE = 50;
+const AUDIT_ACTION_LABELS = {
+  COMPANY_VERIFICATION_SET: 'Verification status set', COMPANY_SUSPENDED: 'Company suspended', COMPANY_REACTIVATED: 'Company reactivated', COMPANY_DELETED: 'Company deleted',
+  COMPANY_PASSWORD_RESET: 'Password reset', WALLET_TOPUP: 'Credits added', DISPUTE_RESOLVED: 'Dispute resolved', REVIEW_COMMENT_HIDDEN: 'Review comment hidden',
+  REVIEW_COMMENT_SHOWN: 'Review comment shown', VERIFICATION_DOCUMENT_VIEWED: 'Verification document viewed', BID_LINK_CREATED: 'Bid link created', BID_LINK_REISSUED: 'Bid link reissued',
+  BID_LINK_REVOKED: 'Bid link revoked', SUPPLIER_CONTACT_RECORDED: 'Supplier contact recorded', SUPPLIER_CONTACT_WITHDRAWN: 'Supplier consent withdrawn', SUPPLIER_CONTACT_VIEWED: 'Supplier contact viewed',
+};
+async function refreshAdminAudit(){
+  if (!state.token || state.view !== 'admin') return;
+  const f = state.adminAuditFilters;
+  const qs = new URLSearchParams();
+  if (f.action) qs.set('action', f.action);
+  if (f.companyId) qs.set('companyId', f.companyId);
+  if (f.dateFrom) qs.set('dateFrom', f.dateFrom);
+  if (f.dateTo) qs.set('dateTo', f.dateTo);
+  qs.set('page', state.adminAuditPage);
+  qs.set('pageSize', AUDIT_PAGE_SIZE);
+  setState({ adminAuditLoading: true });
+  try {
+    const data = await api('/api/admin/audit-log?' + qs.toString());
+    setState({ adminAuditItems: data.items, adminAuditTotal: data.total, adminAuditActions: data.actions, adminAuditCompanies: data.companies, adminAuditLoading: false });
+    syncOk('adminAudit');
+  } catch(e) { setState({ adminAuditLoading: false }); syncFailed('adminAudit', e); }
+}
+function setAdminAuditFilter(patch){ setState({ adminAuditFilters: { ...state.adminAuditFilters, ...patch }, adminAuditPage: 1 }); refreshAdminAudit(); }
+function setAdminAuditPage(page){ setState({ adminAuditPage: page }); refreshAdminAudit(); }
+// details as short "key: value" pairs; the company name and the admin are columns of their own
+function auditDetailsText(d){
+  const skip = { companyName: 1, adminEmail: 1, otherCompanyId: 1, otherCompanyName: 1 };
+  const parts = Object.keys(d || {}).filter(k => !skip[k] && d[k] !== null && d[k] !== '').map(k => {
+    let v = d[k];
+    if (typeof v === 'object') v = JSON.stringify(v);
+    v = String(v);
+    return k + ': ' + (v.length > 160 ? v.slice(0, 160) + '…' : v);
+  });
+  if (d && d.otherCompanyName) parts.unshift('with ' + d.otherCompanyName);
+  return parts.join(' · ');
+}
+function renderAdminAudit(){
+  const f = state.adminAuditFilters;
+  const list = state.adminAuditItems || [];
+  const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  const actions = state.adminAuditActions && state.adminAuditActions.length ? state.adminAuditActions : Object.keys(AUDIT_ACTION_LABELS);
+  const label = () => 'flex flex-col gap-1 text-[11px] font-semibold';
+  return '<div class="eyebrow mb-1.5">AUDIT LOG</div>' +
+  '<div class="mb-1 flex items-center justify-between gap-3"><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Audit log</h1>' +
+    actionBtn('Refresh', 'refreshAdminAudit()', false) + '</div>' +
+  '<p class="mb-5 text-[12px]" style="color:var(--tx3);">Everything administrators do is recorded here. Entries cannot be changed or deleted. Times are UTC.</p>' +
+  '<div class="mb-5 flex flex-wrap items-end gap-2">' +
+    '<label class="' + label() + '" style="color:var(--tx4);">Action' +
+      '<select onchange="setAdminAuditFilter({action:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '">' +
+        '<option value="">All actions</option>' + actions.map(a => '<option value="' + esc(a) + '"' + (f.action === a ? ' selected' : '') + '>' + esc(AUDIT_ACTION_LABELS[a] || a) + '</option>').join('') +
+      '</select></label>' +
+    '<label class="' + label() + '" style="color:var(--tx4);">Company' +
+      '<select onchange="setAdminAuditFilter({companyId:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + ' max-width:240px;">' +
+        '<option value="">All companies</option>' + (state.adminAuditCompanies || []).map(c => '<option value="' + esc(c.id) + '"' + (f.companyId === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>').join('') +
+      '</select></label>' +
+    '<label class="' + label() + '" style="color:var(--tx4);">From' +
+      '<input type="date" value="' + esc(f.dateFrom) + '" onchange="setAdminAuditFilter({dateFrom:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+    '<label class="' + label() + '" style="color:var(--tx4);">To' +
+      '<input type="date" value="' + esc(f.dateTo) + '" onchange="setAdminAuditFilter({dateTo:this.value})" class="rounded-lg border px-3 py-1.5 text-[12.5px] outline-none" style="' + inputStyle + '" /></label>' +
+  '</div>' +
+  (state.adminAuditLoading && !list.length ? '<div class="py-8 text-center text-[12px]" style="color:var(--tx4);">Loading…</div>' :
+   list.length === 0 ? emptyState('No entries', 'Nothing matches these filters.') :
+   '<div class="overflow-x-auto rounded-xl border" style="border-color:var(--bd); background:var(--panel);">' +
+    '<table class="w-full text-left text-[12px]" style="color:var(--tx); border-collapse:collapse;">' +
+      '<thead><tr style="color:var(--tx4);">' + ['When (UTC)', 'Admin', 'Action', 'Company', 'Target', 'Details'].map(h => '<th class="px-3 py-2 text-[11px] font-semibold whitespace-nowrap" style="border-bottom:1px solid var(--bd);">' + h + '</th>').join('') + '</tr></thead>' +
+      '<tbody>' + list.map(r => {
+        const when = String(r.createdAt).replace('T', ' ').slice(0, 19);
+        const cell = 'class="px-3 py-2 align-top" style="border-bottom:1px solid var(--bd);"';
+        return '<tr>' +
+          '<td ' + cell.replace('class="', 'class="whitespace-nowrap mono ') + '>' + esc(when) + '</td>' +
+          '<td ' + cell + '>' + esc(r.adminEmail || r.adminId) + '</td>' +
+          '<td ' + cell.replace('class="', 'class="font-semibold ') + '>' + esc(AUDIT_ACTION_LABELS[r.action] || r.action) + '</td>' +
+          '<td ' + cell + '>' + esc(r.companyName || '—') + '</td>' +
+          '<td ' + cell + '><span style="color:var(--tx3);">' + esc(r.targetType) + '</span>' + (r.targetId ? ' <span class="bx-id" title="' + esc(r.targetId) + '">' + esc(String(r.targetId).slice(0, 8)) + '</span>' : '') + '</td>' +
+          '<td class="px-3 py-2 align-top break-words" style="min-width:220px; max-width:420px; border-bottom:1px solid var(--bd); color:var(--tx3);">' + esc(auditDetailsText(r.details)) + '</td>' +
+        '</tr>';
+      }).join('') + '</tbody></table></div>') +
+  pagerHtml(state.adminAuditPage, AUDIT_PAGE_SIZE, state.adminAuditTotal, 'setAdminAuditPage');
+}
 
 // ---------- Admin: analytics ----------
 
@@ -5020,6 +5108,7 @@ function renderAdmin(){
     '<button onclick="setAdminTab(\'rfqs\')" class="chip' + (state.adminTab === 'rfqs' ? ' active' : '') + '">All RFQs</button>' +
     '<button onclick="setAdminTab(\'orders\')" class="chip' + (state.adminTab === 'orders' ? ' active' : '') + '">All orders</button>' +
     '<button onclick="setAdminTab(\'reviews\')" class="chip' + (state.adminTab === 'reviews' ? ' active' : '') + '">Reviews</button>' +
+    '<button onclick="setAdminTab(\'audit\')" class="chip' + (state.adminTab === 'audit' ? ' active' : '') + '">Audit log</button>' +
     '<button onclick="setAdminTab(\'analytics\')" class="chip' + (state.adminTab === 'analytics' ? ' active' : '') + '">Analytics</button>' +
   '</div>';
 
@@ -5028,6 +5117,7 @@ function renderAdmin(){
     state.adminTab === 'rfqs' ? renderAdminRfqs() :
     state.adminTab === 'orders' ? renderAdminOrdersAll() :
     state.adminTab === 'reviews' ? renderAdminReviews() :
+    state.adminTab === 'audit' ? renderAdminAudit() :
     state.adminTab === 'analytics' ? renderAdminAnalyticsPage() :
     '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
