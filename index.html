@@ -2445,6 +2445,7 @@ const AUDIT_ACTION_LABELS = {
   COMPANY_PASSWORD_RESET: 'Password reset', WALLET_TOPUP: 'Credits added', DISPUTE_RESOLVED: 'Dispute resolved', REVIEW_COMMENT_HIDDEN: 'Review comment hidden',
   REVIEW_COMMENT_SHOWN: 'Review comment shown', VERIFICATION_DOCUMENT_VIEWED: 'Verification document viewed', BID_LINK_CREATED: 'Bid link created', BID_LINK_REISSUED: 'Bid link reissued',
   BID_LINK_REVOKED: 'Bid link revoked', SUPPLIER_CONTACT_RECORDED: 'Supplier contact recorded', SUPPLIER_CONTACT_WITHDRAWN: 'Supplier consent withdrawn', SUPPLIER_CONTACT_VIEWED: 'Supplier contact viewed',
+  ORDER_CHAT_VIEWED: 'Order chat viewed', ORDER_DOCUMENT_DOWNLOADED: 'Order document opened', QUOTE_ATTACHMENT_DOWNLOADED: 'Bid attachment opened',
 };
 async function refreshAdminAudit(){
   if (!state.token || state.view !== 'admin') return;
@@ -4020,6 +4021,12 @@ function renderDashboard(role){
 
 // Shown on every page while the company is admin-suspended: it can still work on orders already in
 // flight, but not post/edit RFQs, submit quotes or edit its catalog (enforced server-side too).
+// Admin console: why the company was suspended last time, shown after a reactivation (while it is suspended the badge and the
+// banner already carry the reason). The company itself never sees this line: the API stops sending the reason once it is active.
+function lastSuspensionReasonHtml(c){
+  if (!c || c.suspendedAt || !c.suspensionReason) return '';
+  return '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);">Last suspension reason: ' + esc(c.suspensionReason) + '</div>';
+}
 function suspensionBanner(){
   if (!state.company || !state.company.suspendedAt) return '';
   return '<div class="mb-6 rounded-xl border p-4" style="border-color:var(--bad); background:var(--bad-soft);">' +
@@ -5135,7 +5142,8 @@ function renderAdmin(){
           (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' :
            c.suspendedAt ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);" title="' + esc(c.suspensionReason || '') + '">Suspended</span>' : '') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
-          (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(3) + ' credits' : '') + '</div></div></div>' +
+          (c.type === 'SUPPLIER' && c.wallet ? ' &middot; ' + Number(c.wallet.balance).toFixed(3) + ' credits' : '') + '</div>' +
+          lastSuspensionReasonHtml(c) + '</div></div>' +
         '<div class="flex flex-wrap items-center justify-end gap-2">' +
           '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + ({PENDING:'background:var(--warn-soft); color:var(--warn);', IN_REVIEW:'background:var(--info-soft); color:var(--info);', VERIFIED:'background:var(--ok-soft); color:var(--ok);', REJECTED:'background:var(--bad-soft); color:var(--bad);'}[c.verificationStatus]||'') + '">' + c.verificationStatus + '</span>' +
           (c.verificationStatus !== 'VERIFIED' ? actionBtn('Verify', "setCompanyVerification('" + c.id + "','VERIFIED')", state.adminBusyId===c.id) : '') +

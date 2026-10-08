@@ -13,7 +13,8 @@ const block = html.slice(a, b);
 const { AUDIT_ACTION_LABELS, auditDetailsText } = new Function(block.slice(0, block.indexOf('async function refreshAdminAudit')) + block.slice(block.indexOf('function auditDetailsText'), block.indexOf('function renderAdminAudit')) + '; return { AUDIT_ACTION_LABELS, auditDetailsText };')();
 
 const ACTIONS = ['COMPANY_VERIFICATION_SET', 'COMPANY_SUSPENDED', 'COMPANY_REACTIVATED', 'COMPANY_DELETED', 'COMPANY_PASSWORD_RESET', 'WALLET_TOPUP', 'DISPUTE_RESOLVED', 'REVIEW_COMMENT_HIDDEN', 'REVIEW_COMMENT_SHOWN',
-  'VERIFICATION_DOCUMENT_VIEWED', 'BID_LINK_CREATED', 'BID_LINK_REISSUED', 'BID_LINK_REVOKED', 'SUPPLIER_CONTACT_RECORDED', 'SUPPLIER_CONTACT_WITHDRAWN', 'SUPPLIER_CONTACT_VIEWED']; // = ACTIONS in b2b-backend/src/utils/adminAudit.js
+  'VERIFICATION_DOCUMENT_VIEWED', 'BID_LINK_CREATED', 'BID_LINK_REISSUED', 'BID_LINK_REVOKED', 'SUPPLIER_CONTACT_RECORDED', 'SUPPLIER_CONTACT_WITHDRAWN', 'SUPPLIER_CONTACT_VIEWED',
+  'ORDER_CHAT_VIEWED', 'ORDER_DOCUMENT_DOWNLOADED', 'QUOTE_ATTACHMENT_DOWNLOADED']; // = ACTIONS in b2b-backend/src/utils/adminAudit.js
 check('every action of the backend has a readable label, and there are no others', ACTIONS.every((x) => typeof AUDIT_ACTION_LABELS[x] === 'string' && AUDIT_ACTION_LABELS[x].length > 3) && Object.keys(AUDIT_ACTION_LABELS).length === ACTIONS.length);
 
 check('details: key: value pairs; the company, the admin and the second company are left out of them', auditDetailsText({ companyName: 'A', adminEmail: 'x@y', reason: 'Late', force: true, openOrders: 2 }) === 'reason: Late · force: true · openOrders: 2');
