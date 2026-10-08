@@ -1,0 +1,11 @@
+# Dependabot keeps the GitHub Actions used by .github/workflows up to date: one pull request a month, all updates together.
+# Merging it is safe once the CI of the pull request is green (the deploy steps only run on main: watch the first run there).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      github-actions:
+        patterns: ["*"]
