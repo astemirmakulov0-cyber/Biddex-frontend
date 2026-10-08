@@ -8,9 +8,11 @@ on:
   push:
   pull_request:
 
+# never cancel a run on main: a running run (and its deploy) is finished and the next one waits; on other branches and PRs a newer
+# run replaces the older one. (This is the whole run: the separate `pages` group of the deploy job cannot protect it.)
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
