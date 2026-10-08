@@ -9,7 +9,7 @@ const check = (name, ok, extra) => { ok ? pass++ : fail++; console.log((ok ? 'PA
 
 const a = html.indexOf('// BEGIN ANALYTICS HELPERS'), b = html.indexOf('// END ANALYTICS HELPERS');
 check('the helper block is in index.html', a > 0 && b > a);
-const H = new Function(html.slice(a, b) + '; return { spendPreset, spendRangeError, csvCell, buildSpendingCsv, spendMonthLabel, spendDayLabel, spendBars };')();
+const H = new Function(html.slice(a, b) + '; return { spendPreset, spendRangeError, csvCell, buildSpendingCsv, spendMonthLabel, spendDayLabel, spendBars, spendItemKey, lastPaidOf };')();
 
 // ---- periods ----
 check('quick periods end today: this month, 3 months, this year, 12 months', JSON.stringify(H.spendPreset('month', '2026-10-08')) === '{"from":"2026-10-01","to":"2026-10-08"}' && H.spendPreset('3m', '2026-10-08').from === '2026-08-01' && H.spendPreset('year', '2026-10-08').from === '2026-01-01' && H.spendPreset('12m', '2026-10-08').from === '2025-11-01');
@@ -37,9 +37,24 @@ const bars = H.spendBars([{ month: '2026-08', received: '0.000' }, { month: '202
 check('chart bars: the biggest month is full height, half is half, an empty month has no height; bars sit on a common baseline', bars[2].h === 150 && bars[1].h === 75 && bars[0].h === 0 && bars.every((x) => Math.abs(x.y + x.h - 150) < 0.11) && bars[0].x < bars[1].x && bars[1].x < bars[2].x, bars);
 check('chart bars: all-zero months do not divide by zero', H.spendBars([{ month: '2026-10', received: '0.000' }], 300, 150)[0].h === 0 && H.spendBars([], 300, 150).length === 0);
 
+// ---- "last paid" in Compare bids ----
+check('item key = the server rule: same name + unit, capitals and extra spaces ignored, nothing else', H.spendItemKey('  Olive  OIL 5L ', 'Box') === 'olive oil 5l|box' && H.spendItemKey('Flour', null) === 'flour|' && H.spendItemKey('Olive oil 5L', 'box') !== H.spendItemKey('Olive oil 5L', 'carton') && H.spendItemKey('Olive oil', 'box') !== H.spendItemKey('Olive oil 5L', 'box'));
+const detail = { rfqs: [
+  { rfqId: 'r-now', day: '2026-10-01', unit: 'box', chosenUnitPrice: '19.000', bids: [{ supplier: 'Now Co', chosen: true }] },
+  { rfqId: 'r-open', day: '2026-09-15', unit: 'box', chosenUnitPrice: null, bids: [{ supplier: 'Open Co', chosen: false }] },
+  { rfqId: 'r-old', day: '2026-08-12', unit: 'box', chosenUnitPrice: '21.000', bids: [{ supplier: 'Old Co', chosen: false }, { supplier: 'Paid Co', chosen: true }] },
+  { rfqId: 'r-older', day: '2026-06-10', unit: 'box', chosenUnitPrice: '20.000', bids: [{ supplier: 'Older Co', chosen: true }] },
+] };
+check('last paid: the newest earlier request that has a chosen bid, never the request being compared and never one without a choice', JSON.stringify(H.lastPaidOf(detail, 'r-now')) === '{"unitPrice":"21.000","supplier":"Paid Co","day":"2026-08-12","unit":"box"}', H.lastPaidOf(detail, 'r-now'));
+check('last paid: nothing when there is no earlier purchase (or no history at all)', H.lastPaidOf({ rfqs: [detail.rfqs[0]] }, 'r-now') === null && H.lastPaidOf({ rfqs: [] }, 'x') === null && H.lastPaidOf(null, 'x') === null && H.lastPaidOf({}, 'x') === null);
+const cmpSrc = html.slice(html.indexOf('async function openCompare'), html.indexOf('async function refreshCompareQuotes'));
+check('Compare bids asks for the history after the bids are in, only as a hint (a failure shows nothing), and forgets it on close', cmpSrc.includes('loadLastPaid(rfqId);') && html.includes('/* no history yet, or offline: no hint */') && html.includes('compareLastPaid:null }); }') && html.includes("api('/api/analytics/items/detail?key=' + encodeURIComponent(spendItemKey(r.title, r.unit)))"));
+check('the line is only drawn when there is a last price, and its values are escaped', html.includes("(state.compareLastPaid ? '<div class=\"mt-3") && html.includes('supplier: esc(state.compareLastPaid.supplier)'));
+
 // ---- texts: English and Arabic ----
 const i0 = html.indexOf('const I18N = {'), i1 = html.indexOf('\n};\n', i0);
 const I18N = new Function('return ' + html.slice(i0 + 'const I18N = '.length, i1 + 3))();
+check('the two "last paid" texts exist in both languages with their {placeholders}', ['cmpLastPaid', 'cmpLastPaidNoUnit'].every((k) => k in I18N.en && k in I18N.ar && /{price}/.test(I18N.en[k]) && /{price}/.test(I18N.ar[k]) && /{supplier}/.test(I18N.ar[k]) && /{date}/.test(I18N.ar[k])));
 const mine = (k) => /^(navSpending|sp[A-Z]|csv[A-Z]|pr[A-Z]|cmp[A-Z])/.test(k);
 const enKeys = Object.keys(I18N.en).filter(mine), arKeys = Object.keys(I18N.ar).filter(mine);
 check('every new text exists in English and in Arabic, and nowhere else', enKeys.length > 60 && enKeys.join() === arKeys.slice().sort((x, y) => enKeys.indexOf(x) - enKeys.indexOf(y)).join() && arKeys.length === enKeys.length, enKeys.filter((k) => !(k in I18N.ar)).concat(arKeys.filter((k) => !(k in I18N.en))));

@@ -308,6 +308,7 @@ const I18N = {
     prRequests:'{n} request(s)', prLastPaid:'Last paid', prPaidRange:'Paid {min} – {max}, average {avg}', prOffered:'Offered {min} – {max}', prNeverBought:'Not ordered yet',
     prBack:'All items', prPerUnit:'per {unit}', prChartTitle:'Chosen price and lowest offer', prChosenLine:'Chosen', prLowestLine:'Lowest offer', prChosen:'Chosen', prLowest:'Lowest', prSubmitted:'Submitted',
     prDearer:'The chosen bid was {pct}% above the lowest. Price is not the only reason to choose.', prQtyUnit:'{qty} {unit}', prNoBids:'No bids.', prDaysTerms:'{days}d · {terms}-day terms',
+    cmpLastPaid:'Last paid {price} per {unit} · {supplier} · {date}', cmpLastPaidNoUnit:'Last paid {price} per unit · {supplier} · {date}',
     stockSubtitle:'Track what you have on hand, get a low-stock alert before you run out, and re-order in one click.',
     addStockItem:'+ Add item', editStockItem:'Edit stock item',
     stockEmptyTitle:'No stock items yet', stockEmptyBody:'Add what you keep on hand, or confirm a delivery and add it from there.',
@@ -972,6 +973,7 @@ const I18N = {
     prRequests:'{n} طلب', prLastPaid:'آخر سعر مدفوع', prPaidRange:'المدفوع {min} – {max}، المتوسط {avg}', prOffered:'المعروض {min} – {max}', prNeverBought:'لم يُطلب بعد',
     prBack:'كل المنتجات', prPerUnit:'لكل {unit}', prChartTitle:'السعر المختار وأقل عرض', prChosenLine:'المختار', prLowestLine:'أقل عرض', prChosen:'المختار', prLowest:'الأقل', prSubmitted:'مقدَّم',
     prDearer:'كان العرض المختار أعلى من الأقل بنسبة {pct}٪. السعر ليس السبب الوحيد للاختيار.', prQtyUnit:'{qty} {unit}', prNoBids:'لا توجد عروض.', prDaysTerms:'توصيل خلال {days} يوم · شروط الدفع {terms} يوم',
+    cmpLastPaid:'آخر سعر دفعته {price} لكل {unit} · {supplier} · {date}', cmpLastPaidNoUnit:'آخر سعر دفعته {price} للوحدة · {supplier} · {date}',
     stockSubtitle:'تابع ما لديك في المخزون، واحصل على تنبيه قبل نفاده، وأعد الطلب بنقرة واحدة.',
     addStockItem:'+ إضافة عنصر', editStockItem:'تعديل عنصر المخزون',
     stockEmptyTitle:'لا توجد عناصر في المخزون بعد', stockEmptyBody:'أضف ما تحتفظ به، أو أكّد استلام طلب وأضفه من هناك.',
@@ -1671,7 +1673,7 @@ let state = {
   postBusy: false,
 
   notFound: null,
-  compareRfqId: null, compareQuotes: [], compareLoading: false, compareBusyId: null,
+  compareRfqId: null, compareQuotes: [], compareLoading: false, compareBusyId: null, compareLastPaid: null,
 
   submitQuoteRfqId: null, quoteForm: { price:'', days:'', paymentTerms:'30' }, quoteBusy: false,
 
@@ -3442,13 +3444,24 @@ async function openRfqLink(rfqId){
 function closeNotFound(){ setState({ notFound:null }); }
 
 async function openCompare(rfqId){
-  setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true });
+  setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true, compareLastPaid: null });
   try {
     const data = await api('/api/rfqs/' + rfqId + '/quotes');
     setState({ compareQuotes: data, compareLoading:false });
   } catch(e) { setState({ compareLoading:false }); showToast(e.message); }
+  loadLastPaid(rfqId);
 }
-function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[], compareBusyId:null }); }
+// "Last paid" under the bids: the price of the last time this item (same name + unit) was bought, from the buyer's own history.
+// It is a hint only: if it cannot be loaded nothing is shown.
+async function loadLastPaid(rfqId){
+  const r = (state.rfqs || []).find(x => x.id === rfqId);
+  if (!r) return;
+  try {
+    const d = await api('/api/analytics/items/detail?key=' + encodeURIComponent(spendItemKey(r.title, r.unit)));
+    if (state.compareRfqId === rfqId) setState({ compareLastPaid: lastPaidOf(d, rfqId) });
+  } catch(e) { /* no history yet, or offline: no hint */ }
+}
+function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[], compareBusyId:null, compareLastPaid:null }); }
 async function refreshCompareQuotes(){
   const rfqId = state.compareRfqId;
   if (!rfqId) return;
@@ -4583,6 +4596,20 @@ function spendBars(months, W, H){
     const h = max > 0 ? Math.round((Number(m.received) / max) * H * 10) / 10 : 0;
     return { x: Math.round((i * step + (step - bw) / 2) * 10) / 10, y: Math.round((H - h) * 10) / 10, w: Math.round(bw * 10) / 10, h, month: m.month, value: m.received };
   });
+}
+// the key of an item = the server's itemKey: same name + same unit, capitals and extra spaces ignored
+function spendItemKey(title, unit){
+  const part = (x) => String(x == null ? '' : x).normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+  return part(title) + '|' + part(unit);
+}
+// from the detail of an item: what was paid the last time, on another request than `exceptRfqId`, or null
+function lastPaidOf(detail, exceptRfqId){
+  for (const r of (detail && detail.rfqs) || []) {
+    if (r.rfqId === exceptRfqId || r.chosenUnitPrice == null) continue;
+    const b = r.bids.find(x => x.chosen);
+    if (b) return { unitPrice: r.chosenUnitPrice, supplier: b.supplier, day: r.day, unit: r.unit };
+  }
+  return null;
 }
 // END ANALYTICS HELPERS
 
@@ -6068,6 +6095,7 @@ function renderModals(){
                 '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (compareRfq.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + t(compareRfq.exactBrandOnly ? 'brandExact' : 'brandEquivalent') + '</span>' : '') +
             '</div>'
           : '') +
+        (state.compareLastPaid ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12.5px]" style="background:var(--acc-soft); color:var(--acc-ink);">' + tpl(state.compareLastPaid.unit ? 'cmpLastPaid' : 'cmpLastPaidNoUnit', { price: bhdMoney(state.compareLastPaid.unitPrice), unit: esc(state.compareLastPaid.unit ? unitLabel(state.compareLastPaid.unit) : ''), supplier: esc(state.compareLastPaid.supplier), date: esc(spendDayLabel(state.compareLastPaid.day, spLocale())) }) + '</div>' : '') +
         '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
         (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">' + t('cmpLoading') + '</div>' :
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">' + t('cmpNone') + '</div>' :
