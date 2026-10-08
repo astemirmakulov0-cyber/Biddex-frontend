@@ -202,6 +202,18 @@
   .chip { border-radius:999px; padding:6px 13px; font-size:12.5px; font-weight:600; border:1px solid var(--bd); color:var(--tx3); background:var(--panel); cursor:pointer; white-space:nowrap; }
   .chip.active { background:var(--tx); color:var(--panel); border-color:var(--tx); }
   .avatar2 { width:38px; height:38px; border-radius:10px; display:grid; place-items:center; font-weight:700; font-size:13px; flex-shrink:0; }
+
+  /* ---- spending report: only the report prints (Print / Save as PDF) ---- */
+  .bx-printonly { display: none; }
+  @media print {
+    :root, :root[data-theme=dark] { --bg:#fff; --panel:#fff; --inset:#fff; --tx:#1B1A17; --tx2:#444; --tx3:#555; --tx4:#666; --line:#d8d3ca; --bd:#d8d3ca; --acc:#0F766E; --acc-soft:#E3F2EF; --acc-ink:#0B5A54; --bad:#B42318; --pend:#8A4A0B; --pend-soft:#FCEFD9; }
+    html, body, #app { background: #fff !important; }
+    .bx-noprint, .bx-bottomnav, .bx-more, .bx-overlay { display: none !important; }
+    .bx-printonly { display: block; color: #1B1A17; }
+    .bx-page { max-width: none !important; padding: 0 !important; }
+    .bx-spend-panel, .bx-spend-row, .bx-chart { break-inside: avoid; }
+    .bx-chart { overflow: visible !important; }
+  }
 </style>
 </head>
 <body>
@@ -280,6 +292,22 @@ const I18N = {
     deleteAccountCancelButton:'Cancel', deleteAccountConfirmButton:'Yes, delete my account',
     deleteAccountSuccessToast:'Your account has been deleted.',
     navStock:'Stock', stockEyebrow:'Inventory', stockTitle:'Stock',
+    navSpending:'Spending', spEyebrow:'Analytics', spTitle:'Spending and prices', spSubtitle:'What your company spends, on what and with whom, and what each item cost before.',
+    spTabSpending:'Spending', spTabPrices:'Price history',
+    spPresetMonth:'This month', spPreset3m:'Last 3 months', spPresetYear:'This year', spPreset12m:'Last 12 months', spFrom:'From', spTo:'To', spShow:'Show',
+    spBadDate:'Enter both dates.', spBadRange:'The start date is after the end date.', spTooLong:'The period can be at most 5 years.',
+    spReceived:'Received', spReceivedHint:'Orders whose receipt you confirmed in this period', spPaid:'Paid', spPaidHint:'Confirmed payments for these orders so far',
+    spToPay:'To pay', spOverdueOf:'of which overdue: {amount}', spToPayHint:'Still unpaid on these orders', spInTransit:'On the way', spInTransitHint:'{n} accepted order(s) not received yet',
+    spByMonth:'By month', spBySupplier:'By supplier', spByCategory:'By category', spTopItems:'Top items', spNoCategory:'No category', spOrdersN:'{n} order(s)', spPaidN:'paid {amount}', spShare:'{pct}%',
+    spChartLabel:'Spending by month, in BHD', spEmptyTitle:'No received orders in this period', spEmptyBody:'Spending is counted when you confirm that an order was received. Pick another period or confirm receipt of your orders.',
+    spLoading:'Loading…', spLoadFailed:'Could not load the numbers. Try again.', spRetry:'Try again', spTruncated:'Only the first 5000 orders are in the CSV; the totals above include all of them.',
+    spCsv:'Download CSV', spPrint:'Print / Save as PDF', spReportTitle:'Spending report', spReportPeriod:'Period: {from} – {to}', spReportNote:'Amounts in BHD. Spending = invoice amount of orders received in the period.',
+    csvDate:'Date received', csvLpo:'LPO', csvSupplier:'Supplier', csvItem:'Item', csvCategory:'Category', csvQty:'Quantity', csvUnit:'Unit', csvUnitPrice:'Unit price (BHD)', csvTotal:'Total (BHD)', csvPaid:'Paid (BHD)', csvInvoice:'Invoice status',
+    prSearchPh:'Search an item by name', prSearch:'Search', prNote:'Items are matched by exact name and unit (capital letters and extra spaces are ignored). Use the same name when you order again.',
+    prEmptyTitle:'No price history yet', prEmptyBody:'Once suppliers bid on your requests, every item you asked for appears here with the prices offered and chosen.', prNoMatch:'No item matches this name.',
+    prRequests:'{n} request(s)', prLastPaid:'Last paid', prPaidRange:'Paid {min} – {max}, average {avg}', prOffered:'Offered {min} – {max}', prNeverBought:'Not ordered yet',
+    prBack:'All items', prPerUnit:'per {unit}', prChartTitle:'Chosen price and lowest offer', prChosenLine:'Chosen', prLowestLine:'Lowest offer', prChosen:'Chosen', prLowest:'Lowest', prSubmitted:'Submitted',
+    prDearer:'The chosen bid was {pct}% above the lowest. Price is not the only reason to choose.', prQtyUnit:'{qty} {unit}', prNoBids:'No bids.', prDaysTerms:'{days}d · {terms}-day terms',
     stockSubtitle:'Track what you have on hand, get a low-stock alert before you run out, and re-order in one click.',
     addStockItem:'+ Add item', editStockItem:'Edit stock item',
     stockEmptyTitle:'No stock items yet', stockEmptyBody:'Add what you keep on hand, or confirm a delivery and add it from there.',
@@ -928,6 +956,22 @@ const I18N = {
     deleteAccountCancelButton:'إلغاء', deleteAccountConfirmButton:'نعم، احذف حسابي',
     deleteAccountSuccessToast:'تم حذف حسابك.',
     navStock:'المخزون', stockEyebrow:'المخزون', stockTitle:'المخزون',
+    navSpending:'الإنفاق', spEyebrow:'التحليلات', spTitle:'الإنفاق والأسعار', spSubtitle:'كم تنفق شركتك وعلى ماذا ومع مَن، وكم كلّف كل منتج سابقاً.',
+    spTabSpending:'الإنفاق', spTabPrices:'سجل الأسعار',
+    spPresetMonth:'هذا الشهر', spPreset3m:'آخر 3 أشهر', spPresetYear:'هذه السنة', spPreset12m:'آخر 12 شهراً', spFrom:'من', spTo:'إلى', spShow:'عرض',
+    spBadDate:'أدخل التاريخين.', spBadRange:'تاريخ البداية بعد تاريخ النهاية.', spTooLong:'الحد الأقصى للفترة 5 سنوات.',
+    spReceived:'المستلَم', spReceivedHint:'الطلبيات التي أكدت استلامها في هذه الفترة', spPaid:'المدفوع', spPaidHint:'المدفوعات المؤكدة لهذه الطلبيات حتى الآن',
+    spToPay:'المتبقي للدفع', spOverdueOf:'منه متأخر: {amount}', spToPayHint:'غير المدفوع بعد في هذه الطلبيات', spInTransit:'في الطريق', spInTransitHint:'{n} طلبية مقبولة لم تُستلم بعد',
+    spByMonth:'حسب الشهر', spBySupplier:'حسب المورّد', spByCategory:'حسب الفئة', spTopItems:'أكثر المنتجات إنفاقاً', spNoCategory:'بدون فئة', spOrdersN:'{n} طلبية', spPaidN:'مدفوع {amount}', spShare:'{pct}٪',
+    spChartLabel:'الإنفاق حسب الشهر بالدينار البحريني', spEmptyTitle:'لا توجد طلبيات مستلَمة في هذه الفترة', spEmptyBody:'يُحتسب الإنفاق عند تأكيدك استلام الطلبية. اختر فترة أخرى أو أكّد استلام طلبياتك.',
+    spLoading:'جارٍ التحميل…', spLoadFailed:'تعذّر تحميل الأرقام. حاول مرة أخرى.', spRetry:'حاول مرة أخرى', spTruncated:'يتضمن ملف CSV أول 5000 طلبية فقط؛ أما الإجماليات أعلاه فتشمل الجميع.',
+    spCsv:'تنزيل CSV', spPrint:'طباعة / حفظ PDF', spReportTitle:'تقرير الإنفاق', spReportPeriod:'الفترة: {from} – {to}', spReportNote:'المبالغ بالدينار البحريني. الإنفاق = مبلغ فواتير الطلبيات المستلَمة في الفترة.',
+    csvDate:'تاريخ الاستلام', csvLpo:'أمر الشراء', csvSupplier:'المورّد', csvItem:'المنتج', csvCategory:'الفئة', csvQty:'الكمية', csvUnit:'الوحدة', csvUnitPrice:'سعر الوحدة (د.ب)', csvTotal:'الإجمالي (د.ب)', csvPaid:'المدفوع (د.ب)', csvInvoice:'حالة الفاتورة',
+    prSearchPh:'ابحث عن منتج بالاسم', prSearch:'بحث', prNote:'تُطابَق المنتجات بالاسم والوحدة تماماً (يُتجاهل حجم الأحرف والمسافات الزائدة). استخدم الاسم نفسه عند الطلب مجدداً.',
+    prEmptyTitle:'لا يوجد سجل أسعار بعد', prEmptyBody:'عندما يقدّم الموردون عروضهم على طلباتك، يظهر هنا كل منتج طلبته مع الأسعار المعروضة والمختارة.', prNoMatch:'لا يوجد منتج بهذا الاسم.',
+    prRequests:'{n} طلب', prLastPaid:'آخر سعر مدفوع', prPaidRange:'المدفوع {min} – {max}، المتوسط {avg}', prOffered:'المعروض {min} – {max}', prNeverBought:'لم يُطلب بعد',
+    prBack:'كل المنتجات', prPerUnit:'لكل {unit}', prChartTitle:'السعر المختار وأقل عرض', prChosenLine:'المختار', prLowestLine:'أقل عرض', prChosen:'المختار', prLowest:'الأقل', prSubmitted:'مقدَّم',
+    prDearer:'كان العرض المختار أعلى من الأقل بنسبة {pct}٪. السعر ليس السبب الوحيد للاختيار.', prQtyUnit:'{qty} {unit}', prNoBids:'لا توجد عروض.', prDaysTerms:'توصيل خلال {days} يوم · شروط الدفع {terms} يوم',
     stockSubtitle:'تابع ما لديك في المخزون، واحصل على تنبيه قبل نفاده، وأعد الطلب بنقرة واحدة.',
     addStockItem:'+ إضافة عنصر', editStockItem:'تعديل عنصر المخزون',
     stockEmptyTitle:'لا توجد عناصر في المخزون بعد', stockEmptyBody:'أضف ما تحتفظ به، أو أكّد استلام طلب وأضفه من هناك.',
@@ -1614,6 +1658,8 @@ let state = {
   token: null, user: null, company: null, wallet: null, onboarding: null,
 
   rfqs: [], catalog: [], myCatalog: [], stock: [],
+  spendTab: 'spending', spendPreset: '12m', spendRange: null, spendData: null, spendLoading: false, spendError: false,
+  priceItems: null, priceSearch: '', priceLoading: false, priceKeyIdx: null, priceDetail: null,
   loading: false,
 
   showStockAdd: false, editStockId: null, stockForm: { name:'', brand:'', unit:'kg', quantity:'', threshold:'' },
@@ -1965,7 +2011,7 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 let lastPollAt = Date.now(); // when the data was last refreshed (see the polling block at the end of the script)
@@ -2565,6 +2611,7 @@ async function resolveDispute(action){
 function setSection(sec){
   state.showMoreSheet = false;
   if (sec === 'main') refreshOnboarding(); // the home card may have ticked while the user was elsewhere
+  if (sec === 'spending' && state.view === 'buyer') spendInit();
   if (sec === 'profile') {
     const c = state.company || {};
     state.profileForm = { name: c.name||'', country: c.country||'', phone: c.phone||'', registrationNumber: c.registrationNumber||'' };
@@ -3858,7 +3905,7 @@ function toastHtml(){
 function renderLanding(){
   const publishedRfqs = (state.catalogRfqsPreview || []);
   return '<div>' +
-  '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
+  '<header class="bx-noprint sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
     '<div class="mx-auto flex max-w-[1220px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3.5">' + logo() +
     '<div class="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">' +
       langToggleBtn() + themeToggleBtn() +
@@ -3993,7 +4040,7 @@ function field(name, label, value, placeholder, type){
 function renderDashboard(role){
   const isBuyer = role === 'buyer';
   const walletLabel = (state.wallet ? Number(state.wallet.balance).toFixed(3) : '—') + ' ' + t('walletCredits');
-  const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
+  const header = '<header class="bx-noprint sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
     '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo(null, isBuyer ? 'buyer' : 'supplier') +
     '<div class="relative flex items-center gap-1.5 sm:gap-2.5">' +
       '<span class="hidden sm:contents"><div class="text-[13px] font-semibold mr-1" style="color:var(--tx3);">' + esc(state.company ? state.company.name : '') + '</div></span>' +
@@ -4012,6 +4059,7 @@ function renderDashboard(role){
     : state.section === 'rfqs' ? (isBuyer ? renderBuyerRfqsPage() : renderOpportunityFeedPage())
     : state.section === 'lpos' ? renderLpoManagement(isBuyer)
     : state.section === 'stock' ? (isBuyer ? renderStockPage() : renderSupplierHub())
+    : state.section === 'spending' ? (isBuyer ? renderSpendingPage() : renderSupplierHub())
     : (isBuyer ? renderBuyerHub() : renderSupplierHub());
 
   return '<div>' + header + '<div class="bx-page mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + suspensionBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
@@ -4064,7 +4112,7 @@ function moreSheet(role, walletLabel){
   return '<div class="bx-more bx-overlay fixed inset-0 z-50 flex items-end bg-black/50" onclick="if(event.target===this)toggleMoreSheet()">' +
     '<div class="bx-sheet bx-rise w-full rounded-t-2xl border-t p-3" style="border-color:var(--bd); background:var(--panel); padding-bottom:calc(0.75rem + env(safe-area-inset-bottom, 0px));">' +
       '<div class="flex items-center justify-between gap-3 px-3 pb-2 pt-1"><div class="min-w-0 truncate text-[14px] font-bold" style="color:var(--tx);">' + esc(state.company ? state.company.name : '') + '</div>' + verificationBadge() + '</div>' +
-      (isBuyer ? row("setSection('catalog')", t('navNetwork')) : row('toggleMoreSheet();openWalletModal()', t('walletTitle') || '', '<span class="mono text-[13px]" style="color:var(--acc);">' + walletLabel + '</span>')) +
+      (isBuyer ? row("setSection('catalog')", t('navNetwork')) + row("setSection('spending')", t('navSpending')) : row('toggleMoreSheet();openWalletModal()', t('walletTitle') || '', '<span class="mono text-[13px]" style="color:var(--acc);">' + walletLabel + '</span>')) +
       row("setSection('profile')", t('navSettings')) +
       row('toggleLang();toggleMoreSheet()', state.lang === 'ar' ? 'English' : 'العربية') +
       row('toggleTheme();toggleMoreSheet()', t(isDarkNow() ? 'themeLight' : 'themeDark')) +
@@ -4079,10 +4127,10 @@ function mobileBack(sec){
 function navBar(role){
   const isBuyer = role === 'buyer';
   const tabs = isBuyer
-    ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['stock',t('navStock')], ['catalog',t('navNetwork')], ['profile',t('navSettings')] ]
+    ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['stock',t('navStock')], ['catalog',t('navNetwork')], ['spending',t('navSpending')], ['profile',t('navSettings')] ]
     : [ ['main',t('navSupplierHub')], ['rfqs',t('navOpportunities')], ['catalog',t('navCatalog')], ['lpos',t('navOrdersLpos')], ['profile',t('navSettings')] ];
   const activeKey = state.section === 'orderDetail' ? 'lpos' : state.section;
-  return '<div class="hidden md:block border-b" style="border-color:var(--bd); background:var(--panel);">' +
+  return '<div class="bx-noprint hidden md:block border-b" style="border-color:var(--bd); background:var(--panel);">' +
     '<div id="nav-scroller" class="bx-edge-fade mx-auto flex max-w-[1220px] gap-1 px-5 overflow-x-auto">' +
       tabs.map(([key,label]) => '<button data-navtab' + (activeKey === key ? ' data-navtab-active' : '') + ' onclick="setSection(\'' + key + '\')" class="border-b-2 px-4 py-3 text-[13px] font-semibold whitespace-nowrap" style="' + (activeKey === key ? 'border-color:var(--acc); color:var(--tx);' : 'border-color:transparent; color:var(--tx4);') + '">' + label + '</button>').join('') +
     '</div></div>';
@@ -4474,6 +4522,269 @@ function fmtQty(n){
   return Number.isInteger(num) ? String(num) : num.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
 }
 function isLowStock(item){ return Number(item.threshold) > 0 && Number(item.quantity) <= Number(item.threshold); }
+
+// ---------- Buyer: spending and price history (#/spending) ----------
+// Numbers come from GET /api/analytics/spending and /api/analytics/items[/detail] (buyer only, own data only).
+// Spending = the invoice amount of orders whose receipt the buyer confirmed in the period (Bahrain days).
+// BEGIN ANALYTICS HELPERS (pure functions: test/analytics.test.js loads this block on its own)
+const SPEND_BAHRAIN_OFFSET_MS = 3 * 60 * 60 * 1000;
+function spendToday(){ return new Date(Date.now() + SPEND_BAHRAIN_OFFSET_MS).toISOString().slice(0, 10); }
+// the period of a quick button, ending today
+function spendPreset(preset, today){
+  const [y, m] = today.split('-').map(Number);
+  const iso = (yy, mm, dd) => new Date(Date.UTC(yy, mm - 1, dd)).toISOString().slice(0, 10);
+  if (preset === 'month') return { from: iso(y, m, 1), to: today };
+  if (preset === '3m') return { from: iso(y, m - 2, 1), to: today };
+  if (preset === 'year') return { from: iso(y, 1, 1), to: today };
+  return { from: iso(y, m - 11, 1), to: today };
+}
+// the same rules as the server, so a bad period is explained here and never reaches it; returns an I18N key or null
+function spendRangeError(from, to){
+  const ok = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '') && !isNaN(new Date(s + 'T00:00:00Z').getTime()) && new Date(s + 'T00:00:00Z').toISOString().slice(0, 10) === s;
+  if (!ok(from) || !ok(to)) return 'spBadDate';
+  if (from > to) return 'spBadRange';
+  const [y, m, d] = to.split('-').map(Number);
+  if (from < new Date(Date.UTC(y - 5, m - 1, d)).toISOString().slice(0, 10)) return 'spTooLong';
+  return null;
+}
+// One CSV cell. Text that could be run as a formula by a spreadsheet (starts with = + - @ or a tab / return) gets a
+// leading apostrophe; real numbers (amounts, prices, quantity) stay plain numbers. Quoted when it holds , ; " or a line break.
+function csvCell(v, isNumber){
+  if (v == null || v === '') return '';
+  let s = String(v);
+  if (isNumber && /^-?\d+(\.\d+)?$/.test(s)) return s;
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return /[",;\r\n]|^\s|\s$/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+// lines: the `lines` of the spending answer; tr(key): the translated header; invLabel(status): invoice status text
+function buildSpendingCsv(lines, tr, invLabel){
+  const cols = [
+    ['receivedDay', 'csvDate'], ['lpo', 'csvLpo'], ['supplier', 'csvSupplier'], ['title', 'csvItem'], ['category', 'csvCategory'], ['quantity', 'csvQty', 1],
+    ['unit', 'csvUnit'], ['unitPrice', 'csvUnitPrice', 1], ['total', 'csvTotal', 1], ['paid', 'csvPaid', 1], ['invoice', 'csvInvoice'],
+  ];
+  const rows = [cols.map(c => csvCell(tr(c[1]))).join(',')];
+  for (const l of lines) {
+    const v = { ...l, lpo: 'LPO-' + String(l.lpoId || '').slice(-4).toUpperCase(), invoice: l.invoiceStatus ? invLabel(l.invoiceStatus) : '' };
+    rows.push(cols.map(c => csvCell(v[c[0]], !!c[2])).join(','));
+  }
+  return '﻿' + rows.join('\r\n') + '\r\n';
+}
+// 'YYYY-MM' -> "Oct 26" / "أكتوبر 26"
+function spendMonthLabel(month, locale){
+  const [y, m] = month.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString(locale, { month: 'short', year: '2-digit', timeZone: 'UTC' });
+}
+function spendDayLabel(day, locale){ return new Date(day + 'T12:00:00Z').toLocaleDateString(locale, { timeZone: 'UTC' }); }
+// bars of the monthly total: [{ x, y, w, h, month, value }] in a box of width W and height H (value strings like "12.500")
+function spendBars(months, W, H){
+  const max = Math.max(0, ...months.map(m => Number(m.received)));
+  const step = W / Math.max(1, months.length), bw = Math.min(34, step * 0.64);
+  return months.map((m, i) => {
+    const h = max > 0 ? Math.round((Number(m.received) / max) * H * 10) / 10 : 0;
+    return { x: Math.round((i * step + (step - bw) / 2) * 10) / 10, y: Math.round((H - h) * 10) / 10, w: Math.round(bw * 10) / 10, h, month: m.month, value: m.received };
+  });
+}
+// END ANALYTICS HELPERS
+
+function spendInit(){
+  if (!state.spendRange) state.spendRange = spendPreset('12m', spendToday());
+  if (!state.spendData && !state.spendLoading) loadSpending();
+  if (state.spendTab === 'prices' && !state.priceItems && !state.priceLoading) loadPriceItems();
+}
+let spendReq = 0, priceReq = 0;
+async function loadSpending(){
+  const r = state.spendRange, bad = spendRangeError(r.from, r.to);
+  if (bad) { showToast(t(bad)); return; }
+  const mine = ++spendReq;
+  setState({ spendLoading: true, spendError: false });
+  try {
+    const d = await api('/api/analytics/spending?from=' + r.from + '&to=' + r.to);
+    if (mine === spendReq) setState({ spendData: d, spendLoading: false });
+  } catch(e) { if (mine === spendReq) { setState({ spendLoading: false, spendError: true }); showToast(e.message); } }
+}
+function setSpendPreset(p){ setState({ spendPreset: p, spendRange: spendPreset(p, spendToday()) }); loadSpending(); }
+function setSpendDate(which, v){ setState({ spendPreset: 'custom', spendRange: { ...state.spendRange, [which]: v } }); }
+function setSpendTab(tab){ setState({ spendTab: tab, priceKeyIdx: null, priceDetail: null }); if (tab === 'prices' && !state.priceItems) loadPriceItems(); }
+async function loadPriceItems(){
+  const mine = ++priceReq;
+  setState({ priceLoading: true, spendError: false });
+  try {
+    const d = await api('/api/analytics/items' + (state.priceSearch ? '?search=' + encodeURIComponent(state.priceSearch) : ''));
+    if (mine === priceReq) setState({ priceItems: d.items, priceLoading: false });
+  } catch(e) { if (mine === priceReq) { setState({ priceLoading: false, spendError: true }); showToast(e.message); } }
+}
+function setPriceSearch(v){ setState({ priceSearch: String(v || '').trim().slice(0, 100), priceItems: null }); loadPriceItems(); }
+async function openPriceItem(i){
+  const it = (state.priceItems || [])[i];
+  if (!it) return;
+  setState({ priceKeyIdx: i, priceDetail: null });
+  try {
+    const d = await api('/api/analytics/items/detail?key=' + encodeURIComponent(it.key));
+    if (state.priceKeyIdx === i) setState({ priceDetail: d });
+  } catch(e) { showToast(e.message); setState({ priceKeyIdx: null }); }
+}
+function closePriceItem(){ setState({ priceKeyIdx: null, priceDetail: null }); }
+function downloadSpendingCsv(){
+  const d = state.spendData;
+  if (!d || !d.lines.length) return;
+  const csv = buildSpendingCsv(d.lines, t, (s) => enumLabel(INVOICE_STATUS_KEYS, s));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'biddex-spending-' + d.period.from + '_' + d.period.to + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function printSpending(){ window.print(); }
+
+const spLocale = () => dateLocale();
+function spendMoney(v){ return bhdMoney(v); }
+function spendPanel(title, inner, extra){
+  return '<section class="bx-spend-panel mb-5 rounded-2xl border p-4 sm:p-5" style="border-color:var(--line); background:var(--panel);">' +
+    '<div class="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 class="text-[15px] font-extrabold" style="color:var(--tx);">' + title + '</h2>' + (extra || '') + '</div>' + inner + '</section>';
+}
+// one line of a breakdown: name, small caption, amount, and a bar showing the share of the total
+function spendRow(name, caption, amount, pct){
+  return '<div class="bx-spend-row py-2.5" style="border-top:1px solid var(--line);">' +
+    '<div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="text-[13.5px] font-semibold break-words" style="color:var(--tx);">' + name + '</div>' +
+    (caption ? '<div class="text-[11.5px]" style="color:var(--tx4);">' + caption + '</div>' : '') + '</div>' +
+    '<div class="shrink-0 text-end"><div class="mono text-[13.5px] font-bold" style="color:var(--tx);">' + spendMoney(amount) + '</div>' +
+    (pct != null ? '<div class="text-[11.5px]" style="color:var(--tx4);">' + tpl('spShare', { pct: pct }) + '</div>' : '') + '</div></div>' +
+    (pct != null ? '<div class="mt-1.5 h-1.5 rounded-full" style="background:var(--line);"><div class="h-1.5 rounded-full" style="width:' + Math.max(0, Math.min(100, pct)) + '%; background:var(--acc);"></div></div>' : '') +
+  '</div>';
+}
+function spendChart(months){
+  const W = Math.max(300, months.length * 46), H = 150, top = 18, bottom = 24;
+  const bars = spendBars(months, W, H);
+  const showValues = months.length <= 14;
+  const svg = '<svg viewBox="0 0 ' + W + ' ' + (H + top + bottom) + '" width="' + W + '" height="' + (H + top + bottom) + '" role="img" aria-label="' + esc(t('spChartLabel')) + '" style="display:block; direction:ltr; margin-right:auto;">' +
+    '<line x1="0" y1="' + (top + H) + '" x2="' + W + '" y2="' + (top + H) + '" stroke="var(--line)" stroke-width="1"/>' +
+    bars.map((b) => '<g><title>' + esc(spendMonthLabel(b.month, spLocale()) + ': ' + spendMoney(b.value)) + '</title>' +
+      '<rect x="' + b.x + '" y="' + (top + b.y) + '" width="' + b.w + '" height="' + Math.max(b.h, Number(b.value) > 0 ? 2 : 0) + '" rx="4" fill="var(--acc)"/>' +
+      (showValues && Number(b.value) > 0 ? '<text x="' + (b.x + b.w / 2) + '" y="' + (top + b.y - 5) + '" text-anchor="middle" font-size="10" fill="var(--tx2)">' + fmtNum(b.value, 0) + '</text>' : '') +
+      '<text x="' + (b.x + b.w / 2) + '" y="' + (top + H + 16) + '" text-anchor="middle" font-size="10" fill="var(--tx3)">' + esc(spendMonthLabel(b.month, spLocale())) + '</text></g>').join('') +
+  '</svg>';
+  return '<div class="bx-chart overflow-x-auto" style="direction:rtl;">' + svg + '</div>';
+}
+
+function renderSpendingPage(){
+  const tabBtn = (key, label) => '<button type="button" onclick="setSpendTab(\'' + key + '\')" class="rounded-full border px-4 py-2 text-[13px] font-bold" style="' +
+    (state.spendTab === key ? 'background:var(--acc-soft); color:var(--acc-ink); border-color:var(--acc);' : 'border-color:var(--line); color:var(--tx2);') + '"' + (state.spendTab === key ? ' aria-current="page"' : '') + '>' + label + '</button>';
+  return '<div class="bx-noprint"><div class="eyebrow mb-1.5">' + t('spEyebrow') + '</div>' +
+    '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('spTitle') + '</h1>' +
+    '<p class="mt-1 mb-4 text-[13.5px] max-w-[620px]" style="color:var(--tx3);">' + t('spSubtitle') + '</p>' +
+    '<div class="mb-5 flex flex-wrap gap-2">' + tabBtn('spending', t('spTabSpending')) + tabBtn('prices', t('spTabPrices')) + '</div></div>' +
+    (state.spendTab === 'prices' ? renderPricesTab() : renderSpendTab());
+}
+
+function renderSpendTab(){
+  const r = state.spendRange || spendPreset('12m', spendToday()), d = state.spendData;
+  const chip = (p, label) => '<button type="button" onclick="setSpendPreset(\'' + p + '\')" class="rounded-full border px-3 py-1.5 text-[12px] font-semibold" style="' +
+    (state.spendPreset === p ? 'background:var(--acc-soft); color:var(--acc-ink); border-color:var(--acc);' : 'border-color:var(--line); color:var(--tx2);') + '">' + label + '</button>';
+  const dateInput = (which, label) => '<label class="text-[11.5px] font-semibold" style="color:var(--tx3);">' + label + '<input type="date" value="' + esc(r[which]) + '" onchange="setSpendDate(\'' + which + '\', this.value)" class="mt-1 block rounded-lg border px-3 py-2 text-[13px] outline-none" style="border-color:var(--line); background:var(--inset); color:var(--tx);" /></label>';
+  const filter = '<div class="bx-noprint mb-5 rounded-2xl border p-4" style="border-color:var(--line); background:var(--panel);">' +
+    '<div class="mb-3 flex flex-wrap gap-2">' + chip('month', t('spPresetMonth')) + chip('3m', t('spPreset3m')) + chip('year', t('spPresetYear')) + chip('12m', t('spPreset12m')) + '</div>' +
+    '<div class="flex flex-wrap items-end gap-3">' + dateInput('from', t('spFrom')) + dateInput('to', t('spTo')) +
+      '<button type="button" onclick="loadSpending()" class="rounded-lg px-4 py-2 text-[13px] font-bold" style="background:var(--acc); color:var(--on-acc);">' + t('spShow') + '</button></div></div>';
+  if (state.spendLoading && !d) return filter + '<div class="py-10 text-center text-[13px]" style="color:var(--tx4);">' + t('spLoading') + '</div>';
+  if (!d) return filter + (state.spendError ? '<div class="py-8 text-center"><div class="mb-3 text-[13px]" style="color:var(--bad);">' + t('spLoadFailed') + '</div><button type="button" onclick="loadSpending()" class="rounded-lg border px-4 py-2 text-[13px] font-bold" style="border-color:var(--line); color:var(--tx);">' + t('spRetry') + '</button></div>' : '');
+  const tt = d.totals;
+  const actions = '<div class="bx-noprint mb-5 flex flex-wrap gap-2">' +
+    '<button type="button" onclick="downloadSpendingCsv()"' + (d.lines.length ? '' : ' disabled') + ' class="rounded-lg border px-3.5 py-2 text-[12.5px] font-bold" style="border-color:var(--line); color:var(--tx); opacity:' + (d.lines.length ? 1 : 0.5) + ';">' + t('spCsv') + '</button>' +
+    '<button type="button" onclick="printSpending()" class="rounded-lg border px-3.5 py-2 text-[12.5px] font-bold" style="border-color:var(--line); color:var(--tx);">' + t('spPrint') + '</button></div>';
+  const printHead = '<div class="bx-printonly mb-4"><div style="font-size:20px; font-weight:800;">' + esc(state.company ? state.company.name : '') + ' — ' + t('spReportTitle') + '</div>' +
+    '<div style="font-size:12px;">' + tpl('spReportPeriod', { from: spendDayLabel(d.period.from, spLocale()), to: spendDayLabel(d.period.to, spLocale()) }) + '</div><div style="font-size:11px;">' + t('spReportNote') + '</div></div>';
+  const card = (label, val, sub, big) => '<div class="rounded-xl border p-4' + (big ? ' sm:col-span-2' : '') + '" style="border-color:var(--line); background:var(--panel);">' +
+    '<div class="eyebrow" style="color:var(--tx4);">' + label + '</div><div class="mono bx-display mt-1.5 text-[' + (big ? 26 : 21) + 'px] font-bold" style="color:var(--tx);">' + val + '</div>' +
+    (sub ? '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + sub + '</div>' : '') + '</div>';
+  const cards = '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-4">' +
+    card(t('spReceived'), spendMoney(tt.received), tpl('spOrdersN', { n: tt.orders }) + ' · ' + t('spReceivedHint'), true) +
+    card(t('spPaid'), spendMoney(tt.paid), t('spPaidHint')) +
+    card(t('spToPay'), spendMoney(tt.toPay), (Number(tt.overdue) > 0 ? '<span style="color:var(--bad); font-weight:600;">' + tpl('spOverdueOf', { amount: spendMoney(tt.overdue) }) + '</span>' : t('spToPayHint'))) +
+    card(t('spInTransit'), spendMoney(tt.inTransit), tpl('spInTransitHint', { n: tt.inTransitOrders })) + '</div>';
+  if (tt.orders === 0) return filter + printHead + cards + emptyState(t('spEmptyTitle'), t('spEmptyBody'));
+  const monthRows = d.byMonth.filter(m => m.orders > 0).slice().reverse().map(m => spendRow(esc(spendMonthLabel(m.month, spLocale())), tpl('spOrdersN', { n: m.orders }) + ' · ' + tpl('spPaidN', { amount: spendMoney(m.paid) }), m.received, null)).join('');
+  const list = (rows, nameOf, capOf) => rows.map(x => spendRow(nameOf(x), capOf(x), x.received, x.share)).join('');
+  return filter + actions + printHead + cards +
+    spendPanel(t('spByMonth'), spendChart(d.byMonth) + '<div class="mt-3">' + monthRows + '</div>') +
+    spendPanel(t('spBySupplier'), list(d.bySupplier, x => esc(x.name), x => tpl('spOrdersN', { n: x.orders }))) +
+    spendPanel(t('spByCategory'), list(d.byCategory, x => esc(x.category ? categoryDisplay(x.category) : t('spNoCategory')), x => tpl('spOrdersN', { n: x.orders }))) +
+    spendPanel(t('spTopItems'), list(d.topItems, x => esc(x.title), x => tpl('spOrdersN', { n: x.orders }) + (x.unit ? ' · ' + tpl('prQtyUnit', { qty: x.quantity, unit: esc(unitLabel(x.unit)) }) : ''))) +
+    (d.truncated ? '<p class="bx-noprint text-[12px]" style="color:var(--tx4);">' + t('spTruncated') + '</p>' : '');
+}
+
+// ---- price history ----
+function bidStatusPill(status){
+  const map = {
+    AWARDED: ['background:var(--pend-soft); color:var(--pend);', t('stAwarded')],
+    REJECTED: ['background:var(--bad-soft); color:var(--bad);', t('stRejected')],
+    WITHDRAWN: ['background:var(--line); color:var(--tx2);', t('stWithdrawn')],
+    SHORTLISTED: ['background:var(--info-soft); color:var(--info);', t('stShortlisted')],
+    SUBMITTED: ['background:var(--line); color:var(--tx2);', t('prSubmitted')],
+  };
+  const m = map[status] || ['background:var(--line); color:var(--tx2);', esc(status)];
+  return '<span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="' + m[0] + '">' + m[1] + '</span>';
+}
+function priceChart(series){
+  const pts = series.filter(s => s.chosen != null || s.cheapest != null);
+  if (pts.length < 2) return '';
+  const vals = pts.flatMap(s => [s.chosen, s.cheapest]).filter(v => v != null).map(Number);
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  const W = Math.max(300, pts.length * 56), H = 130, padX = 24, top = 14, bottom = 22;
+  const x = (i) => padX + (pts.length === 1 ? 0 : (i * (W - 2 * padX)) / (pts.length - 1));
+  const y = (v) => top + (H - ((Number(v) - lo) / span) * H);
+  const line = (key, color, dash) => {
+    const p = pts.map((s, i) => s[key] != null ? [x(i), y(s[key])] : null).filter(Boolean);
+    return (p.length > 1 ? '<polyline fill="none" stroke="' + color + '" stroke-width="2"' + (dash ? ' stroke-dasharray="5 4"' : '') + ' points="' + p.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ') + '"/>' : '') +
+      p.map((q, i) => '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="3.5" fill="' + color + '"/>').join('');
+  };
+  const svg = '<svg viewBox="0 0 ' + W + ' ' + (H + top + bottom) + '" width="' + W + '" height="' + (H + top + bottom) + '" role="img" aria-label="' + esc(t('prChartTitle')) + '" style="display:block; direction:ltr; margin-right:auto;">' +
+    line('cheapest', 'var(--tx3)', true) + line('chosen', 'var(--acc)', false) +
+    pts.map((s, i) => '<text x="' + x(i).toFixed(1) + '" y="' + (top + H + 16) + '" text-anchor="middle" font-size="10" fill="var(--tx3)">' + esc(spendDayLabel(s.day, spLocale()).replace(/\/20(\d\d)$/, '/$1')) + '</text>' +
+      (s.chosen != null ? '<title>' + esc(spendDayLabel(s.day, spLocale()) + ': ' + spendMoney(s.chosen)) + '</title>' : '')).join('') + '</svg>';
+  return '<div class="mb-4 overflow-x-auto" style="direction:rtl;">' + svg + '</div>' +
+    '<div class="mb-4 flex flex-wrap gap-4 text-[12px]" style="color:var(--tx3);"><span><span style="display:inline-block; width:18px; border-top:2px solid var(--acc); vertical-align:middle;"></span> ' + t('prChosenLine') + '</span>' +
+    '<span><span style="display:inline-block; width:18px; border-top:2px dashed var(--tx3); vertical-align:middle;"></span> ' + t('prLowestLine') + '</span></div>';
+}
+function renderPricesTab(){
+  if (state.priceKeyIdx != null) return renderPriceDetail();
+  const items = state.priceItems;
+  const search = '<div class="mb-4 flex flex-wrap items-center gap-2"><input type="search" value="' + esc(state.priceSearch) + '" maxlength="100" placeholder="' + esc(t('prSearchPh')) + '" onchange="setPriceSearch(this.value)" class="min-w-[220px] flex-1 rounded-lg border px-3 py-2 text-[13px] outline-none" style="border-color:var(--line); background:var(--inset); color:var(--tx);" />' +
+    '<button type="button" onclick="setPriceSearch(this.previousElementSibling.value)" class="rounded-lg px-4 py-2 text-[13px] font-bold" style="background:var(--acc); color:var(--on-acc);">' + t('prSearch') + '</button></div>';
+  if (items == null) return search + '<div class="py-10 text-center text-[13px]" style="color:var(--tx4);">' + (state.spendError ? t('spLoadFailed') : t('spLoading')) + '</div>';
+  if (items.length === 0) return search + emptyState(state.priceSearch ? t('prNoMatch') : t('prEmptyTitle'), state.priceSearch ? '' : t('prEmptyBody'));
+  return search + '<p class="mb-3 text-[12px] max-w-[640px]" style="color:var(--tx4);">' + t('prNote') + '</p>' +
+    items.map((it, i) => {
+      const unit = it.unit ? unitLabel(it.unit) : '';
+      return '<button type="button" onclick="openPriceItem(' + i + ')" class="bx-tapcard mb-3 block w-full rounded-2xl border p-4 text-start" style="border-color:var(--line); background:var(--panel);">' +
+        '<div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="text-[14.5px] font-bold break-words" style="color:var(--tx);">' + esc(it.title) + '</div>' +
+        '<div class="text-[11.5px]" style="color:var(--tx4);">' + (unit ? esc(unit) + ' · ' : '') + tpl('prRequests', { n: it.rfqs }) + '</div></div>' +
+        (it.lastPaid ? '<div class="shrink-0 text-end"><div class="mono text-[14px] font-bold" style="color:var(--tx);">' + spendMoney(it.lastPaid.unitPrice) + '</div><div class="text-[11px]" style="color:var(--tx4);">' + t('prLastPaid') + '</div></div>' : '<div class="shrink-0 text-[11.5px]" style="color:var(--tx4);">' + t('prNeverBought') + '</div>') + '</div>' +
+        (it.lastPaid ? '<div class="mt-1.5 text-[12px]" style="color:var(--tx3);">' + esc(it.lastPaid.supplier) + ' · ' + esc(spendDayLabel(it.lastPaid.date, spLocale())) + '</div>' +
+          '<div class="mt-0.5 text-[12px]" style="color:var(--tx3);">' + tpl('prPaidRange', { min: fmtNum(it.paidMin, 3), max: fmtNum(it.paidMax, 3), avg: fmtNum(it.paidAvg, 3) }) + '</div>' : '') +
+        (it.offeredMin != null ? '<div class="mt-0.5 text-[12px]" style="color:var(--tx4);">' + tpl('prOffered', { min: fmtNum(it.offeredMin, 3), max: fmtNum(it.offeredMax, 3) }) + '</div>' : '') +
+      '</button>';
+    }).join('');
+}
+function renderPriceDetail(){
+  const back = '<button type="button" onclick="closePriceItem()" class="mb-3 inline-flex min-h-[40px] items-center gap-1.5 text-[13px] font-semibold" style="color:var(--tx3);">' + (state.lang === 'ar' ? '&rarr; ' : '&larr; ') + t('prBack') + '</button>';
+  const d = state.priceDetail;
+  if (!d) return back + '<div class="py-10 text-center text-[13px]" style="color:var(--tx4);">' + t('spLoading') + '</div>';
+  const unit = d.unit ? unitLabel(d.unit) : '';
+  return back + '<h2 class="text-[20px] font-extrabold break-words" style="color:var(--tx);">' + esc(d.title.trim()) + '</h2>' +
+    '<div class="mb-4 text-[12px]" style="color:var(--tx4);">' + (unit ? esc(unit) + ' · ' : '') + tpl('prRequests', { n: d.rfqs.length }) + '</div>' +
+    priceChart(d.series) +
+    d.rfqs.map(r => '<section class="mb-4 rounded-2xl border p-4" style="border-color:var(--line); background:var(--panel);">' +
+      '<div class="mb-2 flex flex-wrap items-center justify-between gap-2"><div class="text-[13px] font-bold" style="color:var(--tx);">' + esc(spendDayLabel(r.day, spLocale())) + ' · <span class="bx-id">RFQ-' + esc(String(r.rfqId).slice(-4).toUpperCase()) + '</span>' +
+        (r.quantity ? ' · ' + tpl('prQtyUnit', { qty: r.quantity, unit: esc(r.unit ? unitLabel(r.unit) : '') }) : '') + '</div>' + statusPill(r.status) + '</div>' +
+      (r.bids.length === 0 ? '<div class="text-[12px]" style="color:var(--tx4);">' + t('prNoBids') + '</div>' : r.bids.map(b =>
+        '<div class="flex items-start justify-between gap-3 py-2" style="border-top:1px solid var(--line);"><div class="min-w-0"><div class="text-[13px] font-semibold break-words" style="color:var(--tx);">' + esc(b.supplier) + '</div>' +
+          '<div class="mt-0.5 flex flex-wrap items-center gap-1.5">' + bidStatusPill(b.status) +
+          (b.cheapest ? '<span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--ok-soft); color:var(--ok);">' + t('prLowest') + '</span>' : '') +
+          '</div><div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + tpl('prDaysTerms', { days: b.deliveryTimeDays != null ? b.deliveryTimeDays : '—', terms: b.paymentTermsDays != null ? b.paymentTermsDays : 30 }) + '</div></div>' +
+          '<div class="shrink-0 text-end"><div class="mono text-[14px] font-bold" style="color:var(--tx);">' + spendMoney(b.unitPrice) + '</div><div class="text-[11.5px]" style="color:var(--tx4);">' + spendMoney(b.total) + '</div></div></div>').join('')) +
+      (r.chosenOverCheapestPercent != null ? '<div class="mt-2 rounded-lg p-2.5 text-[12px]" style="background:var(--pend-soft); color:var(--pend);">' + tpl('prDearer', { pct: r.chosenOverCheapestPercent }) + '</div>' : '') +
+    '</section>').join('');
+}
 
 function renderStockPage(){
   const items = state.stock || [];
@@ -5090,7 +5401,7 @@ function verificationBanner(){
 // ---------- Admin ----------
 
 function renderAdmin(){
-  const header = '<header class="sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
+  const header = '<header class="bx-noprint sticky top-0 z-30 border-b backdrop-blur-xl" style="border-color:var(--bd); background:color-mix(in srgb, var(--bg) 90%, transparent);">' +
     '<div class="mx-auto flex max-w-[1220px] items-center justify-between gap-2 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5">' + logo('ADMIN CONSOLE') +
     '<div class="relative flex items-center gap-1.5 sm:gap-3">' +
       '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:var(--line); color:var(--tx2);">Admin</span>' +
@@ -6136,7 +6447,7 @@ const OVERLAYS = [
   ['erase', s => !!s.showEraseModal, () => closeEraseModal()],
   ['forgot', s => !!s.showForgotModal, () => closeForgotModal()]
 ];
-const ROUTE_NAMES = { '': 'main', rfqs: 'rfqs', opportunities: 'rfqs', orders: 'lpos', stock: 'stock', suppliers: 'catalog', catalog: 'catalog', settings: 'profile' };
+const ROUTE_NAMES = { '': 'main', rfqs: 'rfqs', opportunities: 'rfqs', orders: 'lpos', stock: 'stock', spending: 'spending', suppliers: 'catalog', catalog: 'catalog', settings: 'profile' };
 let histDepth = 0, histBusy = false, histPopExpected = false, histDirty = false, histAdopt = false, histTimer = null, pendingRoute = null;
 
 function isDashboardView(){ return state.view === 'buyer' || state.view === 'supplier'; }
@@ -6150,7 +6461,7 @@ function topOverlay(){ const o = OVERLAYS.find(x => x[1](state)); return o ? o[0
 function currentDepth(){ return screenDepth() + (topOverlay() ? 1 : 0); }
 function sectionHash(sec){
   const supplier = state.view === 'supplier';
-  return ({ main: '#/', rfqs: supplier ? '#/opportunities' : '#/rfqs', lpos: '#/orders', stock: '#/stock', catalog: supplier ? '#/catalog' : '#/suppliers', profile: '#/settings' })[sec] || '#/';
+  return ({ main: '#/', rfqs: supplier ? '#/opportunities' : '#/rfqs', lpos: '#/orders', stock: '#/stock', spending: '#/spending', catalog: supplier ? '#/catalog' : '#/suppliers', profile: '#/settings' })[sec] || '#/';
 }
 // URL of the history entry at depth k while the app is showing the current screen
 function entryHash(k){
@@ -6180,7 +6491,7 @@ function applyRoute(r){
   const supplier = state.view === 'supplier';
   if (r.section === 'rfqLink' && r.rfqId) { openRfqLink(r.rfqId); return; }
   if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId, true); return; }
-  if (r.section === 'stock' && supplier) r = { section: 'main' };
+  if ((r.section === 'stock' || r.section === 'spending') && supplier) r = { section: 'main' };
   setSection(r.section);
 }
 // A route from the address bar / a link. Sign-in and registration links only mean something signed out (signed in:
