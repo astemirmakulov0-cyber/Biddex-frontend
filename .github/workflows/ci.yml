@@ -39,6 +39,15 @@ jobs:
       - name: Build the site folder (dry run of the deploy)
         run: node tools/build-site.js _site
 
+      # only on a pull request: the same upload the deploy job does, so a new version of the action is tried before the merge
+      # (the deploy steps themselves run on main only); nothing is published, the artifact is kept for one day
+      - name: Try the Pages artifact upload (pull requests only, nothing is deployed)
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+          retention-days: 1
+
   deploy:
     name: Deploy to GitHub Pages
     needs: test
