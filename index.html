@@ -2445,6 +2445,7 @@ const AUDIT_ACTION_LABELS = {
   COMPANY_PASSWORD_RESET: 'Password reset', WALLET_TOPUP: 'Credits added', DISPUTE_RESOLVED: 'Dispute resolved', REVIEW_COMMENT_HIDDEN: 'Review comment hidden',
   REVIEW_COMMENT_SHOWN: 'Review comment shown', VERIFICATION_DOCUMENT_VIEWED: 'Verification document viewed', BID_LINK_CREATED: 'Bid link created', BID_LINK_REISSUED: 'Bid link reissued',
   BID_LINK_REVOKED: 'Bid link revoked', SUPPLIER_CONTACT_RECORDED: 'Supplier contact recorded', SUPPLIER_CONTACT_WITHDRAWN: 'Supplier consent withdrawn', SUPPLIER_CONTACT_VIEWED: 'Supplier contact viewed',
+  ORDER_CHAT_VIEWED: 'Order chat viewed', ORDER_DOCUMENT_DOWNLOADED: 'Order document opened', QUOTE_ATTACHMENT_DOWNLOADED: 'Bid attachment opened',
 };
 async function refreshAdminAudit(){
   if (!state.token || state.view !== 'admin') return;
