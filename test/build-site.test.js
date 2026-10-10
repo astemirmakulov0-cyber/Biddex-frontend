@@ -23,7 +23,7 @@ check('the artifact is exactly the list of the site files', JSON.stringify(built
 check('CNAME is in the artifact and equals the one of the repository', fs.existsSync(path.join(out, 'CNAME')) && fs.readFileSync(path.join(out, 'CNAME'), 'utf8') === fs.readFileSync(path.join(root, 'CNAME'), 'utf8') && fs.readFileSync(path.join(out, 'CNAME'), 'utf8').trim() === 'app.biddex.online');
 const leaked = built.filter((f) => /^(tools|test|\.github|node_modules|_site)\//.test(f) || /(^|\/)(README|\.git|\.env)/i.test(f) || /\.(test\.js|svg|md|log|pem|key)$/.test(f));
 check('no service files in the artifact (tools/, test/, .github/, README, *.svg sources, secrets)', leaked.length === 0, leaked.join(' '));
-check('the pages and scripts of the site are all there', ['index.html', 'bid.html', 'verify.html', 'reset-password.html', 'privacy.html', 'terms.html', 'ar/privacy.html', 'ar/terms.html', 'config.js', 'server-errors.js', 'manifest.webmanifest'].every((f) => built.includes(f)));
+check('the pages and scripts of the site are all there', ['index.html', 'bid.html', 'accept-invite.html', 'verify.html', 'reset-password.html', 'privacy.html', 'terms.html', 'ar/privacy.html', 'ar/terms.html', 'config.js', 'server-errors.js', 'manifest.webmanifest'].every((f) => built.includes(f)));
 
 // links: HTML src/href and the manifest, checked against the built folder itself
 const miss = site.missingRefs(built, (f) => fs.readFileSync(path.join(out, f), 'utf8'));
