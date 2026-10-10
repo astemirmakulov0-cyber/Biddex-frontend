@@ -43,7 +43,7 @@ check('"Prepared by" and the waiting banner need the flag, the label never shows
 check('Publish on a draft only for a person who may publish; it asks first and opens the form when something is missing', /r\.status === 'DRAFT' && can\('rfq\.publish'\) \? '<button onclick="event\.stopPropagation\(\); publishDraft/.test(html) && /confirm\(tpl\('tmPublishConfirm'/.test(html) && /e\.status === 400\) openEditRfq\(id\)/.test(html));
 check('History: only with the flag, and the supplier never gets the order block', /function historyCard\(list\)\{\n  if \(!teamOn\(\)/.test(html) && /historyCard\(isSupplier \? null : order\.activity\)/.test(html) && /\(teamOn\(\) \? '<button onclick="event\.stopPropagation\(\); openRfqHistory/.test(html));
 check('the bell: "a person joined" opens People (only with the flag)', /n\.type === 'MEMBER_JOINED' && peopleOn\(\)/.test(html) && /id="' \+ id \+ '"/.test(html) && /people-card/.test(html));
-check('an RFQ link from the bell or an e-mail lands a buyer on the row, never in the supplier bid form', /else flashRfq\(rfq\.id\); return; \}/.test(html));
+check('an RFQ link from the bell or an e-mail lands a buyer on the row, never in the supplier bid form', /else \{ state\.rfqTab = rfqTabOf\(rfq\); render\(\); flashRfq\(rfq\.id\); \} return; \}/.test(html));
 {
   const en = html.slice(html.indexOf('en: {'), html.indexOf('ar: {')), ar = html.slice(html.indexOf('ar: {'));
   const keys = [...new Set([...en.matchAll(/\b((?:tm|act_)\w+):/g)].map((m) => m[1]))];
