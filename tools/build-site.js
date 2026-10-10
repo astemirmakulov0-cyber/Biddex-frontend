@@ -7,7 +7,7 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const FILES = [
-  'index.html', 'bid.html', 'verify.html', 'reset-password.html', 'privacy.html', 'terms.html',
+  'index.html', 'bid.html', 'accept-invite.html', 'verify.html', 'reset-password.html', 'privacy.html', 'terms.html',
   'config.js', 'server-errors.js', 'manifest.webmanifest',
   'CNAME', // kept in the artifact; with the Actions source Pages takes the domain from Settings → Pages
 ];
