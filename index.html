@@ -349,6 +349,7 @@ const I18N = {
     rfqSpecsMax:"Specifications can be at most {max} characters.",
     rfqUpdated:"RFQ updated.",
     rfqPosted:"RFQ posted to suppliers.",
+    rfqSaveDraft:"Save as draft", rfqDraftSaved:"Draft saved. A manager or the owner can publish it.",
     rfqLocked:"A supplier has already quoted on this RFQ, so it can no longer be edited.",
     rfqMoreDetails:"More details",
     rfqLessDetails:"Fewer details",
@@ -460,6 +461,7 @@ const I18N = {
     roleSupplier:"Supplier",
     registerSuccess:"Registration successful. Please check your email to verify your account.",
     sessionExpired:"Your session has expired. Please log in again.",
+    noLongerMember:"You are no longer a member of that company. Please log in again.",
     accountDeactivated:"This account has been deactivated.",
     verifyTitle2:"Submit verification document",
     verifyStaysVerified:"Your company stays Verified. The new document is added for the Biddex team to review (e.g. a renewed trade license).",
@@ -1014,6 +1016,7 @@ const I18N = {
     rfqSpecsMax:"يمكن أن تصل المواصفات إلى {max} حرفًا كحد أقصى.",
     rfqUpdated:"تم تحديث الطلب.",
     rfqPosted:"تم نشر الطلب للموردين.",
+    rfqSaveDraft:"حفظ كمسودة", rfqDraftSaved:"تم حفظ المسودة. يمكن للمدير أو المالك نشرها.",
     rfqLocked:"قدّم مورد عرضًا على هذا الطلب، لذا لم يعد بالإمكان تعديله.",
     rfqMoreDetails:"المزيد من التفاصيل",
     rfqLessDetails:"تفاصيل أقل",
@@ -1125,6 +1128,7 @@ const I18N = {
     roleSupplier:"مورّد",
     registerSuccess:"تم إنشاء الحساب. تحقّق من بريدك الإلكتروني لتفعيل حسابك.",
     sessionExpired:"انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
+    noLongerMember:"لم تعد عضواً في تلك الشركة. يرجى تسجيل الدخول مرة أخرى.",
     accountDeactivated:"تم تعطيل هذا الحساب.",
     verifyTitle2:"إرسال مستند التوثيق",
     verifyStaysVerified:"تبقى شركتك موثّقة. سيُضاف المستند الجديد ليراجعه فريق Biddex (مثل رخصة تجارية مجدَّدة).",
@@ -1658,6 +1662,7 @@ let state = {
   showForgotModal: false, forgotEmail: '', forgotBusy: false,
 
   token: null, user: null, company: null, wallet: null, onboarding: null,
+  teamMembersEnabled: false, // GET /api/config/public; everything about teams is hidden while it is false
 
   rfqs: [], catalog: [], myCatalog: [], stock: [],
   spendTab: 'spending', spendPreset: '12m', spendRange: null, spendData: null, spendLoading: false, spendError: false,
@@ -1781,10 +1786,16 @@ function bidFeePercent(){
   if (state.bidFeePercent != null) return state.bidFeePercent;
   return (state.company && state.company.bidFeePercent != null) ? state.company.bidFeePercent : null;
 }
+// Rights come from the server: GET /auth/me and the login answer carry user.permissions (the actions of permissions.js that this
+// person may do). The app keeps no copy of the table. No list (an old session or an old backend) = everything is shown, as for an
+// owner; the server decides anyway and answers 403 with its own text.
+function can(action){ const p = state.user && state.user.permissions; return !Array.isArray(p) || p.includes(action); }
+function teamOn(){ return state.teamMembersEnabled === true; }
 async function refreshConfig(){
   try {
     const data = await api('/api/config/public');
     if (data && typeof data.bidFeePercent === 'number') setIfChanged('bidFeePercent', data.bidFeePercent);
+    if (data) setIfChanged('teamMembersEnabled', data.teamMembersEnabled === true);
   } catch(e) { /* keep whatever is known; the company fetch also carries bidFeePercent */ }
 }
 // "Overdue N days" for an invoice past its due date (dueDate is only set once receipt is confirmed)
@@ -1825,10 +1836,10 @@ async function api(path, opts={}) {
     // A 401 from the auth middleware mid-session means the token expired or the account was deactivated:
     // end the session instead of leaving every panel silently empty. (Other 401s, e.g. a wrong current
     // password on the change-password form, must not log the user out.)
-    const SESSION_ERRORS = ['Invalid or expired token', 'Account deactivated', 'Missing or invalid Authorization header'];
+    const SESSION_ERRORS = ['Invalid or expired token', 'Account deactivated', 'Missing or invalid Authorization header', 'You are no longer a member of this company'];
     if (res.status === 401 && state.token && SESSION_ERRORS.includes(err.message)) {
       logout();
-      showToast(t(err.message === 'Account deactivated' ? 'accountDeactivated' : 'sessionExpired'));
+      showToast(t(err.message === 'Account deactivated' ? 'accountDeactivated' : err.message === 'You are no longer a member of this company' ? 'noLongerMember' : 'sessionExpired'));
     }
     throw err;
   }
@@ -2072,8 +2083,22 @@ function syncBanner(){
   '</div>';
 }
 
+// who I am and what I may do: once after the page opens (an old stored session has no list) and then every 5 minutes
+let lastMeAt = 0;
+async function refreshMe(){
+  if (!state.token || !state.user || state.user.role === 'ADMIN') return;
+  if (Array.isArray(state.user.permissions) && Date.now() - lastMeAt < 5 * 60 * 1000) return;
+  try {
+    const me = await api('/api/auth/me');
+    lastMeAt = Date.now();
+    if (!me || !state.user) return;
+    setIfChanged('user', { ...state.user, fullName: me.fullName || null, memberRole: me.memberRole || null, permissions: Array.isArray(me.permissions) ? me.permissions : undefined });
+    saveSession();
+  } catch(e) { /* keep what is known */ }
+}
 async function refreshCompanyInfo(){
   if (!state.token || !state.company) return;
+  refreshMe();
   try { const data = await api('/api/companies/me'); setIfChanged('company', { ...state.company, ...data }); syncOk('company'); }
   catch(e) { syncFailed('company', e); }
 }
@@ -2223,7 +2248,7 @@ function reviewBodyHtml(rv, viewer){
 // The card on an order: the form for the buyer once the goods are received, then the review (and the reply).
 function renderReviewPanel(order, isSupplier){
   const rv = order.review;
-  const canRate = !isSupplier && order.receivedAt && ['DELIVERED', 'COMPLETED'].includes(order.status) && !rv;
+  const canRate = !isSupplier && can('review.write') && order.receivedAt && ['DELIVERED', 'COMPLETED'].includes(order.status) && !rv;
   if (!rv && !canRate) return '';
   const card = (inner) => '<div class="mt-6 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' + inner + '</div>';
   if (rv) {
@@ -3201,8 +3226,9 @@ function bahrainToday(){ return new Date(Date.now() + 3 * 3600e3).toISOString().
 function bahrainDateOf(iso){ return iso ? new Date(new Date(iso).getTime() + 3 * 3600e3).toISOString().slice(0, 10) : ''; }
 
 // Buyer may edit an RFQ only while it is DRAFT/PUBLISHED and nobody has quoted (the server enforces this too)
-function canEditRfq(r){ return (r.status === 'DRAFT' || r.status === 'PUBLISHED') && !(r._count && r._count.quotes > 0); }
-function canCancelRfq(r){ return ['DRAFT','PUBLISHED','QUOTING_CLOSED'].includes(r.status); }
+// (a person who may not publish edits drafts only)
+function canEditRfq(r){ return (r.status === 'DRAFT' || (r.status === 'PUBLISHED' && can('rfq.publish'))) && !(r._count && r._count.quotes > 0); }
+function canCancelRfq(r){ return can('rfq.cancel') && ['DRAFT','PUBLISHED','QUOTING_CLOSED'].includes(r.status); }
 
 // The buyer's category for a new RFQ: the one of their latest RFQ (companies have no category of their own),
 // else the platform default
@@ -3384,10 +3410,13 @@ async function submitNewRfq(){
   if (fields.specifications.length > MAX_SPECIFICATIONS) { showToast(t('rfqSpecsMax').replace('{max}', MAX_SPECIFICATIONS)); return; }
   setState({ postBusy:true });
   try {
-    if (editId) await api('/api/rfqs/' + editId, { method:'PATCH', body: JSON.stringify(fields) });
-    else await api('/api/rfqs', { method:'POST', body: JSON.stringify({ ...fields, publish: true }) });
+    const publishes = can('rfq.publish');
+    const editedDraft = editId && ((state.rfqs || []).find(x => x.id === editId) || {}).status === 'DRAFT';
+    // a draft (made by someone who may not publish) goes live when a manager or owner saves it
+    if (editId) await api('/api/rfqs/' + editId, { method:'PATCH', body: JSON.stringify(editedDraft && publishes ? { ...fields, status: 'PUBLISHED' } : fields) });
+    else await api('/api/rfqs', { method:'POST', body: JSON.stringify({ ...fields, publish: publishes }) });
     setState({ showPostRfq:false, editRfqId:null, postBusy:false });
-    showToast(t(editId ? 'rfqUpdated' : 'rfqPosted'));
+    showToast(t(editId ? (editedDraft && publishes ? 'rfqPosted' : 'rfqUpdated') : (publishes ? 'rfqPosted' : 'rfqDraftSaved')));
     refreshRfqs();
   } catch(e) {
     setState({ postBusy:false });
@@ -3455,7 +3484,7 @@ async function openCompare(rfqId){
 // It is a hint only: if it cannot be loaded nothing is shown.
 async function loadLastPaid(rfqId){
   const r = (state.rfqs || []).find(x => x.id === rfqId);
-  if (!r) return;
+  if (!r || !can('analytics.view')) return;
   try {
     const d = await api('/api/analytics/items/detail?key=' + encodeURIComponent(spendItemKey(r.title, r.unit)));
     if (state.compareRfqId === rfqId) setState({ compareLastPaid: lastPaidOf(d, rfqId) });
@@ -4125,7 +4154,7 @@ function moreSheet(role, walletLabel){
   return '<div class="bx-more bx-overlay fixed inset-0 z-50 flex items-end bg-black/50" onclick="if(event.target===this)toggleMoreSheet()">' +
     '<div class="bx-sheet bx-rise w-full rounded-t-2xl border-t p-3" style="border-color:var(--bd); background:var(--panel); padding-bottom:calc(0.75rem + env(safe-area-inset-bottom, 0px));">' +
       '<div class="flex items-center justify-between gap-3 px-3 pb-2 pt-1"><div class="min-w-0 truncate text-[14px] font-bold" style="color:var(--tx);">' + esc(state.company ? state.company.name : '') + '</div>' + verificationBadge() + '</div>' +
-      (isBuyer ? row("setSection('catalog')", t('navNetwork')) + row("setSection('spending')", t('navSpending')) : row('toggleMoreSheet();openWalletModal()', t('walletTitle') || '', '<span class="mono text-[13px]" style="color:var(--acc);">' + walletLabel + '</span>')) +
+      (isBuyer ? row("setSection('catalog')", t('navNetwork')) + (can('analytics.view') ? row("setSection('spending')", t('navSpending')) : '') : row('toggleMoreSheet();openWalletModal()', t('walletTitle') || '', '<span class="mono text-[13px]" style="color:var(--acc);">' + walletLabel + '</span>')) +
       row("setSection('profile')", t('navSettings')) +
       row('toggleLang();toggleMoreSheet()', state.lang === 'ar' ? 'English' : 'العربية') +
       row('toggleTheme();toggleMoreSheet()', t(isDarkNow() ? 'themeLight' : 'themeDark')) +
@@ -4140,7 +4169,7 @@ function mobileBack(sec){
 function navBar(role){
   const isBuyer = role === 'buyer';
   const tabs = isBuyer
-    ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['stock',t('navStock')], ['catalog',t('navNetwork')], ['spending',t('navSpending')], ['profile',t('navSettings')] ]
+    ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['stock',t('navStock')], ['catalog',t('navNetwork')], ...(can('analytics.view') ? [['spending',t('navSpending')]] : []), ['profile',t('navSettings')] ]
     : [ ['main',t('navSupplierHub')], ['rfqs',t('navOpportunities')], ['catalog',t('navCatalog')], ['lpos',t('navOrdersLpos')], ['profile',t('navSettings')] ];
   const activeKey = state.section === 'orderDetail' ? 'lpos' : state.section;
   return '<div class="bx-noprint hidden md:block border-b" style="border-color:var(--bd); background:var(--panel);">' +
@@ -4227,7 +4256,7 @@ const CHEVRON = '<svg class="bx-chev" width="18" height="18" viewBox="0 0 24 24"
 function rfqTable(rfqs){
   const rows = rfqs.map(r => ({ r, tl: timeLeftLabel(r.deadline), actions:
     (canEditRfq(r) ? '<button onclick="event.stopPropagation(); openEditRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnEdit') + '</button>' : '') +
-    (r.status === 'PUBLISHED' ? '<button onclick="event.stopPropagation(); openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnCloseBidding') + '</button>' : '') +
+    (r.status === 'PUBLISHED' && can('rfq.publish') ? '<button onclick="event.stopPropagation(); openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnCloseBidding') + '</button>' : '') +
     (canCancelRfq(r) ? '<button onclick="event.stopPropagation(); openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">' + t('btnCancel') + '</button>' : '') +
     (rfqBidCount(r) > 0 && r.status !== 'CANCELLED' ? '<button onclick="event.stopPropagation(); openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('btnCompare') + '</button>' : '')
   }));
@@ -5137,7 +5166,7 @@ function renderSettings(){
       profileField('phone', t('pfPhone'), f.phone) +
       profileField('registrationNumber', t('pfCr'), f.registrationNumber) +
     '</div>' +
-    '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="bx-btn-block mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + t(state.profileBusy ? 'saving' : 'saveChanges') + '</button>' +
+    (can('company.edit') ? '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="bx-btn-block mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + t(state.profileBusy ? 'saving' : 'saveChanges') + '</button>' : '') +
   '</div>' +
   onboardingRestoreBlock() +
   '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
@@ -5149,7 +5178,7 @@ function renderSettings(){
   '</div>' +
   '<div class="mt-6 max-w-lg">' +
     '<div class="mb-3 flex items-center justify-between"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('setDocsHeading') + '</h2>' +
-    '<button onclick="openVerifyModal()" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t(c.verificationStatus === 'VERIFIED' ? 'setSubmitUpdated' : 'setSubmitDoc') + '</button>' +
+    (can('company.edit') ? '<button onclick="openVerifyModal()" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">' + t(c.verificationStatus === 'VERIFIED' ? 'setSubmitUpdated' : 'setSubmitDoc') + '</button>' : '') +
     '</div>' +
     (docs.length === 0 ? emptyState(t('setNoDocsTitle'), t('setNoDocsBody')) :
       '<div class="flex flex-col gap-2">' + docs.map(d =>
@@ -5190,7 +5219,7 @@ function emailPrefToggle(field, label, checked){
 
 function profileField(name, label, value){
   return '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + label + '</span>' +
-    '<input data-profile="' + name + '" type="text" value="' + esc(value) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>';
+    '<input data-profile="' + name + '"' + (can('company.edit') ? '' : ' disabled') + ' type="text" value="' + esc(value) + '" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>';
 }
 
 // ---------- Order detail ----------
@@ -5221,7 +5250,7 @@ function renderOrderDetail(){
   const totals = invoiceTotals(invoice);
   const awaitingReceipt = ['SHIPPED', 'DELIVERED'].includes(order.status) && !order.receivedAt;
   let payAction = '';
-  if (!isSupplier && invoice.id && ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'].includes(invoice.status) && order.status !== 'CANCELLED') {
+  if (!isSupplier && can('payment.record') && invoice.id && ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'].includes(invoice.status) && order.status !== 'CANCELLED') {
     payAction = !order.receivedAt
       ? '<span class="rounded-lg px-3 py-1.5 text-[12px] font-semibold" style="background:var(--line); color:var(--tx2);">' + t('odPayableAfter') + '</span>'
       : totals.outstanding > 0
@@ -5421,7 +5450,7 @@ function verificationBanner(){
   if (!st || st === 'VERIFIED' || st === 'IN_REVIEW') return '';
   return '<div class="mb-6 flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
     '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + t(st === 'REJECTED' ? 'verifyBannerRejected' : 'verifyBannerGet') + hint('verification') + '</div>' +
-    '<button onclick="openVerifyModal()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('verifySubmitDoc') + '</button>' +
+    (can('company.edit') ? '<button onclick="openVerifyModal()" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('verifySubmitDoc') + '</button>' : '') +
   '</div>';
 }
 
@@ -5994,7 +6023,7 @@ function renderModals(){
           '</label>'
         : '') +
       '</div>',
-      'submitNewRfq()', state.postBusy ? t(editing ? 'rfqSaving' : 'rfqPosting') : t(editing ? 'saveChanges' : 'rfqPostSubmit'), state.postBusy, true);
+      'submitNewRfq()', state.postBusy ? t(editing ? 'rfqSaving' : 'rfqPosting') : t(!can('rfq.publish') ? (editing ? 'saveChanges' : 'rfqSaveDraft') : (editing && ((state.rfqs || []).find(x => x.id === state.editRfqId) || {}).status !== 'DRAFT') ? 'saveChanges' : 'rfqPostSubmit'), state.postBusy, true);
   }
   if (state.showPayModal) {
     const f = state.payForm;
@@ -6077,7 +6106,7 @@ function renderModals(){
       if (x.status === 'WITHDRAWN') return pill(t('stWithdrawn'), 'background:var(--line); color:var(--tx2);');
       const busy = state.compareBusyId === x.id;
       const shortlisted = x.status === 'SHORTLISTED' ? pill(t('stShortlisted'), 'background:var(--info-soft); color:var(--info);') : '';
-      if (!evaluating) return shortlisted;
+      if (!evaluating || !can('quote.decide')) return shortlisted;
       const btn = (label, fn, style) => '<button onclick="' + (busy || state.compareBusyId ? '' : fn) + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="' + style + ' opacity:' + (busy?'0.6':'1') + ';">' + label + '</button>';
       return shortlisted +
         (x.status === 'SUBMITTED' ? btn(t('btnShortlist'), "changeQuoteStatus('" + x.id + "','shortlist')", 'border-color:var(--bd2); color:var(--tx);') : '') +
@@ -6520,6 +6549,7 @@ function applyRoute(r){
   if (r.section === 'rfqLink' && r.rfqId) { openRfqLink(r.rfqId); return; }
   if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId, true); return; }
   if ((r.section === 'stock' || r.section === 'spending') && supplier) r = { section: 'main' };
+  if (r.section === 'spending' && !can('analytics.view')) r = { section: 'main' };
   setSection(r.section);
 }
 // A route from the address bar / a link. Sign-in and registration links only mean something signed out (signed in:
