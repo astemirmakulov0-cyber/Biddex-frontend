@@ -281,6 +281,23 @@ const I18N = {
     reverifyConfirm:'Your company is verified. Changing its name or CR number removes the verification until an admin checks it again; meanwhile you cannot post RFQs or submit quotes. Continue?',
     reverifyToast:'Saved. Your company is back in review until an admin re-verifies it.',
     networkError:'Network error — check your connection.', syncFailed:'Couldn’t refresh data.', syncRetrying:'Retrying automatically.', retryNow:'Retry now',
+    tmHeading:"People", tmSub:"People who work in this account. Each sees and does what their role allows.", tmCount:"{n} of {max} places used (invitations count)",
+    tmYou:"you", tmFormer:"Former member", tmRoleOwner:"Owner", tmRoleManager:"Manager", tmRoleStaff:"Staff",
+    tmRoleOwnerHint:"Everything, including people, company data and deleting the company.",
+    tmRoleManagerHint:"Publishes requests, chooses the supplier, records payments, writes reviews and sees spending.",
+    tmRoleStaffHint:"Prepares draft requests, confirms receipt, opens disputes, uses chat, documents and stock.",
+    tmInvite:"Invite a person", tmInviteTitle:"Invite a person", tmEmail:"Email address", tmRole:"Role", tmSend:"Send invitation", tmSending:"Sending…",
+    tmInviteSent:"Invitation sent to {email}.", tmInviteNotSent:"The invitation was created, but the email could not be sent. Use Resend.",
+    tmInviteNote:"The person gets a link valid for {days} days and sets their own password. An address that already has a Biddex account cannot join.",
+    tmPending:"Invitations", tmExpires:"expires {date}", tmExpired:"expired", tmResend:"Resend", tmCancelInvite:"Cancel",
+    tmConfirmCancelInvite:"Cancel the invitation to {email}?", tmResent:"Invitation sent again.", tmInviteCancelled:"Invitation cancelled.",
+    tmRemove:"Remove", tmConfirmRemove:"Remove {name} from the company? Their account is deleted and they are signed out at once. What they did stays in the history as a former member.", tmRemoved:"Person removed.",
+    tmRoleChanged:"Role changed.", tmConfirmRole:"Change the role of {name} to {role}? They will be signed out and must sign in again.",
+    tmLeave:"Leave the company", tmLeaveTitle:"Leave the company", tmLeaveBody:"Your account will be deleted and your personal data erased. The company keeps its business records, which show you as a former member. This cannot be undone.",
+    tmLeavePassword:"Your password", tmLeaveYes:"Leave and delete my account", tmLeaving:"Leaving…", tmLeft:"You left the company. Your account was deleted.",
+    tmLastOwner:"You are the only owner. Make someone else an owner first, or delete the company.", tmLoadFailed:"Could not load the people list.",
+    tmNameHeading:"Your name", tmNamePh:"Full name", tmNameHint:"Colleagues see it in the history of who did what.", tmNameAdd:"Add your name so colleagues can see who did what.", tmNameSaved:"Name saved.",
+    settingsEmailHeadingMine:"Your email notifications",
     settingsEmailHeading:'Email notifications', settingsEmailNewRfq:'Email me about new RFQs', settingsEmailOther:'Other email notifications',
     settingsPrivacyHeading:'Privacy & data', settingsPrivacySubtext:'Your rights under Bahrain’s Personal Data Protection Law (PDPL).',
     settingsExportData:'Download my data', settingsDeleteAccount:'Delete account',
@@ -948,6 +965,23 @@ const I18N = {
     reverifyConfirm:'شركتك موثّقة. تغيير اسمها أو رقم سجلها التجاري يلغي التوثيق حتى يراجعه المسؤول مجددًا، ولن تتمكن خلال ذلك من نشر طلبات التسعير أو تقديم العروض. هل تريد المتابعة؟',
     reverifyToast:'تم الحفظ. شركتك قيد المراجعة مجددًا حتى يعيد المسؤول توثيقها.',
     networkError:'خطأ في الشبكة — تحقّق من اتصالك.', syncFailed:'تعذّر تحديث البيانات.', syncRetrying:'ستتم إعادة المحاولة تلقائيًا.', retryNow:'أعد المحاولة الآن',
+    tmHeading:"الأشخاص", tmSub:"الأشخاص الذين يعملون في هذا الحساب. يرى كلٌّ منهم ويفعل ما يسمح به دوره.", tmCount:"المقاعد المستخدمة: {n} من {max} (تُحسب الدعوات)",
+    tmYou:"أنت", tmFormer:"عضو سابق", tmRoleOwner:"مالك", tmRoleManager:"مدير", tmRoleStaff:"موظف",
+    tmRoleOwnerHint:"كل شيء، بما في ذلك الأشخاص وبيانات الشركة وحذف الشركة.",
+    tmRoleManagerHint:"ينشر الطلبات ويختار المورّد ويسجّل المدفوعات ويكتب التقييمات ويرى الإنفاق.",
+    tmRoleStaffHint:"يعدّ مسودات الطلبات ويؤكد الاستلام ويفتح النزاعات ويستخدم المحادثة والمستندات والمخزون.",
+    tmInvite:"دعوة شخص", tmInviteTitle:"دعوة شخص", tmEmail:"البريد الإلكتروني", tmRole:"الدور", tmSend:"إرسال الدعوة", tmSending:"جارٍ الإرسال…",
+    tmInviteSent:"تم إرسال الدعوة إلى {email}.", tmInviteNotSent:"تم إنشاء الدعوة لكن تعذّر إرسال البريد. استخدم «إعادة الإرسال».",
+    tmInviteNote:"يصل إلى الشخص رابط صالح لمدة {days} أيام ويضع كلمة مروره بنفسه. لا يمكن لعنوان لديه حساب في Biddex أن ينضم.",
+    tmPending:"الدعوات", tmExpires:"تنتهي في {date}", tmExpired:"منتهية", tmResend:"إعادة الإرسال", tmCancelInvite:"إلغاء",
+    tmConfirmCancelInvite:"إلغاء الدعوة المرسلة إلى {email}؟", tmResent:"تم إرسال الدعوة مرة أخرى.", tmInviteCancelled:"تم إلغاء الدعوة.",
+    tmRemove:"إزالة", tmConfirmRemove:"إزالة {name} من الشركة؟ سيُحذف حسابه ويُسجَّل خروجه فوراً. يبقى ما فعله في السجل باسم عضو سابق.", tmRemoved:"تمت إزالة الشخص.",
+    tmRoleChanged:"تم تغيير الدور.", tmConfirmRole:"تغيير دور {name} إلى {role}؟ سيُسجَّل خروجه وعليه تسجيل الدخول من جديد.",
+    tmLeave:"مغادرة الشركة", tmLeaveTitle:"مغادرة الشركة", tmLeaveBody:"سيُحذف حسابك وتُمحى بياناتك الشخصية. تحتفظ الشركة بسجلاتها التجارية التي تظهر فيها باسم عضو سابق. لا يمكن التراجع عن ذلك.",
+    tmLeavePassword:"كلمة المرور", tmLeaveYes:"مغادرة وحذف حسابي", tmLeaving:"جارٍ المغادرة…", tmLeft:"غادرت الشركة وتم حذف حسابك.",
+    tmLastOwner:"أنت المالك الوحيد. اجعل شخصاً آخر مالكاً أولاً، أو احذف الشركة.", tmLoadFailed:"تعذّر تحميل قائمة الأشخاص.",
+    tmNameHeading:"اسمك", tmNamePh:"الاسم الكامل", tmNameHint:"يراه زملاؤك في سجل من فعل ماذا.", tmNameAdd:"أضف اسمك ليعرف زملاؤك من فعل ماذا.", tmNameSaved:"تم حفظ الاسم.",
+    settingsEmailHeadingMine:"إشعارات بريدك الإلكتروني",
     settingsEmailHeading:'إشعارات البريد الإلكتروني', settingsEmailNewRfq:'إرسال بريد إلكتروني عن طلبات التسعير الجديدة', settingsEmailOther:'إشعارات البريد الإلكتروني الأخرى',
     settingsPrivacyHeading:'الخصوصية والبيانات', settingsPrivacySubtext:'حقوقك بموجب قانون حماية البيانات الشخصية البحريني (PDPL).',
     settingsExportData:'تنزيل بياناتي', settingsDeleteAccount:'حذف الحساب',
@@ -1662,6 +1696,8 @@ let state = {
   showForgotModal: false, forgotEmail: '', forgotBusy: false,
 
   token: null, user: null, company: null, wallet: null, onboarding: null,
+  people: null, peopleError: false, peopleBusy: false, nameDraft: null, nameBusy: false,
+  showInviteModal: false, inviteForm: { email:'', role:'STAFF' }, inviteBusy: false, showLeaveModal: false, leavePassword: '', leaveBusy: false,
   teamMembersEnabled: false, // GET /api/config/public; everything about teams is hidden while it is false
 
   rfqs: [], catalog: [], myCatalog: [], stock: [],
@@ -1796,6 +1832,7 @@ async function refreshConfig(){
     const data = await api('/api/config/public');
     if (data && typeof data.bidFeePercent === 'number') setIfChanged('bidFeePercent', data.bidFeePercent);
     if (data) setIfChanged('teamMembersEnabled', data.teamMembersEnabled === true);
+    if (data && teamOn() && state.section === 'profile' && !state.people) refreshPeople();
   } catch(e) { /* keep whatever is known; the company fetch also carries bidFeePercent */ }
 }
 // "Overdue N days" for an invoice past its due date (dueDate is only set once receipt is confirmed)
@@ -2024,7 +2061,7 @@ async function submitForgotPassword(){
 
 function logout(){
   clearSession();
-  setState({ token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 let lastPollAt = Date.now(); // when the data was last refreshed (see the polling block at the end of the script)
@@ -2101,6 +2138,76 @@ async function refreshCompanyInfo(){
   refreshMe();
   try { const data = await api('/api/companies/me'); setIfChanged('company', { ...state.company, ...data }); syncOk('company'); }
   catch(e) { syncFailed('company', e); }
+}
+
+// ---------- People (buyer companies; only while the server says teamMembersEnabled) ----------
+// GET /api/company/members -> { me, members[{id,userId,email,fullName,role,joinedAt,you}], invites[], limits:{maxMembers,maxOwners,inviteDays} }
+// Owners manage (invite, resend, cancel, change role, remove); everybody sees the list and can leave the company.
+const ROLE_KEYS = { OWNER: 'tmRoleOwner', MANAGER: 'tmRoleManager', STAFF: 'tmRoleStaff' };
+function roleLabel(r){ return ROLE_KEYS[r] ? t(ROLE_KEYS[r]) : esc(r); }
+function memberName(m){ return m.fullName || m.email; }
+function peopleOn(){ return teamOn() && state.view === 'buyer'; }
+async function refreshPeople(){
+  if (!peopleOn() || !state.token) return;
+  try { const d = await api('/api/company/members'); setState({ people: d, peopleError: false }); }
+  catch(e) { setState({ peopleError: true }); }
+}
+async function peopleAction(fn, okKey){
+  setState({ peopleBusy: true });
+  try { const r = await fn(); if (okKey) showToast(t(okKey)); await refreshPeople(); setState({ peopleBusy: false }); return r; }
+  catch(e) { setState({ peopleBusy: false }); showToast(e.message); refreshPeople(); }
+}
+function openInviteModal(){ setState({ showInviteModal: true, inviteForm: { email: '', role: 'STAFF' }, inviteBusy: false }); }
+function closeInviteModal(){ setState({ showInviteModal: false }); }
+async function submitInvite(){
+  const f = state.inviteForm;
+  if (!(f.email || '').trim()) return;
+  setState({ inviteBusy: true });
+  try {
+    const r = await api('/api/company/invites', { method:'POST', body: JSON.stringify({ email: f.email.trim(), role: f.role }) });
+    setState({ showInviteModal: false, inviteBusy: false });
+    showToast(r && r.emailSent === false ? t('tmInviteNotSent') : tpl('tmInviteSent', { email: f.email.trim() }));
+    refreshPeople();
+  } catch(e) { setState({ inviteBusy: false }); showToast(e.message); }
+}
+function resendInvite(id){ return peopleAction(() => api('/api/company/invites/' + encodeURIComponent(id) + '/resend', { method:'POST' }), 'tmResent'); }
+function cancelInvite(id, email){
+  if (!confirm(tpl('tmConfirmCancelInvite', { email }))) return;
+  return peopleAction(() => api('/api/company/invites/' + encodeURIComponent(id), { method:'DELETE' }), 'tmInviteCancelled');
+}
+function changeMemberRole(id, role){
+  const m = ((state.people || {}).members || []).find(x => x.id === id);
+  if (!m || m.role === role) return;
+  if (!confirm(tpl('tmConfirmRole', { name: memberName(m), role: roleLabel(role) }))) { refreshPeople(); render(); return; }
+  return peopleAction(() => api('/api/company/members/' + encodeURIComponent(id), { method:'PATCH', body: JSON.stringify({ role }) }), 'tmRoleChanged');
+}
+function removeMember(id){
+  const m = ((state.people || {}).members || []).find(x => x.id === id);
+  if (!m || !confirm(tpl('tmConfirmRemove', { name: memberName(m) }))) return;
+  return peopleAction(() => api('/api/company/members/' + encodeURIComponent(id), { method:'DELETE' }), 'tmRemoved');
+}
+function openLeaveModal(){ setState({ showLeaveModal: true, leavePassword: '', leaveBusy: false }); }
+function closeLeaveModal(){ setState({ showLeaveModal: false }); }
+async function submitLeave(){
+  if (!state.leavePassword) return;
+  setState({ leaveBusy: true });
+  try {
+    await api('/api/company/leave', { method:'POST', body: JSON.stringify({ password: state.leavePassword }) });
+    logout();
+    showToast(t('tmLeft'));
+  } catch(e) { setState({ leaveBusy: false }); showToast(e.message); }
+}
+async function saveMyName(){
+  const name = (state.nameDraft != null ? state.nameDraft : (state.user && state.user.fullName) || '').trim();
+  if (!name) return;
+  setState({ nameBusy: true });
+  try {
+    const r = await api('/api/auth/me/profile', { method:'PATCH', body: JSON.stringify({ fullName: name }) });
+    setState({ user: { ...state.user, fullName: r.fullName }, nameDraft: null, nameBusy: false });
+    saveSession();
+    showToast(t('tmNameSaved'));
+    refreshPeople();
+  } catch(e) { setState({ nameBusy: false }); showToast(e.message); }
 }
 
 function openVerifyModal(){ setState({ showVerifyModal:true, verifyForm:{ fileUrl:'', docType:'TRADE_LICENSE' }, verifyFileName:'' }); }
@@ -2640,6 +2747,7 @@ function setSection(sec){
   if (sec === 'main') refreshOnboarding(); // the home card may have ticked while the user was elsewhere
   if (sec === 'spending' && state.view === 'buyer') spendInit();
   if (sec === 'profile') {
+    refreshPeople();
     const c = state.company || {};
     state.profileForm = { name: c.name||'', country: c.country||'', phone: c.phone||'', registrationNumber: c.registrationNumber||'' };
   }
@@ -5169,8 +5277,9 @@ function renderSettings(){
     (can('company.edit') ? '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="bx-btn-block mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + t(state.profileBusy ? 'saving' : 'saveChanges') + '</button>' : '') +
   '</div>' +
   onboardingRestoreBlock() +
+  peopleCard() +
   '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
-    '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">' + t('settingsEmailHeading') + '</div>' +
+    '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">' + t(peopleOn() ? 'settingsEmailHeadingMine' : 'settingsEmailHeading') + '</div>' +
     '<div class="flex flex-col gap-3">' +
       emailPrefToggle('emailNewRfq', t('settingsEmailNewRfq'), c.emailNewRfq !== false) +
       emailPrefToggle('emailOtherNotifications', t('settingsEmailOther'), c.emailOtherNotifications !== false) +
@@ -5195,6 +5304,48 @@ function renderSettings(){
       '<button onclick="openEraseModal()" class="rounded-xl border px-4 py-2.5 text-left text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('settingsDeleteAccount') + '</button>' +
     '</div>' +
   '</div>';
+}
+
+function peopleCard(){
+  if (!peopleOn()) return '';
+  const card = (inner) => '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' + inner + '</div>';
+  const inputCss = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  const myName = (state.user && state.user.fullName) || '';
+  const nameCard = card('<div class="mb-1 text-[15px] font-bold" style="color:var(--tx);">' + t('tmNameHeading') + '</div>' +
+    '<div class="mb-3 text-[12.5px]" style="color:var(--tx4);">' + t(myName ? 'tmNameHint' : 'tmNameAdd') + '</div>' +
+    '<div class="flex gap-2"><input type="text" maxlength="100" value="' + esc(state.nameDraft != null ? state.nameDraft : myName) + '" placeholder="' + esc(t('tmNamePh')) + '" oninput="state.nameDraft=this.value" class="min-w-0 flex-1 rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputCss + '" />' +
+    '<button onclick="saveMyName()" ' + (state.nameBusy ? 'disabled' : '') + ' class="shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.nameBusy ? '0.6' : '1') + ';">' + t('saveChanges') + '</button></div>');
+  const p = state.people;
+  if (!p) return nameCard + card('<div class="text-[13px]" style="color:var(--tx4);">' + t(state.peopleError ? 'tmLoadFailed' : 'cmpLoading') + '</div>');
+  const manage = can('people.manage');
+  const l = p.limits || {};
+  const used = p.members.length + p.invites.filter(i => !i.expired).length;
+  const owners = p.members.filter(m => m.role === 'OWNER').length;
+  const me = p.members.find(m => m.you);
+  const rolePill = (r) => '<span class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold" style="background:var(--acc-soft); color:var(--acc-ink);">' + roleLabel(r) + '</span>';
+  const smallBtn = (label, fn, danger) => '<button type="button" onclick="' + fn + '" ' + (state.peopleBusy ? 'disabled' : '') + ' class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:' + (danger ? 'var(--bad)' : 'var(--bd2)') + '; color:' + (danger ? 'var(--bad)' : 'var(--tx)') + ';">' + label + '</button>';
+  const row = (m) => '<div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3" style="border-color:var(--bd);">' +
+    '<div class="min-w-0"><div class="truncate text-[13px] font-semibold" style="color:var(--tx);">' + esc(memberName(m)) + (m.you ? ' <span class="font-normal" style="color:var(--tx4);">(' + t('tmYou') + ')</span>' : '') + '</div>' +
+    (m.fullName ? '<div class="truncate text-[12px]" style="color:var(--tx4);">' + esc(m.email) + '</div>' : '') + '</div>' +
+    '<div class="flex items-center gap-2">' +
+      (manage ? '<select aria-label="' + esc(t('tmRole')) + '" onchange="changeMemberRole(' + jsAttr(m.id) + ', this.value)" ' + (state.peopleBusy ? 'disabled' : '') + ' class="rounded-lg border px-2 py-1.5 text-[12px] font-semibold outline-none" style="' + inputCss + '">' +
+        ['OWNER', 'MANAGER', 'STAFF'].map(r => '<option value="' + r + '"' + (m.role === r ? ' selected' : '') + '>' + roleLabel(r) + '</option>').join('') + '</select>' : rolePill(m.role)) +
+      (manage && !m.you ? smallBtn(t('tmRemove'), 'removeMember(' + jsAttr(m.id) + ')', true) : '') +
+    '</div></div>';
+  const inviteRow = (i) => '<div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed p-3" style="border-color:var(--bd2);">' +
+    '<div class="min-w-0"><div class="truncate text-[13px] font-semibold" style="color:var(--tx);">' + esc(i.email) + '</div>' +
+    '<div class="text-[12px]" style="color:var(--tx4);">' + roleLabel(i.role) + ' · ' + (i.expired ? t('tmExpired') : tpl('tmExpires', { date: fmtDate(i.expiresAt) })) + '</div></div>' +
+    '<div class="flex items-center gap-2">' + smallBtn(t('tmResend'), 'resendInvite(' + jsAttr(i.id) + ')') + smallBtn(t('tmCancelInvite'), 'cancelInvite(' + jsAttr(i.id) + ',' + jsAttr(i.email) + ')', true) + '</div></div>';
+  return nameCard + card('<div class="mb-1 flex items-center justify-between gap-3"><div class="text-[15px] font-bold" style="color:var(--tx);">' + t('tmHeading') + '</div>' +
+      (manage ? '<button onclick="openInviteModal()" ' + (used >= (l.maxMembers || 10) ? 'disabled' : '') + ' class="rounded-xl px-3.5 py-2 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (used >= (l.maxMembers || 10) ? '0.5' : '1') + ';">' + t('tmInvite') + '</button>' : '') + '</div>' +
+    '<div class="mb-3 text-[12.5px]" style="color:var(--tx4);">' + t('tmSub') + '</div>' +
+    '<div class="flex flex-col gap-2">' + p.members.map(row).join('') + '</div>' +
+    (manage && p.invites.length ? '<div class="mb-2 mt-4 text-[12px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('tmPending') + '</div><div class="flex flex-col gap-2">' + p.invites.map(inviteRow).join('') + '</div>' : '') +
+    (manage ? '<div class="mt-3 text-[12px]" style="color:var(--tx4);">' + tpl('tmCount', { n: used, max: l.maxMembers || 10 }) + '</div>' : '') +
+    '<div class="mt-5 border-t pt-4" style="border-color:var(--bd);">' +
+      (me && me.role === 'OWNER' && owners <= 1 ? '<div class="mb-2 text-[12.5px]" style="color:var(--tx4);">' + t('tmLastOwner') + '</div>' : '') +
+      '<button onclick="openLeaveModal()" ' + (me && me.role === 'OWNER' && owners <= 1 ? 'disabled' : '') + ' class="rounded-xl border px-4 py-2.5 text-sm font-bold" style="border-color:var(--bad); color:var(--bad); opacity:' + (me && me.role === 'OWNER' && owners <= 1 ? '0.5' : '1') + ';">' + t('tmLeave') + '</button>' +
+    '</div>');
 }
 
 function renderChangePassword(){
@@ -6041,6 +6192,26 @@ function renderModals(){
         '<input data-pay="reference" type="text" maxlength="100" value="' + esc(f.reference) + '" placeholder="BBK-2026-004512" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputStyle + '" /></label>',
       'submitPayment()', t(state.payBusy ? 'pmBusy' : 'pmSubmit'), state.payBusy);
   }
+  if (state.showInviteModal) {
+    const f = state.inviteForm;
+    const inputCss = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+    html += modalWrap(t('tmInviteTitle'), 'closeInviteModal()',
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('tmEmail') + '</span>' +
+        '<input type="email" maxlength="254" autocomplete="off" value="' + esc(f.email) + '" oninput="state.inviteForm.email=this.value" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputCss + '" /></label>' +
+      '<div class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('tmRole') + '</span>' +
+        ['MANAGER', 'STAFF'].map(r => '<label class="flex items-start gap-2.5 rounded-lg border p-3" style="border-color:' + (f.role === r ? 'var(--acc)' : 'var(--bd)') + ';">' +
+          '<input type="radio" name="inviteRole" value="' + r + '" ' + (f.role === r ? 'checked' : '') + ' onchange="state.inviteForm.role=\'' + r + '\'; render();" class="mt-1" />' +
+          '<span><span class="block text-[13px] font-semibold" style="color:var(--tx);">' + roleLabel(r) + '</span><span class="block text-[12px]" style="color:var(--tx4);">' + t(r === 'MANAGER' ? 'tmRoleManagerHint' : 'tmRoleStaffHint') + '</span></span></label>').join('') + '</div>' +
+      '<p class="text-[12px]" style="color:var(--tx4);">' + tpl('tmInviteNote', { days: ((state.people || {}).limits || {}).inviteDays || 7 }) + '</p>',
+      'submitInvite()', t(state.inviteBusy ? 'tmSending' : 'tmSend'), state.inviteBusy);
+  }
+  if (state.showLeaveModal) {
+    html += modalWrap(t('tmLeaveTitle'), 'closeLeaveModal()',
+      '<p class="text-[13px]" style="color:var(--tx3);">' + t('tmLeaveBody') + '</p>' +
+      '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('tmLeavePassword') + '</span>' +
+        '<input type="password" autocomplete="current-password" value="' + esc(state.leavePassword) + '" oninput="state.leavePassword=this.value" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" /></label>',
+      'submitLeave()', t(state.leaveBusy ? 'tmLeaving' : 'tmLeaveYes'), state.leaveBusy);
+  }
   if (state.closeBiddingRfqId) {
     const cr = (state.rfqs || []).find(x => x.id === state.closeBiddingRfqId) || {};
     const n = cr._count ? cr._count.quotes : 0;
@@ -6494,6 +6665,8 @@ const OVERLAYS = [
   ['stockAdd', s => !!s.showStockAdd, () => closeStockAdd()],
   ['stockCount', s => !!s.showStockCount, () => closeStockCount()],
   ['verify', s => !!s.showVerifyModal, () => closeVerifyModal()],
+  ['invite', s => !!s.showInviteModal, () => closeInviteModal()],
+  ['leave', s => !!s.showLeaveModal, () => closeLeaveModal()],
   ['deliveryFail', s => !!s.showDeliveryFailModal, () => closeDeliveryFailModal()],
   ['receipt', s => !!s.receiptOrderId, () => closeReceiptModal()],
   ['dispute', s => !!s.disputeOrderId, () => closeDisputeModal()],
