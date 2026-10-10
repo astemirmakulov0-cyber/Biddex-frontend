@@ -2077,6 +2077,7 @@ async function submitForgotPassword(){
 }
 
 function logout(){
+  notifSeen = null;
   clearSession();
   setState({ people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
@@ -3102,10 +3103,15 @@ function closeOrderDetail(){ setState({ section:'lpos', selectedOrderId:null, or
 
 // ---------- Notifications ----------
 
+let notifSeen = null; // ids of the notifications seen in this session (null until the first answer: those are not "new")
+let lastQuietAt = 0;
 async function refreshNotifications(){
   if (!state.token) return;
   try {
     const data = await api('/api/notifications');
+    const fresh = newUnreadNotifications(notifSeen, data);
+    notifSeen = new Set(data.map(n => n.id));
+    if (fresh.length && quietRefreshDue(Date.now(), lastQuietAt)) quietRefresh(); // e.g. "your company was verified": the screen follows
     if (JSON.stringify(data) !== JSON.stringify(state.notifications)) {
       setState({ notifications: data, notifUnread: data.filter(n => !n.read).length });
     }
@@ -6968,10 +6974,33 @@ setInterval(tickCountdowns, 1000);
 const POLL_VISIBLE_MS = 30000, POLL_HIDDEN_MS = 300000, POLL_SLACK_MS = 1000;
 function pollDue(now, last, hidden){ return now - last >= (hidden ? POLL_HIDDEN_MS : POLL_VISIBLE_MS) - POLL_SLACK_MS; }
 function returnAction(now, last){ const away = now - last; return away >= POLL_HIDDEN_MS ? 'full' : away >= POLL_VISIBLE_MS ? 'poll' : 'none'; }
+// a new notification (one not seen before in this session, unread) calls for a quiet refresh, but never more often than every 30 s
+const QUIET_REFRESH_MS = 30000;
+function quietRefreshDue(now, last){ return now - last >= QUIET_REFRESH_MS; }
+function newUnreadNotifications(seen, list){ return seen ? list.filter(n => !n.read && !seen.has(n.id)) : []; }
 /* poll-plan:end */
+// the open order page, re-read without a loading state; replaced only when something changed
+async function refreshOrderDetailQuiet(){
+  const id = state.section === 'orderDetail' ? state.selectedOrderId : null;
+  if (!id || !state.orderDetail) return;
+  try {
+    const order = await api('/api/orders/' + encodeURIComponent(id));
+    if (state.selectedOrderId !== id || !state.orderDetail) return;
+    if (JSON.stringify(order) !== JSON.stringify(state.orderDetail.order)) setState({ orderDetail: { ...state.orderDetail, order } });
+  } catch(e) { /* the next poll tries again */ }
+}
+// company (verification status, suspension), wallet, lists and the open order: after a new notification
+function quietRefresh(){
+  if (!state.token || !(state.view === 'buyer' || state.view === 'supplier')) return;
+  lastQuietAt = lastPollAt = Date.now();
+  refreshCompanyInfo(); refreshWallet(); refreshRfqs(); refreshOrders(); refreshLpos(); refreshOrderDetailQuiet();
+}
 function pollNow(){
-  lastPollAt = Date.now();
+  lastPollAt = lastQuietAt = Date.now();
   if (state.view === 'buyer' || state.view === 'supplier') {
+    refreshCompanyInfo();
+    refreshWallet();
+    refreshOrderDetailQuiet();
     refreshRfqs();
     refreshOrders();
     refreshLpos();
@@ -6991,13 +7020,16 @@ checkForNewVersion();
 setInterval(checkForNewVersion, 5 * 60 * 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForNewVersion(); });
 
-document.addEventListener('visibilitychange', () => {
+// back on the tab or in the app (visibilitychange, and focus for a window that was only unfocused): refresh quietly, at most every 30 s
+function onReturnToApp(){
   if (document.hidden || !state.token) return;
   const action = returnAction(Date.now(), lastPollAt);
   if (action === 'none') return;
   if (action === 'full' && (state.view === 'buyer' || state.view === 'supplier')) refreshAll();
   else pollNow();
-});
+}
+document.addEventListener('visibilitychange', onReturnToApp);
+window.addEventListener('focus', onReturnToApp);
 
 // Tapping/clicking outside an open header dropdown (notifications, the mobile "more" menu) closes it.
 // The toggle buttons live inside the same [data-dropdown] wrapper, so opening one isn't undone by this.

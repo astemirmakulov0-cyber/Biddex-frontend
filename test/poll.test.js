@@ -5,7 +5,7 @@ const path = require('path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const m = /\/\* poll-plan:start \*\/([\s\S]*?)\/\* poll-plan:end \*\//.exec(html);
 if (!m) { console.error('FAIL poll-plan block not found in index.html'); process.exit(1); }
-const { POLL_VISIBLE_MS, POLL_HIDDEN_MS, pollDue, returnAction } = new Function(m[1] + '; return { POLL_VISIBLE_MS, POLL_HIDDEN_MS, pollDue, returnAction };')();
+const { POLL_VISIBLE_MS, POLL_HIDDEN_MS, pollDue, returnAction, quietRefreshDue, newUnreadNotifications } = new Function(m[1] + '; return { POLL_VISIBLE_MS, POLL_HIDDEN_MS, pollDue, returnAction, quietRefreshDue, newUnreadNotifications };')();
 
 let pass = 0, fail = 0;
 const check = (name, ok) => { ok ? pass++ : fail++; console.log((ok ? 'PASS ' : 'FAIL ') + name); };
@@ -31,6 +31,20 @@ check('intervals: 30 s visible, 5 minutes hidden', POLL_VISIBLE_MS === 30000 && 
 check('wiring: the interval checks pollDue(..., document.hidden)', /pollDue\(Date\.now\(\), lastPollAt, document\.hidden\)/.test(html));
 check('wiring: the visibilitychange handler uses returnAction and no longer refreshes everything every time', /returnAction\(Date\.now\(\), lastPollAt\)/.test(html) && !/if \(document\.hidden \|\| !state\.token\) return;\n  if \(state\.view === 'buyer' \|\| state\.view === 'supplier'\) refreshAll\(\);/.test(html));
 check('wiring: lastPollAt is declared before the first refreshAll() call', html.indexOf('let lastPollAt') < html.indexOf("if (state.token) { if (state.view === 'admin') refreshAdmin(); else refreshAll(); }"));
+
+
+// a quiet refresh after a new notification and on returning to the app
+check('quiet refresh: not within 30 s of the last one, allowed from 30 s', !quietRefreshDue(T0 + 29999, T0) && quietRefreshDue(T0 + 30000, T0) && quietRefreshDue(T0 + 90000, T0));
+const seen = new Set(['a', 'b']);
+const list = [{ id: 'a', read: false }, { id: 'b', read: true }, { id: 'c', read: false }, { id: 'd', read: true }];
+check('only an unread notification not seen before is new (the first answer of a session, with nothing seen, has none)', JSON.stringify(newUnreadNotifications(seen, list).map((n) => n.id)) === '["c"]' && newUnreadNotifications(null, list).length === 0 && newUnreadNotifications(seen, [{ id: 'a', read: false }]).length === 0);
+const has = (s) => html.includes(s);
+check('wiring: a new notification calls quietRefresh, throttled by quietRefreshDue', has('const fresh = newUnreadNotifications(notifSeen, data);') && has('if (fresh.length && quietRefreshDue(Date.now(), lastQuietAt)) quietRefresh();'));
+check('wiring: the quiet refresh covers company, wallet, lists and the open order', has('refreshCompanyInfo(); refreshWallet(); refreshRfqs(); refreshOrders(); refreshLpos(); refreshOrderDetailQuiet();'));
+const poll = html.slice(html.indexOf('function pollNow(){'), html.indexOf('setInterval(() => {\n  if (!state.token) return;'));
+check('wiring: a poll covers company, wallet and the open order too', poll.includes('refreshCompanyInfo();') && poll.includes('refreshWallet();') && poll.includes('refreshOrderDetailQuiet();'));
+check('wiring: visibilitychange and focus both use onReturnToApp (throttled by returnAction)', has("document.addEventListener('visibilitychange', onReturnToApp);") && has("window.addEventListener('focus', onReturnToApp);"));
+check('wiring: signing out forgets the seen notifications', has('function logout(){\n  notifSeen = null;'));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
