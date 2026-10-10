@@ -552,6 +552,8 @@ const I18N = {
     rfqsAllRequests:"All requests",
     rfqsPageTitle:"Your RFQs",
     rfqsCreateNew:"+ Create new RFQ",
+    rfqTabActive:"Active", rfqTabFinished:"Finished", rfqNoFinished:"No finished requests yet.", rfqNoActive:"No active requests. Finished ones are in the Finished tab.",
+    rfqOrderStatus:"Order: {status}", rfqAwaitingSupplier:"Purchase order sent — awaiting supplier", rfqSupplierDeclined:"Supplier declined — choose another bid",
     closeBiddingTitle:"Close bidding",
     closeBiddingBody:"Close bidding on {title} now? Suppliers will no longer be able to submit quotes.",
     closeBiddingHave:"You can still compare and award the {n} quote(s) you received.",
@@ -1242,6 +1244,8 @@ const I18N = {
     rfqsAllRequests:"كل الطلبات",
     rfqsPageTitle:"طلبات التسعير الخاصة بك",
     rfqsCreateNew:"+ طلب تسعير جديد",
+    rfqTabActive:"النشطة", rfqTabFinished:"المنتهية", rfqNoFinished:"لا توجد طلبات منتهية بعد.", rfqNoActive:"لا توجد طلبات نشطة. الطلبات المنتهية في تبويب «المنتهية».",
+    rfqOrderStatus:"الطلبية: {status}", rfqAwaitingSupplier:"أُرسل أمر الشراء — بانتظار المورّد", rfqSupplierDeclined:"رفض المورّد — اختر عرضًا آخر",
     closeBiddingTitle:"إغلاق باب العروض",
     closeBiddingBody:"هل تريد إغلاق باب العروض على {title} الآن؟ لن يتمكن الموردون من تقديم عروض بعد ذلك.",
     closeBiddingHave:"يمكنك مع ذلك مقارنة العروض التي استلمتها ({n}) وترسية أحدها.",
@@ -1710,7 +1714,7 @@ let state = {
   token: null, user: null, company: null, wallet: null, onboarding: null,
   people: null, peopleError: false, peopleBusy: false, nameDraft: null, nameBusy: false,
   showInviteModal: false, inviteForm: { email:'', role:'STAFF' }, inviteBusy: false, showLeaveModal: false, leavePassword: '', leaveBusy: false,
-  historyRfqId: null, historyData: null,
+  historyRfqId: null, historyData: null, rfqTab: 'active',
   teamMembersEnabled: false, // GET /api/config/public; everything about teams is hidden while it is false
 
   rfqs: [], catalog: [], myCatalog: [], stock: [],
@@ -3642,7 +3646,7 @@ async function openRfqLink(rfqId){
   if (!(state.rfqs || []).some(r => r.id === rfq.id)) state.rfqs = [rfq].concat(state.rfqs || []);
   const supplier = state.view === 'supplier';
   setSection('rfqs');
-  if (!supplier) { if ((rfq.quotes || []).length) openCompare(rfq.id); else flashRfq(rfq.id); return; }
+  if (!supplier) { if ((rfq.quotes || []).length) openCompare(rfq.id); else { state.rfqTab = rfqTabOf(rfq); render(); flashRfq(rfq.id); } return; }
   const own = (rfq.quotes || []).find(q => q.status !== 'WITHDRAWN');
   if (rfq.status === 'PUBLISHED' && !own && new Date(rfq.deadline) > new Date()) { openSubmitQuote(rfq.id); return; }
   setTimeout(() => {
@@ -4424,9 +4428,54 @@ function renderBuyerHub(){
 // Table on sm: and up; a stack of cards below 640px (a 6-column table has no good way to shrink —
 // see the mobile audit notes). Both read from the same per-row `actions`/`tl` so they never drift apart.
 const rfqBidCount = (r) => (r._count ? r._count.quotes : 0);
+// ---------- "Your RFQs": what a request is waiting for, and the Active / Finished tabs ----------
+// The purchase order of a request comes from state.lpos (GET /lpos: rfqId, status, order). Priority: the accepted one (it has an order),
+// then one waiting for the supplier, then a declined one. After a decline the server puts the request back to QUOTING_CLOSED (the other
+// bids are restored), so "declined" is a QUOTING_CLOSED request whose latest purchase order was declined: the buyer picks another bid.
+function rfqLpoOf(r){
+  const mine = (state.lpos || []).filter(l => l.rfqId === r.id);
+  return mine.find(l => l.status === 'ACCEPTED') || mine.find(l => l.status === 'ISSUED') || mine.find(l => l.status === 'DECLINED') || null;
+}
+function rfqFollowUp(r){
+  const l = rfqLpoOf(r);
+  if (r.status === 'AWARDED' && l && l.status === 'ACCEPTED' && l.order) return { kind: 'order', order: l.order };
+  if (r.status === 'AWARDED' && l && l.status === 'ISSUED') return { kind: 'waiting' };
+  if (r.status === 'QUOTING_CLOSED' && l && l.status === 'DECLINED') return { kind: 'declined' };
+  return null;
+}
+// a finished request: cancelled, or awarded and its order is completed or cancelled
+function rfqIsFinished(r){
+  if (r.status === 'CANCELLED') return true;
+  const f = rfqFollowUp(r);
+  return r.status === 'AWARDED' && !!f && f.kind === 'order' && isOrderClosed(f.order);
+}
+const rfqTabOf = (r) => (rfqIsFinished(r) ? 'finished' : 'active');
+// the countdown only means something while bidding can still happen
+const rfqHasTimer = (r) => r.status === 'DRAFT' || r.status === 'PUBLISHED';
+function rfqFollowUpNote(r){
+  const f = rfqFollowUp(r);
+  return f && f.kind === 'declined' ? '<div class="mt-1 text-[12px] font-semibold" style="color:var(--bad);">' + t('rfqSupplierDeclined') + '</div>' : '';
+}
+function rfqFollowUpButton(r){
+  const f = rfqFollowUp(r);
+  if (f && f.kind === 'order') return '<button onclick="event.stopPropagation(); openOrderDetail(\'' + esc(f.order.id) + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--acc); color:var(--acc-ink); background:var(--acc-soft);">' + tpl('rfqOrderStatus', { status: esc(orderStatusLabel(f.order.status)) }) + '</button>';
+  if (f && f.kind === 'waiting') return '<button onclick="event.stopPropagation(); setSection(\'lpos\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('rfqAwaitingSupplier') + '</button>';
+  return '';
+}
+function rfqTabsHtml(rfqs){
+  const n = { active: rfqs.filter(r => !rfqIsFinished(r)).length, finished: rfqs.filter(rfqIsFinished).length };
+  const btn = (key) => '<button type="button" onclick="setState({ rfqTab: \'' + key + '\' })" aria-pressed="' + (state.rfqTab === key) + '" class="rounded-lg border px-3.5 py-1.5 text-[13px] font-bold" style="' +
+    (state.rfqTab === key ? 'background:var(--acc-soft); color:var(--acc-ink); border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + t(key === 'active' ? 'rfqTabActive' : 'rfqTabFinished') + ' <span class="mono">' + n[key] + '</span></button>';
+  return '<div class="mb-4 flex gap-2">' + btn('active') + btn('finished') + '</div>';
+}
+
+
 // What tapping a phone card does: compare the bids if there are any, otherwise edit if that is still possible.
 // null = nothing to open, so the card is not styled or behaves as tappable.
 function rfqCardTap(r){
+  const f = rfqFollowUp(r);
+  if (f && f.kind === 'order') return "openOrderDetail('" + f.order.id + "')";
+  if (r.status === 'CANCELLED') return null;
   if (rfqBidCount(r) > 0) return "openCompare('" + r.id + "')";
   if (canEditRfq(r)) return "openEditRfq('" + r.id + "')";
   return null;
@@ -4440,16 +4489,17 @@ function rfqTable(rfqs){
     (r.status === 'PUBLISHED' && can('rfq.publish') ? '<button onclick="event.stopPropagation(); openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnCloseBidding') + '</button>' : '') +
     (teamOn() ? '<button onclick="event.stopPropagation(); openRfqHistory(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('tmHistory') + '</button>' : '') +
     (canCancelRfq(r) ? '<button onclick="event.stopPropagation(); openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">' + t('btnCancel') + '</button>' : '') +
-    (rfqBidCount(r) > 0 && r.status !== 'CANCELLED' ? '<button onclick="event.stopPropagation(); openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('btnCompare') + '</button>' : '')
+    rfqFollowUpButton(r) +
+    (rfqBidCount(r) > 0 && r.status !== 'CANCELLED' && !(r.status === 'AWARDED' && ['order', 'waiting'].includes((rfqFollowUp(r) || {}).kind)) ? '<button onclick="event.stopPropagation(); openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('btnCompare') + '</button>' : '')
   }));
 
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>' + esc(t('thRfqTitleId')) + '</th><th>' + t('thCategory') + '</th><th>' + t('thBids') + '</th><th>' + t('thClosingIn') + '</th><th>' + t('thStatus') + '</th><th></th></tr></thead><tbody>' +
     rows.map(({r,tl,actions}) => '<tr data-rfq="' + esc(r.id) + '">' +
-      '<td><div class="flex items-center gap-2.5">' + rfqThumb(r, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div>' + preparedByPill(r) + '</div></div></td>' +
+      '<td><div class="flex items-center gap-2.5">' + rfqThumb(r, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div>' + preparedByPill(r) + rfqFollowUpNote(r) + '</div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</td>' +
       '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
-      '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' +
+      (rfqHasTimer(r) ? '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' : '<td class="mono" style="color:var(--tx4);">—</td>') +
       '<td>' + statusPill(r.status) + '</td>' +
       '<td class="text-right"><div class="flex items-center justify-end gap-2">' + actions + '</div></td>' +
     '</tr>').join('') +
@@ -4460,13 +4510,13 @@ function rfqTable(rfqs){
       return '<div data-rfq="' + esc(r.id) + '" class="rounded-xl border p-3.5' + (tap ? ' bx-tap bx-tapcard' : '') + '" style="border-color:var(--bd); background:var(--panel);"' + (tap ? ' role="button" tabindex="0" onclick="' + tap + '"' : '') + '>' +
         '<div class="flex items-start gap-2.5">' + rfqThumb(r, 32) +
           '<div class="min-w-0 flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-          '<div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div>' + preparedByPill(r) + '</div>' +
+          '<div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div>' + preparedByPill(r) + rfqFollowUpNote(r) + '</div>' +
           '<div class="shrink-0">' + statusPill(r.status) + '</div>' + (tap ? CHEVRON : '') +
         '</div>' +
         '<div class="mt-3 grid ' + (oneCategory ? 'grid-cols-2' : 'grid-cols-3') + ' gap-2 text-[12px]">' +
           (oneCategory ? '' : '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobCategory') + '</div><div class="mt-1" style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</div></div>') +
           '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobBids') + '</div><div class="mono mt-1 font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</div></div>' +
-          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobClosing') + '</div><div class="mono mt-1" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</div></div>' +
+          '<div><div class="eyebrow" style="font-size:9.5px; color:var(--tx4);">' + t('mobClosing') + '</div><div class="mono mt-1"' + (rfqHasTimer(r) ? ' data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label : ' style="color:var(--tx4);">—') + '</div></div>' +
         '</div>' +
         (actions ? '<div class="mt-3 flex flex-wrap gap-2">' + actions + '</div>' : '') +
       '</div>'; }
@@ -4490,11 +4540,12 @@ function statusPill(status){
 
 function renderBuyerRfqsPage(){
   const rfqs = state.rfqs || [];
+  const shown = rfqs.filter(r => rfqTabOf(r) === state.rfqTab);
   return draftsWaitingBanner(rfqs) + '<div class="flex flex-wrap items-center justify-between gap-3 mb-6">' +
     '<div><div class="eyebrow mb-1.5">' + t('rfqsAllRequests') + '</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('rfqsPageTitle') + hint('rfq') + '</h1></div>' +
     '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc); white-space:nowrap;">' + t('rfqsCreateNew') + '</button>' +
   '</div>' +
-  (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTable(rfqs));
+  (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTabsHtml(rfqs) + (shown.length === 0 ? emptyState(t(state.rfqTab === 'finished' ? 'rfqNoFinished' : 'rfqNoActive'), '') : rfqTable(shown)));
 }
 
 // ---------- LPO Management (shared buyer/supplier, 6-stage tracker) ----------
