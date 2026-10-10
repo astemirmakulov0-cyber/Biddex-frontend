@@ -1,5 +1,5 @@
 // Arabic wording for the backend's English error texts (sign-in, registration, password and e-mail flows).
-// Shared by index.html, verify.html and reset-password.html; loaded as server-errors.js?v=N — bump N when this
+// Shared by index.html, bid.html, accept-invite.html, verify.html and reset-password.html; loaded as server-errors.js?v=N — bump N when this
 // file changes so phones don't keep a cached copy. Texts are matched exactly as the server sends them
 // (src/controllers/auth.controller.js, src/utils/credentials.js, src/index.js limiters, src/middleware/errorHandler.js).
 // Anything not listed is shown as it is. Only the display is translated: callers keep comparing the original
@@ -50,10 +50,54 @@
     'deliveryTimeDays must be a whole number between 0 and 365': 'deliveryInvalid',
     'paymentTermsDays must be a whole number between 0 and 120': 'termsInvalid',
     'notes must be text of at most 1000 characters': 'notesInvalid',
+    'Your role in this company does not allow this action': 'roleDenied',
+    'You are no longer a member of this company': 'notMember',
+    'Forbidden: insufficient role': 'forbiddenRole',
+    'Teams are only available for buyer companies for now': 'teamsBuyerOnly',
+    'Invitation not found': 'inviteNotFound',
+    'Person not found': 'personNotFound',
+    'You are not in this company': 'notInCompany',
+    'You are not in a company': 'notInACompany',
+    'This company is not active': 'companyNotActive',
+    'This person is already in your company': 'alreadyInCompany',
+    'An invitation to this address is already open; resend it instead': 'inviteOpen',
+    'Please wait a minute before sending it again': 'waitMinute',
+    'This invitation was sent too many times; cancel it and invite again': 'inviteSentTooMany',
+    'Too many invitations today; try again tomorrow': 'invitesToday',
+    'Use "Leave the company" to remove yourself': 'useLeave',
+    'A company needs at least one owner': 'needOwner',
+    'You are the last owner of this company: make someone else an owner first, or delete the company': 'lastOwner',
+    'role must be MANAGER or STAFF': 'roleInvite',
+    'role must be OWNER, MANAGER or STAFF': 'roleAny',
+    'This e-mail address already belongs to another Biddex account. Ask your company owner to invite a different address.': 'inviteEmailInUse',
+    'This company has reached its limit of people': 'peopleLimit',
+    'password is required': 'passwordRequired',
     'Request body is too large': 'bodyTooLarge',
     'Invalid JSON body': 'badJson'
   };
   var AR = {
+    roleDenied: 'دورك في هذه الشركة لا يسمح بهذا الإجراء',
+    notMember: 'لم تعد عضوًا في هذه الشركة',
+    forbiddenRole: 'ليست لديك صلاحية لهذا الإجراء',
+    teamsBuyerOnly: 'الفرق متاحة لشركات المشترين فقط حاليًا',
+    inviteNotFound: 'الدعوة غير موجودة',
+    personNotFound: 'الشخص غير موجود',
+    notInCompany: 'أنت لست في هذه الشركة',
+    notInACompany: 'أنت لست في شركة',
+    companyNotActive: 'هذه الشركة غير نشطة',
+    alreadyInCompany: 'هذا الشخص موجود في شركتك بالفعل',
+    inviteOpen: 'توجد دعوة مفتوحة لهذا العنوان؛ أعد إرسالها بدلًا من ذلك',
+    waitMinute: 'يرجى الانتظار دقيقة قبل الإرسال مرة أخرى',
+    inviteSentTooMany: 'أُرسلت هذه الدعوة مرات كثيرة؛ ألغِها وادعُ الشخص من جديد',
+    invitesToday: 'دعوات كثيرة اليوم؛ حاول غدًا',
+    useLeave: 'استخدم «مغادرة الشركة» لإزالة نفسك',
+    needOwner: 'تحتاج الشركة إلى مالك واحد على الأقل',
+    lastOwner: 'أنت آخر مالك لهذه الشركة: اجعل شخصًا آخر مالكًا أولًا، أو احذف الشركة',
+    roleInvite: 'يجب أن يكون الدور مديرًا أو موظفًا',
+    roleAny: 'يجب أن يكون الدور مالكًا أو مديرًا أو موظفًا',
+    inviteEmailInUse: 'هذا البريد الإلكتروني يخص حسابًا آخر في Biddex. اطلب من مالك شركتك دعوة عنوان مختلف.',
+    peopleLimit: 'بلغت هذه الشركة الحد الأقصى لعدد الأشخاص',
+    passwordRequired: 'كلمة المرور مطلوبة',
     bodyTooLarge: 'حجم الطلب كبير جدًا',
     badJson: 'تعذّرت قراءة الطلب',
     invalidCredentials: 'بيانات الدخول غير صحيحة',
@@ -105,7 +149,7 @@
     notes: 'الملاحظات', terms: 'الشروط', trackingInfo: 'معلومات التتبع', body: 'الرسالة', category: 'الفئة', reference: 'المرجع',
     password: 'كلمة المرور', currentPassword: 'كلمة المرور الحالية', newPassword: 'كلمة المرور الجديدة', reason: 'السبب', comment: 'التعليق', q: 'نص البحث',
     publish: 'النشر', isActive: 'الحالة', exactBrandOnly: 'العلامة التجارية بالضبط', productId: 'المنتج', duplicateFromId: 'المنتج', companyId: 'الشركة',
-    deliveryTimeDays: 'مدة التسليم', paymentTermsDays: 'مهلة الدفع', price: 'السعر', unitPrice: 'سعر الوحدة', budget: 'الميزانية', amount: 'المبلغ'
+    fullName: 'الاسم الكامل', email: 'البريد الإلكتروني', role: 'الدور', consent: 'الموافقة', deliveryTimeDays: 'مدة التسليم', paymentTermsDays: 'مهلة الدفع', price: 'السعر', unitPrice: 'سعر الوحدة', budget: 'الميزانية', amount: 'المبلغ'
   };
   var field = function (f) { return '«' + (FIELDS[f] || f) + '»'; };
   var SHAPES = [
@@ -116,6 +160,9 @@
     [/^(\w+) must be true or false$/, function (m) { return 'يجب أن تكون قيمة الحقل ' + field(m[1]) + ' نعم أو لا'; }],
     [/^(\w+) must be a positive number$/, function (m) { return 'يجب أن يكون الحقل ' + field(m[1]) + ' رقمًا أكبر من صفر'; }],
     [/^(\w+) can have at most 3 decimal places$/, function (m) { return 'يمكن أن يحتوي الحقل ' + field(m[1]) + ' على 3 خانات عشرية كحد أقصى'; }],
+    [/^A company can have at most (\d+) owners$/, function (m) { return 'يمكن أن يكون للشركة ' + m[1] + ' ملّاك كحد أقصى'; }],
+    [/^At most (\d+) invitations can be open at once$/, function (m) { return 'يمكن فتح ' + m[1] + ' دعوات كحد أقصى في الوقت نفسه'; }],
+    [/^Your company can have at most (\d+) people, invitations included$/, function (m) { return 'يمكن أن يضم حسابك ' + m[1] + ' أشخاص كحد أقصى، بما في ذلك الدعوات'; }],
     [/^(\w+) is too large$/, function (m) { return 'قيمة الحقل ' + field(m[1]) + ' كبيرة جدًا'; }]
   ];
 
