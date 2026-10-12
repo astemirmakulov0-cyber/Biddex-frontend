@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
 <script src="config.js?v=1"></script>
-<script src="server-errors.js?v=5"></script>
+<script src="server-errors.js?v=6"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
@@ -559,7 +559,7 @@ const I18N = {
     apWhy:"Why it needs you", apReasonThreshold:"The order is above your approval limit of {threshold} BHD.", apReasonBudget:"It takes this month's budget over the limit, and you asked to approve such orders.", apReasonBoth:"The order is above your approval limit of {threshold} BHD, and it takes this month's budget over the limit.",
     apBudgetLine:"Budget this month: {before} before this order, {after} after it, of {budget} BHD.", apOverBy:"Over the budget by {over} BHD", apNeededBy:"Needed by", apExpires:"This request expires on {date}.",
     apApprove:"Approve and send to supplier", apApproving:"Approving…", apApproveConfirm:"Approve “{title}” and send the purchase order to {supplier}?", apApproved:"Approved. The purchase order was sent to the supplier.",
-    apReject:"Reject…", apRejectReason:"Reason for the manager (required)", apRejectSend:"Send rejection", apRejected:"Rejected. The manager can see your reason.", apDecidedBy:"Decided by {name}", apOpenApproval:"Open approval", ntOpenSpending:"Open Spending",
+    apReject:"Reject…", apRejectReason:"Reason for the manager (required)", apRejectSend:"Send rejection", apRejected:"Rejected. The manager can see your reason.", apDecidedBy:"Decided by {name}", apOpenApproval:"Open approval", ntOpenSpending:"Open Spending", rdTitle:"Time to reorder soon", rdIntro:"Based on how often you usually order this.", rdUsually:"Usually every {days} days", rdLast:"Last time: {qty} {unit} from {supplier}", rdPrice:"{price} per unit", rdUsualQty:"Usual quantity: {qty} {unit}", rdDueToday:"Expected today", rdDueTomorrow:"Expected tomorrow", rdDueIn:"Expected in {n} days", rdLateYesterday:"Expected yesterday", rdLate:"Expected {n} days ago", rdOrderAgain:"Order again", rdSnooze:"Remind me in a week", rdMute:"Turn off for this item", rdMuteConfirm:"Stop reminders for \"{item}\" for the whole company?", rdSnoozed:"We will remind you in a week", rdMuted:"Reminders for this item are off", rdUnmuted:"Reminders are on again", rdShowAll:"Show all ({n})", rdShowLess:"Show less", rdOffTitle:"Reminders turned off", rdOffIntro:"These items get no reorder reminders. Turn one on to start them again.", rdTurnOn:"Turn on", rdSeeAll:"See them on Home", rdGone:"This reminder is no longer current",
     apSt_PENDING:"Waiting for a decision", apSt_APPROVED:"Approved", apSt_REJECTED:"Rejected", apSt_CANCELLED:"Withdrawn", apSt_EXPIRED:"Expired", apSt_FAILED:"Not completed",
     acTitle:"Choose this bid?", acAmount:"Order total", acNeedsApproval:"This order needs the owner's approval. It will not go to the supplier until the owner approves it.",
     acWhyThreshold:"It is above the approval limit of {threshold} BHD.", acWhyBudget:"It takes this month's budget over the limit, and the owner asked to approve such orders.", acWhyBoth:"It is above the approval limit of {threshold} BHD, and it takes this month's budget over the limit.",
@@ -1279,7 +1279,7 @@ const I18N = {
     apWhy:"لماذا تحتاج إلى موافقتك", apReasonThreshold:"الطلبية أعلى من حد الموافقة لديك البالغ {threshold} د.ب.", apReasonBudget:"تتجاوز بها ميزانية هذا الشهر، وقد طلبت الموافقة على مثل هذه الطلبيات.", apReasonBoth:"الطلبية أعلى من حد الموافقة لديك البالغ {threshold} د.ب، وتتجاوز بها ميزانية هذا الشهر.",
     apBudgetLine:"ميزانية هذا الشهر: {before} قبل هذه الطلبية و{after} بعدها، من أصل {budget} د.ب.", apOverBy:"تجاوز الميزانية بمقدار {over} د.ب", apNeededBy:"مطلوب بحلول", apExpires:"ينتهي هذا الطلب في {date}.",
     apApprove:"موافقة وإرسال إلى المورّد", apApproving:"جارٍ الموافقة…", apApproveConfirm:"الموافقة على «{title}» وإرسال أمر الشراء إلى {supplier}؟", apApproved:"تمت الموافقة. أُرسل أمر الشراء إلى المورّد.",
-    apReject:"رفض…", apRejectReason:"سبب الرفض للمدير (مطلوب)", apRejectSend:"إرسال الرفض", apRejected:"تم الرفض. يمكن للمدير رؤية السبب.", apDecidedBy:"قرار {name}", apOpenApproval:"فتح الموافقة", ntOpenSpending:"فتح الإنفاق",
+    apReject:"رفض…", apRejectReason:"سبب الرفض للمدير (مطلوب)", apRejectSend:"إرسال الرفض", apRejected:"تم الرفض. يمكن للمدير رؤية السبب.", apDecidedBy:"قرار {name}", apOpenApproval:"فتح الموافقة", ntOpenSpending:"فتح الإنفاق", rdTitle:"حان وقت إعادة الطلب قريبًا", rdIntro:"بحسب معدل طلبك المعتاد لهذا الصنف.", rdUsually:"عادةً كل {days} يومًا", rdLast:"في المرة الأخيرة: {qty} {unit} من {supplier}", rdPrice:"{price} للوحدة", rdUsualQty:"الكمية المعتادة: {qty} {unit}", rdDueToday:"متوقع اليوم", rdDueTomorrow:"متوقع غدًا", rdDueIn:"متوقع بعد {n} يومًا", rdLateYesterday:"كان متوقعًا أمس", rdLate:"كان متوقعًا قبل {n} يومًا", rdOrderAgain:"إعادة الطلب", rdSnooze:"ذكّرني بعد أسبوع", rdMute:"إيقاف التذكير لهذا الصنف", rdMuteConfirm:"إيقاف التذكيرات الخاصة بـ «{item}» لجميع أفراد الشركة؟", rdSnoozed:"سنذكّرك بعد أسبوع", rdMuted:"تم إيقاف التذكيرات لهذا الصنف", rdUnmuted:"تمت إعادة تفعيل التذكيرات", rdShowAll:"عرض الكل ({n})", rdShowLess:"عرض أقل", rdOffTitle:"التذكيرات الموقوفة", rdOffIntro:"هذه الأصناف لا تصلها تذكيرات إعادة الطلب. فعّل الصنف لتعود التذكيرات.", rdTurnOn:"تفعيل", rdSeeAll:"عرضها في الرئيسية", rdGone:"لم يعد هذا التذكير ساريًا",
     apSt_PENDING:"بانتظار القرار", apSt_APPROVED:"تمت الموافقة", apSt_REJECTED:"مرفوض", apSt_CANCELLED:"تم سحبه", apSt_EXPIRED:"انتهت مهلته", apSt_FAILED:"لم يكتمل",
     acTitle:"اختيار هذا العرض؟", acAmount:"إجمالي الطلبية", acNeedsApproval:"تحتاج هذه الطلبية إلى موافقة المالك. لن تصل إلى المورّد قبل أن يوافق عليها.",
     acWhyThreshold:"إنها أعلى من حد الموافقة البالغ {threshold} د.ب.", acWhyBudget:"تتجاوز بها ميزانية هذا الشهر، وقد طلب المالك الموافقة على مثل هذه الطلبيات.", acWhyBoth:"إنها أعلى من حد الموافقة البالغ {threshold} د.ب، وتتجاوز بها ميزانية هذا الشهر.",
@@ -1772,7 +1772,7 @@ let state = {
   showInviteModal: false, inviteForm: { email:'', role:'STAFF' }, inviteBusy: false, showLeaveModal: false, leavePassword: '', leaveBusy: false,
   historyRfqId: null, historyData: null, rfqTab: 'active',
   supplierCard: null,
-  awardCheck: null, awardBusy: false, approvalModal: null, spendRules: null, spendForm: null, spendBusy: false,
+  reorder: null, reorderAll: false, awardCheck: null, awardBusy: false, approvalModal: null, spendRules: null, spendForm: null, spendBusy: false,
   teamMembersEnabled: false, // GET /api/config/public; everything about teams is hidden while it is false
 
   rfqs: [], catalog: [], myCatalog: [], stock: [],
@@ -2137,13 +2137,13 @@ async function submitForgotPassword(){
 function logout(){
   notifSeen = null;
   clearSession();
-  setState({ approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 let lastPollAt = Date.now(); // when the data was last refreshed (see the polling block at the end of the script)
 async function refreshAll(){
   lastPollAt = Date.now();
-  await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications(), refreshOnboarding(), refreshRatings() ]);
+  await Promise.all([ refreshConfig(), refreshRfqs(), refreshWallet(), refreshCatalog(), refreshMyCatalog(), refreshStock(), refreshLpos(), refreshOrders(), refreshCompanyInfo(), refreshNotifications(), refreshOnboarding(), refreshRatings(), refreshReorder() ]);
 }
 
 // ---------- Background refresh errors ----------
@@ -4730,6 +4730,90 @@ function attentionBlock(){
   '</div>';
 }
 
+// ---------- Reorder reminders (GET /reorder/suggestions; the server computes everything) ----------
+// Home card "Time to reorder soon", the bell (REORDER_DUE / REORDER_MORE), #/reorder/<last order id> (e-mail and bell button) and, for
+// Manager and up, the list of items turned off in Settings. The usual quantity comes from the server; the prices only when it sends them.
+async function refreshReorder(){
+  if (!state.token || state.view !== 'buyer' || !can('rfq.draft')) return;
+  try { const d = await api('/api/reorder/suggestions'); setIfChanged('reorder', d); syncOk('reorder'); }
+  catch(e) { syncFailed('reorder', e); }
+}
+function reorderItem(key){ return ((state.reorder && state.reorder.items) || []).find(i => i.key === key); }
+// the same form as "Re-order", filled with the usual quantity
+function orderAgainItem(key){
+  const it = reorderItem(key);
+  if (!it) { showToast(t('rdGone')); return; }
+  openReorder({ title: it.title, unit: it.unit, brand: it.brand, quantity: it.usualQuantity, productId: it.productId, category: categoryLabel(it.category) });
+}
+async function reorderAction(path, key, toastKey){
+  try { await api('/api/reorder/' + path, { method:'POST', body: JSON.stringify({ key }) }); showToast(t(toastKey)); await refreshReorder(); }
+  catch(e) { showToast(e.message); }
+}
+function snoozeReorder(key){ return reorderAction('snooze', key, 'rdSnoozed'); }
+function muteReorder(key){
+  const it = reorderItem(key);
+  if (!confirm(tpl('rdMuteConfirm', { item: it ? it.title : '' }))) return;
+  return reorderAction('mute', key, 'rdMuted');
+}
+function unmuteReorder(key){ return reorderAction('unmute', key, 'rdUnmuted'); }
+function toggleReorderAll(){ setState({ reorderAll: !state.reorderAll }); }
+function reorderDueText(n){
+  return n === 0 ? t('rdDueToday') : n === 1 ? t('rdDueTomorrow') : n === -1 ? t('rdLateYesterday') : n > 1 ? tpl('rdDueIn', { n }) : tpl('rdLate', { n: -n });
+}
+// #/reorder/<id of the last order>: the request form for that item, or (the reminder is gone) the plain Re-order of that order
+async function openReorderLink(orderId){
+  setSection('main');
+  await refreshReorder();
+  const it = ((state.reorder && state.reorder.items) || []).find(i => i.lastOrderId === orderId);
+  if (it) { orderAgainItem(it.key); return; }
+  if (!(state.orders || []).some(o => o.id === orderId)) await refreshOrders();
+  if ((state.orders || []).some(o => o.id === orderId)) reorderFromOrder(orderId); else showToast(t('rdGone'));
+}
+function openNotifReorder(orderId, notifId){
+  setState({ showNotifDropdown: false });
+  api('/api/notifications/' + encodeURIComponent(notifId) + '/read', { method: 'PATCH' }).then(() => refreshNotifications()).catch(() => {});
+  openReorderLink(orderId);
+}
+function openNotifReorderMore(notifId){
+  setState({ showNotifDropdown: false });
+  api('/api/notifications/' + encodeURIComponent(notifId) + '/read', { method: 'PATCH' }).then(() => refreshNotifications()).catch(() => {});
+  setSection('main');
+}
+const REORDER_HOME_ROWS = 5;
+function reorderCard(){
+  const d = state.reorder;
+  if (state.view !== 'buyer' || !can('rfq.draft') || !d || !(d.items || []).length) return '';
+  const all = d.items, shown = state.reorderAll ? all : all.slice(0, REORDER_HOME_ROWS);
+  const key = (k) => esc(k).replace(/'/g, '&#39;');
+  const row = (it) => {
+    const k = key(it.key);
+    return '<div class="rounded-xl border p-3.5" style="border-color:var(--line); background:var(--bg);">' +
+      '<div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"><div class="min-w-0 text-[14px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(it.title) + ' <span class="text-[12px] font-semibold" style="color:var(--tx4);">(' + esc(unitLabel(it.unit)) + ')</span></div>' +
+      '<div class="text-[12px] font-semibold" style="color:' + (it.daysLeft < 0 ? 'var(--pend)' : 'var(--acc)') + ';">' + reorderDueText(it.daysLeft) + '</div></div>' +
+      '<div class="mt-1 text-[12.5px]" style="color:var(--tx3);">' + tpl('rdUsually', { days: it.intervalDays }) + ' · ' + tpl('rdUsualQty', { qty: fmtQty(it.usualQuantity), unit: esc(unitLabel(it.unit)) }) + '</div>' +
+      '<div class="mt-0.5 text-[12.5px]" style="color:var(--tx4); overflow-wrap:anywhere;">' + tpl('rdLast', { qty: fmtQty(it.lastQuantity), unit: esc(unitLabel(it.unit)), supplier: esc(it.lastSupplier) }) + (d.showPrices && it.lastUnitPrice ? ' · ' + tpl('rdPrice', { price: bhdMoney(it.lastUnitPrice) }) : '') + '</div>' +
+      '<div class="mt-3 flex flex-wrap items-center gap-2">' +
+        '<button type="button" onclick="orderAgainItem(\'' + k + '\')" class="bx-tap min-h-[44px] rounded-xl px-4 py-2 text-[13px] font-bold text-white" style="background:var(--acc);">' + t('rdOrderAgain') + '</button>' +
+        '<button type="button" onclick="snoozeReorder(\'' + k + '\')" class="bx-tap min-h-[44px] rounded-xl border px-3.5 py-2 text-[12.5px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">' + t('rdSnooze') + '</button>' +
+        (can('reorder.mute') ? '<button type="button" onclick="muteReorder(\'' + k + '\')" class="bx-tap min-h-[44px] rounded-xl px-2.5 py-2 text-[12.5px] font-semibold" style="color:var(--tx4);">' + t('rdMute') + '</button>' : '') +
+      '</div></div>';
+  };
+  return '<div class="mb-6 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="px-1 text-[13px] font-bold" style="color:var(--tx);">' + t('rdTitle') + '</div><div class="mb-2.5 px-1 text-[12px]" style="color:var(--tx4);">' + t('rdIntro') + '</div>' +
+    '<div class="flex flex-col gap-2.5">' + shown.map(row).join('') + '</div>' +
+    (all.length > REORDER_HOME_ROWS ? '<button type="button" onclick="toggleReorderAll()" class="bx-tap mt-2 min-h-[44px] px-1 text-[12.5px] font-semibold" style="color:var(--acc);">' + (state.reorderAll ? t('rdShowLess') : tpl('rdShowAll', { n: all.length })) + '</button>' : '') +
+  '</div>';
+}
+// Settings: the items turned off (Manager and up may turn them on again)
+function reorderOffCard(){
+  const m = (state.reorder && state.reorder.muted) || [];
+  if (state.view !== 'buyer' || !can('reorder.mute') || !m.length) return '';
+  return '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="mb-1 text-[15px] font-bold" style="color:var(--tx);">' + t('rdOffTitle') + '</div><div class="mb-3 text-[12.5px]" style="color:var(--tx4);">' + t('rdOffIntro') + '</div>' +
+    '<div class="flex flex-col gap-2">' + m.map(x => '<div class="flex items-center justify-between gap-3 text-[13px]"><span class="min-w-0" style="color:var(--tx2); overflow-wrap:anywhere;">' + esc(x.label) + '</span>' +
+      '<button type="button" onclick="unmuteReorder(\'' + esc(x.key).replace(/'/g, '&#39;') + '\')" class="bx-tap min-h-[44px] shrink-0 rounded-xl border px-3.5 text-[12.5px] font-semibold" style="border-color:var(--bd2); color:var(--acc);">' + t('rdTurnOn') + '</button></div>').join('') + '</div></div>';
+}
+
 function renderBuyerHub(){
   const rfqs = state.rfqs || [];
   const active = rfqs.filter(r => r.status === 'PUBLISHED').length;
@@ -4742,7 +4826,7 @@ function renderBuyerHub(){
     '<div><h1 class="text-[26px] font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;"><span class="hidden md:inline">' + t('dashTitleBuyer') + '</span><span class="md:hidden">' + t('dashTitleBuyerShort') + '</span></h1>' +
     '<p class="mt-1 hidden md:block text-[13.5px] max-w-[520px]" style="color:var(--tx3);">' + t('dashSubBuyer') + '</p></div>' +
     '<button onclick="openPostRfq()" class="w-full md:w-auto rounded-xl px-4 py-3 md:py-2.5 text-[14px] md:text-[13px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('createRfq') + '</button>' +
-  '</div>' + attentionBlock() +
+  '</div>' + attentionBlock() + reorderCard() +
   statsBar([[t('statActiveRfqs'), active], [t('statTotalQuotes'), totalQuotes], [t('statAwarded'), awarded], [t('statOpenOrders'), openOrders]]) +
   '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentRfqs') + hint('rfq') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
   (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTable(rfqs.slice(0,5))) +
@@ -5729,6 +5813,7 @@ function renderSettings(){
   '</div>' +
   onboardingRestoreBlock() +
   spendRulesCard() +
+  reorderOffCard() +
   peopleCard() +
   '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">' + t(peopleOn() ? 'settingsEmailHeadingMine' : 'settingsEmailHeading') + '</div>' +
@@ -6009,11 +6094,11 @@ function notifBell(){
         (state.notifUnread > 0 ? '<button onclick="markAllNotifRead()" class="text-[11px] font-semibold" style="color:var(--acc);">' + t('notifMarkAll') + '</button>' : '') +
         '</div>' +
         (list.length === 0 ? '<div class="px-3.5 py-8 text-center text-[12px]" style="color:var(--tx4);">' + t('notifEmpty') + '</div>' :
-          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + (/^APPROVAL_(REQUESTED|REMINDER)$/.test(n.type) && n.relatedRfqId && can('order.approve') ? ' cursor:pointer;" onclick="openNotifApproval(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : /^BUDGET_/.test(n.type) && can('analytics.view') ? ' cursor:pointer;" onclick="openNotifSpending(\'' + esc(n.id) + '\')' : n.type === 'MEMBER_JOINED' && peopleOn() ? ' cursor:pointer;" onclick="openNotifPeople(\'' + esc(n.id) + '\')' : n.relatedRfqId ? ' cursor:pointer;" onclick="openNotifRfq(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? ' cursor:pointer;" onclick="openNotifOrder(\'' + esc(n.relatedOrderId) + '\',\'' + esc(n.id) + '\')' : '')) + '">' +
+          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + (n.type === 'REORDER_DUE' && n.relatedOrderId && can('rfq.draft') ? ' cursor:pointer;" onclick="openNotifReorder(\'' + esc(n.relatedOrderId) + '\',\'' + esc(n.id) + '\')' : n.type === 'REORDER_MORE' ? ' cursor:pointer;" onclick="openNotifReorderMore(\'' + esc(n.id) + '\')' : /^APPROVAL_(REQUESTED|REMINDER)$/.test(n.type) && n.relatedRfqId && can('order.approve') ? ' cursor:pointer;" onclick="openNotifApproval(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : /^BUDGET_/.test(n.type) && can('analytics.view') ? ' cursor:pointer;" onclick="openNotifSpending(\'' + esc(n.id) + '\')' : n.type === 'MEMBER_JOINED' && peopleOn() ? ' cursor:pointer;" onclick="openNotifPeople(\'' + esc(n.id) + '\')' : n.relatedRfqId ? ' cursor:pointer;" onclick="openNotifRfq(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? ' cursor:pointer;" onclick="openNotifOrder(\'' + esc(n.relatedOrderId) + '\',\'' + esc(n.id) + '\')' : '')) + '">' +
             '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
             (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
             (n.type === 'STOCK_RECEIPT_UNMATCHED' && n.relatedOrderId ? '<button onclick="createStockFromNotification(\'' + n.relatedOrderId + '\')" class="mt-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('addToStock') + '</button>' : '') +
-            (/^APPROVAL_(REQUESTED|REMINDER)$/.test(n.type) && n.relatedRfqId && can('order.approve') ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('apOpenApproval') + '</div>' : /^BUDGET_/.test(n.type) && can('analytics.view') ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('ntOpenSpending') + '</div>' : n.type === 'MEMBER_JOINED' && peopleOn() ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('tmOpenPeople') + '</div>' : n.relatedRfqId ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenRfq') + '</div>' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenOrder') + '</div>' : '')) +
+            (n.type === 'REORDER_DUE' && n.relatedOrderId && can('rfq.draft') ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('rdOrderAgain') + '</div>' : n.type === 'REORDER_MORE' ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('rdSeeAll') + '</div>' : /^APPROVAL_(REQUESTED|REMINDER)$/.test(n.type) && n.relatedRfqId && can('order.approve') ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('apOpenApproval') + '</div>' : /^BUDGET_/.test(n.type) && can('analytics.view') ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('ntOpenSpending') + '</div>' : n.type === 'MEMBER_JOINED' && peopleOn() ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('tmOpenPeople') + '</div>' : n.relatedRfqId ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenRfq') + '</div>' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenOrder') + '</div>' : '')) +
             '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + fmtDateTime(n.createdAt) + '</div>' +
           '</div>').join('')) +
       '</div>' : '') +
@@ -7178,16 +7263,18 @@ function parseHash(h){
   if (m[1] === 'rfq' && m[2]) return { section: 'rfqLink', rfqId: safeDecode(m[2]) };
   if (m[1] === 'order' && m[2]) return { section: 'orderDetail', orderId: safeDecode(m[2]) };
   if (m[1] === 'approval' && m[2]) return { section: 'approvalLink', approvalId: safeDecode(m[2]) };
+  if (m[1] === 'reorder' && m[2]) return { section: 'reorderLink', orderId: safeDecode(m[2]) };
   const am = str.match(/^#\/admin\/company\/([^/?#]+)/);
   if (am) return { section: 'adminCompany', companyId: safeDecode(am[1]) }; // from the admin's registration e-mail
   return { section: ROUTE_NAMES[m[1]] || 'main' };
 }
-function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?(?:\?[^#]*)?$/); return !!m && (['order', 'rfq', 'approval', 'login', 'register'].includes(m[1]) || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
+function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?(?:\?[^#]*)?$/); return !!m && (['order', 'rfq', 'approval', 'reorder', 'login', 'register'].includes(m[1]) || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
 function applyRoute(r){
   if (!isDashboardView()) return;
   const supplier = state.view === 'supplier';
   if (r.section === 'rfqLink' && r.rfqId) { openRfqLink(r.rfqId); return; }
   if (r.section === 'approvalLink' && r.approvalId) { if (can('order.approve') && !supplier) { setSection('rfqs'); openApproval(r.approvalId); } else setSection('main'); return; }
+  if (r.section === 'reorderLink' && r.orderId) { if (!supplier && can('rfq.draft')) openReorderLink(r.orderId); else setSection('main'); return; }
   if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId, true); return; }
   if ((r.section === 'stock' || r.section === 'spending') && supplier) r = { section: 'main' };
   if (r.section === 'spending' && !can('analytics.view')) r = { section: 'main' };
@@ -7201,7 +7288,7 @@ function applyDeepRoute(r){
   if (r.auth) { if (!state.token) openAuth(r.role || 'BUYER', r.auth); else if (isDashboardView()) setSection('main'); return; }
   if (isDashboardView()) { applyRoute(r); return; }
   pendingRoute = r;
-  if (r.section === 'orderDetail' || r.section === 'rfqLink' || r.section === 'approvalLink') openAuth('BUYER', 'login');
+  if (r.section === 'orderDetail' || r.section === 'rfqLink' || r.section === 'approvalLink' || r.section === 'reorderLink') openAuth('BUYER', 'login');
 }
 function applyPendingRoute(){
   if (pendingRoute && state.view === 'admin') { const r = pendingRoute; pendingRoute = null; if (r.section === 'adminCompany') openAdminCompany(r.companyId); return; }
@@ -7336,6 +7423,7 @@ function pollNow(){
     refreshLpos();
     refreshNotifications();
     refreshOnboarding();
+    if (state.section === 'main') refreshReorder();
     if (state.section === 'orderDetail' && state.selectedOrderId) { refreshChat(state.selectedOrderId); refreshOrderDocs(state.selectedOrderId); }
   } else if (state.view === 'admin') {
     refreshAdmin();
