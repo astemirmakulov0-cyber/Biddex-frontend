@@ -595,7 +595,16 @@ const I18N = {
     rvYes:"Yes", rvNo:"No", rvComment:"Comment (optional)", rvSubmit:"Send review", rvSending:"Sending…", rvChooseAll:"Choose the stars and answer both questions.", rvThanks:"Thank you. Your review was sent.",
     rvYourReview:"Your review", rvBuyerReview:"Buyer’s review", rvOnTimeShort:"On time", rvMatchesShort:"As ordered", rvHiddenComment:"The comment was hidden by an admin.", rvHiddenForSupplier:"Your comment is hidden from the supplier by an admin.",
     rvReply:"Supplier’s reply", rvReplyPh:"Reply to this review…", rvReplySend:"Send reply", rvReplyEdit:"Update reply", rvReplySaved:"Reply saved.",
-    rtOrders:"{n} orders", rtNoClaims:"no claims {p}%", rtOnTime:"on time {p}%", rtHint:"Based on this supplier’s received orders on Biddex.",
+    rtNew:"New supplier — not enough data yet", rtAsOrdered:"as ordered {p}%", rtDetails:"Reliability details",
+    rlTitle:"Supplier reliability", rlWindow:"Last 12 months, over all buyers. No buyer is named.", rlNew:"New supplier — not enough data yet. Figures appear after {n} orders from at least {m} different buyers.",
+    rlOrders:"Orders", rlCompleted:"Completed orders", rlNoProblems:"Without problems", rlNoProblemsHint:"Received without a dispute and as ordered.", rlDisputes:"Disputes", rlDisputesHint:"Share of orders where a buyer opened a dispute. A dispute is not always the supplier's fault.",
+    rlReviews:"Reviews", rlStars:"Average rating", rlOnTime:"Delivered on time", rlAsOrdered:"As ordered", rlReviewsBase:"From {n} reviews by buyers.",
+    rlLpo:"Purchase orders", rlDeclined:"Declined by the supplier", rlDeclinedHint:"Of {n} purchase orders the supplier decided on. A decline can mean the item was out of stock.",
+    rlDeliveries:"Deliveries", rlFailed:"Deliveries with a failed attempt", rlFailedHint:"Of {n} shipped orders. A failed delivery is an attempt that did not work; the order may still have arrived later. Recorded since October 2026.",
+    rlNotEnough:"Not enough data yet", rlBase:"Based on {n} orders.", rlLoadFailed:"Could not load the figures.",
+    rpCompleted:"Completed orders", rpAsOrdered:"As ordered", rpDisputes:"Disputes", rpDeclined:"Declined purchase orders", rpFailed:"Deliveries with a failed attempt", rpWindow:"Last 12 months, all buyers.",
+    rpRule:"Buyers see a figure when at least {n} orders come from at least {m} different buyers; before that they see \"New supplier\". Disputes, declines and failed deliveries are shown to buyers only on your reliability card, with an explanation.",
+    rtOrders:"{n} orders", rtNoClaims:"no problems {p}%", rtOnTime:"on time {p}%", rtHint:"Last 12 months, all buyers: tap the name for details.",
     rpTitle:"My ratings", rpIntro:"Buyers see your rating once {n} orders are counted.", rpOrders:"Counted orders", rpNoClaims:"No claims", rpStars:"Average stars", rpOnTime:"Delivered on time", rpReviews:"Reviews",
     rpVisible:"Visible to buyers", rpMissing:"{n} more counted order(s) until buyers see it.", rpView:"View reviews", rpNone:"No reviews yet.", rpHint:"Counted: received orders and orders that had a dispute, also if they were cancelled afterwards.",
     notifOpenOrder:"Open order",
@@ -1306,7 +1315,16 @@ const I18N = {
     rvYes:"نعم", rvNo:"لا", rvComment:"تعليق (اختياري)", rvSubmit:"إرسال التقييم", rvSending:"جارٍ الإرسال…", rvChooseAll:"اختر عدد النجوم وأجب عن السؤالين.", rvThanks:"شكرًا. تم إرسال تقييمك.",
     rvYourReview:"تقييمك", rvBuyerReview:"تقييم المشتري", rvOnTimeShort:"في الموعد", rvMatchesShort:"مطابق للطلب", rvHiddenComment:"أخفى المسؤول هذا التعليق.", rvHiddenForSupplier:"أخفى المسؤول تعليقك عن المورّد.",
     rvReply:"ردّ المورّد", rvReplyPh:"اكتب ردًا على التقييم…", rvReplySend:"إرسال الرد", rvReplyEdit:"تحديث الرد", rvReplySaved:"تم حفظ الرد.",
-    rtOrders:"عدد الطلبيات {n}", rtNoClaims:"بلا مطالبات {p}%", rtOnTime:"في الموعد {p}%", rtHint:"استنادًا إلى طلبيات هذا المورّد المستلمة على Biddex.",
+    rtNew:"مورّد جديد — لا توجد بيانات كافية بعد", rtAsOrdered:"مطابق للطلب {p}%", rtDetails:"تفاصيل الموثوقية",
+    rlTitle:"موثوقية المورّد", rlWindow:"آخر 12 شهرًا، على مستوى جميع المشترين. لا يُذكر اسم أي مشترٍ.", rlNew:"مورّد جديد — لا توجد بيانات كافية بعد. تظهر الأرقام بعد {n} طلبيات من {m} مشترين مختلفين على الأقل.",
+    rlOrders:"الطلبيات", rlCompleted:"الطلبيات المكتملة", rlNoProblems:"بلا مشاكل", rlNoProblemsHint:"طلبيات استُلمت دون نزاع وكما طُلبت.", rlDisputes:"النزاعات", rlDisputesHint:"نسبة الطلبيات التي فتح فيها المشتري نزاعًا. النزاع ليس دائمًا خطأ المورّد.",
+    rlReviews:"التقييمات", rlStars:"متوسط التقييم", rlOnTime:"التسليم في الموعد", rlAsOrdered:"مطابق للطلب", rlReviewsBase:"من {n} تقييمًا من المشترين.",
+    rlLpo:"أوامر الشراء", rlDeclined:"ما رفضه المورّد", rlDeclinedHint:"من أصل {n} من أوامر الشراء التي قرّر فيها المورّد. قد يعني الرفض أن الصنف غير متوفر.",
+    rlDeliveries:"التوصيل", rlFailed:"عمليات توصيل فشلت فيها محاولة", rlFailedHint:"من أصل {n} طلبية شُحنت. التوصيل الفاشل هو محاولة لم تنجح؛ وقد تصل الطلبية لاحقًا. مسجّل منذ أكتوبر 2026.",
+    rlNotEnough:"لا توجد بيانات كافية بعد", rlBase:"استنادًا إلى {n} طلبيات.", rlLoadFailed:"تعذّر تحميل الأرقام.",
+    rpCompleted:"الطلبيات المكتملة", rpAsOrdered:"مطابق للطلب", rpDisputes:"النزاعات", rpDeclined:"أوامر الشراء المرفوضة", rpFailed:"عمليات توصيل فشلت فيها محاولة", rpWindow:"آخر 12 شهرًا، جميع المشترين.",
+    rpRule:"يرى المشترون الرقم عندما تأتي {n} طلبيات على الأقل من {m} مشترين مختلفين على الأقل؛ وقبل ذلك يرون «مورّد جديد». لا يرى المشترون النزاعات والرفض والتوصيل الفاشل إلا في بطاقة موثوقيتك، مع شرح لها.",
+    rtOrders:"عدد الطلبيات {n}", rtNoClaims:"بلا مشاكل {p}%", rtOnTime:"في الموعد {p}%", rtHint:"استنادًا إلى طلبيات هذا المورّد المستلمة على Biddex.",
     rpTitle:"تقييماتي", rpIntro:"يرى المشترون تقييمك عندما يبلغ عدد الطلبيات المحتسبة {n}.", rpOrders:"الطلبيات المحتسبة", rpNoClaims:"بلا مطالبات", rpStars:"متوسط النجوم", rpOnTime:"التسليم في الموعد", rpReviews:"التقييمات",
     rpVisible:"ظاهر للمشترين", rpMissing:"يلزم {n} طلبية محتسبة أخرى ليظهر للمشترين.", rpView:"عرض التقييمات", rpNone:"لا توجد تقييمات بعد.", rpHint:"المحتسبة: الطلبيات المستلمة والطلبيات التي شهدت نزاعًا، حتى لو أُلغيت لاحقًا.",
     notifOpenOrder:"فتح الطلبية",
@@ -1753,6 +1771,7 @@ let state = {
   people: null, peopleError: false, peopleBusy: false, nameDraft: null, nameBusy: false,
   showInviteModal: false, inviteForm: { email:'', role:'STAFF' }, inviteBusy: false, showLeaveModal: false, leavePassword: '', leaveBusy: false,
   historyRfqId: null, historyData: null, rfqTab: 'active',
+  supplierCard: null,
   awardCheck: null, awardBusy: false, approvalModal: null, spendRules: null, spendForm: null, spendBusy: false,
   teamMembersEnabled: false, // GET /api/config/public; everything about teams is hidden while it is false
 
@@ -2720,15 +2739,50 @@ function renderReviewPanel(order, isSupplier){
     '<div class="mt-3">' + actionBtn(state.reviewBusy ? t('rvSending') : t('rvSubmit'), "submitReview('" + order.id + "')", state.reviewBusy) + '</div>');
 }
 // The figures line under a supplier's name in Compare bids (only when the server sends supplierRating).
-function supplierRatingLine(r){
-  if (!r) return '';
+// Compare bids: only the positive badges (the server sends nothing else), or "New supplier" when there is not enough data behind them.
+// `r` = the quote's supplierRating (null = not enough data); the supplier's own quote list has no such key at all (nothing is shown there).
+function supplierRatingLine(r, supplierId){
+  const line = (inner) => '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx3);" title="' + esc(t('rtHint')) + '">' + inner + '</div>';
+  if (!r) return line('<span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">' + t('rtNew') + '</span>');
   const parts = [];
   if (r.avgStars != null) parts.push('<b style="color:var(--pend);">★ ' + Number(r.avgStars).toFixed(1) + '</b>');
   parts.push(tpl('rtOrders', { n: r.orders }));
   parts.push(tpl('rtNoClaims', { p: r.claimFreePercent }));
   if (r.onTimePercent != null) parts.push(tpl('rtOnTime', { p: r.onTimePercent }));
-  return '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx3);" title="' + esc(t('rtHint')) + '">' + parts.join(' &middot; ') + '</div>';
+  if (r.matchesOrderPercent != null) parts.push(tpl('rtAsOrdered', { p: r.matchesOrderPercent }));
+  return line(parts.join(' &middot; '));
 }
+// The supplier's card (GET /suppliers/:id/reliability): every figure that has enough behind it, each with a short explanation.
+async function openSupplierCard(id, name){
+  setState({ supplierCard: { id, name, data: null, failed: false } });
+  try { const data = await api('/api/suppliers/' + encodeURIComponent(id) + '/reliability'); if (state.supplierCard && state.supplierCard.id === id) setState({ supplierCard: { id, name: (data.supplier && data.supplier.name) || name, data, failed: false } }); }
+  catch(e) { if (state.supplierCard && state.supplierCard.id === id) setState({ supplierCard: { id, name, data: null, failed: true } }); }
+}
+function closeSupplierCard(){ setState({ supplierCard: null }); }
+function renderSupplierCard(){
+  const c = state.supplierCard;
+  if (!c) return '';
+  const d = c.data;
+  const wrap = (inner) => '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div class="bx-rise bx-modal bx-scroll w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel); max-height:90vh; overflow-y:auto;">' +
+    '<div class="flex items-start justify-between gap-3"><div><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('rlTitle') + '</h3><div class="text-[13px] font-semibold" style="color:var(--tx2); overflow-wrap:anywhere;">' + esc(c.name || '') + '</div></div>' +
+    '<button onclick="closeSupplierCard()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' + inner + '</div></div>';
+  if (c.failed) return wrap('<div class="mt-4 text-[13px]" style="color:var(--tx4);">' + t('rlLoadFailed') + '</div>');
+  if (!d) return wrap('<div class="mt-4 text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>');
+  const head = '<div class="mt-2 text-[11.5px]" style="color:var(--tx4);">' + t('rlWindow') + '</div>';
+  if (d.newSupplier) return wrap(head + '<div class="mt-4 rounded-lg px-3 py-3 text-[13px] font-semibold" style="background:var(--line); color:var(--tx2);">' + tpl('rlNew', { n: d.minOrders, m: d.minBuyers || 3 }) + '</div>');
+  const big = (label, value, hint, color) => '<div class="py-2.5"><div class="flex items-baseline justify-between gap-3"><span class="text-[13px]" style="color:var(--tx3);">' + label + '</span><span class="mono bx-display text-[18px] font-bold" style="color:' + (color || 'var(--tx)') + ';">' + value + '</span></div>' +
+    (hint ? '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + hint + '</div>' : '') + '</div>';
+  const section = (title, inner) => '<div class="mt-4"><div class="eyebrow" style="color:var(--tx4);">' + title + '</div><div class="divide-y" style="border-color:var(--bd);">' + inner + '</div></div>';
+  const none = '<div class="py-2.5 text-[12.5px]" style="color:var(--tx4);">' + t('rlNotEnough') + '</div>';
+  const pct = (v) => (v == null ? '—' : v + '%');
+  const o = d.orders, rv = d.reviews, po = d.purchaseOrders, dl = d.deliveries;
+  return wrap(head +
+    section(t('rlOrders'), o ? big(t('rlCompleted'), o.completed, tpl('rlBase', { n: o.counted })) + big(t('rlNoProblems'), pct(o.claimFreePercent), t('rlNoProblemsHint')) + big(t('rlDisputes'), pct(o.disputePercent), t('rlDisputesHint')) : none) +
+    section(t('rlReviews'), rv ? big(t('rlStars'), '★ ' + Number(rv.avgStars).toFixed(1), tpl('rlReviewsBase', { n: rv.count }), 'var(--pend)') + big(t('rlOnTime'), pct(rv.onTimePercent)) + big(t('rlAsOrdered'), pct(rv.matchesOrderPercent)) : none) +
+    section(t('rlLpo'), po ? big(t('rlDeclined'), pct(po.declinePercent), tpl('rlDeclinedHint', { n: po.decided })) : none) +
+    section(t('rlDeliveries'), dl ? big(t('rlFailed'), pct(dl.failedPercent), tpl('rlFailedHint', { n: dl.shipped })) : none));
+}
+
 // Supplier hub card: its own figures, always (also before buyers can see them)
 function ratingsCard(){
   const R = state.ratings;
@@ -2741,6 +2795,10 @@ function ratingsCard(){
     '<div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">' +
       cell(t('rpOrders'), f.orders) + cell(t('rpNoClaims'), f.claimFreePercent != null ? f.claimFreePercent + '%' : '—') +
       cell(t('rpStars'), f.avgStars != null ? '★ ' + Number(f.avgStars).toFixed(1) : '—') + cell(t('rpOnTime'), f.onTimePercent != null ? f.onTimePercent + '%' : '—') + '</div>' +
+    (f.matchesOrderPercent !== undefined ? '<div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">' +
+      cell(t('rpCompleted'), f.completedOrders) + cell(t('rpAsOrdered'), f.matchesOrderPercent != null ? f.matchesOrderPercent + '%' : '—') + cell(t('rpDisputes'), f.disputePercent != null ? f.disputePercent + '%' : '—') +
+      cell(t('rpDeclined'), f.declinePercent != null ? f.declinePercent + '%' : '—') + cell(t('rpFailed'), f.deliveryFailPercent != null ? f.deliveryFailPercent + '%' : '—') + '</div>' +
+      '<div class="mt-2 text-[11.5px]" style="color:var(--tx4);">' + t('rpWindow') + ' ' + tpl('rpRule', { n: f.minOrders, m: f.minBuyers }) + '</div>' : '') +
     '<div class="mt-2 text-[11.5px]" style="color:var(--tx4);">' + (f.visibleToBuyers ? t('rpVisible') : tpl('rpMissing', { n: f.ordersToVisible })) + ' &middot; ' + t('rpHint') + '</div></div>';
 }
 function renderRatingsModal(){
@@ -6703,9 +6761,9 @@ function renderModals(){
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">' + t('cmpNone') + '</div>' :
           q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
             '<div class="flex items-center gap-2.5">' + avatarHtml(x.supplierCompany ? x.supplierCompany.name : '?', 32) +
-            '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + esc(x.supplierCompany ? x.supplierCompany.name : '') +
+            '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + (x.supplierCompany && 'supplierRating' in x ? '<button type="button" onclick="openSupplierCard(' + jsAttr(x.supplierCompany.id) + ',' + jsAttr(x.supplierCompany.name) + ')" title="' + esc(t('rtDetails')) + '" class="text-start font-semibold underline decoration-dotted underline-offset-2" style="color:var(--tx);">' + esc(x.supplierCompany.name) + '</button>' : esc(x.supplierCompany ? x.supplierCompany.name : '')) +
               (x.source === 'BID_LINK' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--pend-soft); color:var(--pend);" title="' + esc(t('viaLinkHint')) + '">' + esc(t('viaLink')) + '</span>' : '') + '</div>' +
-              (x.revisedAt ? '<div class="text-[11px]" style="color:var(--tx4);">' + tpl('quoteRevised', { date: fmtDateTime(x.revisedAt) }) + '</div>' : '') + supplierRatingLine(x.supplierRating) +
+              (x.revisedAt ? '<div class="text-[11px]" style="color:var(--tx4);">' + tpl('quoteRevised', { date: fmtDateTime(x.revisedAt) }) + '</div>' : '') + ('supplierRating' in x ? supplierRatingLine(x.supplierRating) : '') +
             '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>' +
             (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">' + (x.lpo.declineReason ? tpl('cmpDeclinedReason', { reason: esc(x.lpo.declineReason) }) : t('cmpDeclined')) + '</div>' : '') +
             '</div></div>' +
@@ -6834,7 +6892,7 @@ function renderModals(){
       'confirmDeliveryFail()', state.ordersBusyId ? t('working') : t('dfSubmit'), !!state.ordersBusyId);
   }
   // on top of everything else (Compare bids stays open underneath the question)
-  html += renderAwardCheck() + renderApprovalModal();
+  html += renderAwardCheck() + renderApprovalModal() + renderSupplierCard();
   return html;
 }
 
@@ -7072,6 +7130,7 @@ const OVERLAYS = [
   ['invite', s => !!s.showInviteModal, () => closeInviteModal()],
   ['awardCheck', s => !!s.awardCheck, () => closeAwardCheck()],
   ['approval', s => !!s.approvalModal, () => closeApproval()],
+  ['supplierCard', s => !!s.supplierCard, () => closeSupplierCard()],
   ['history', s => !!s.historyRfqId, () => closeRfqHistory()],
   ['leave', s => !!s.showLeaveModal, () => closeLeaveModal()],
   ['deliveryFail', s => !!s.showDeliveryFailModal, () => closeDeliveryFailModal()],

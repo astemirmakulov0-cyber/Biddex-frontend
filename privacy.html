@@ -142,7 +142,7 @@
     <tr><td>Company</td><td>Company name, type, commercial registration (CR) number, country, address, phone; verification status and the notes of our review; your e-mail notification choices.</td></tr>
     <tr><td>Verification documents</td><td>The files you upload to prove the company (for example a trade licence or CR certificate). Only the Biddex team can open them.</td></tr>
     <tr><td>Catalog and stock</td><td>For suppliers: product names, prices, units and photos. For buyers: the buyer’s own stock list (never shown to anyone else).</td></tr>
-    <tr><td>Deals</td><td>Requests for quotation (title, description, quantity, budget, optional photo), quotes (prices, notes, attachments), purchase orders, orders, delivery details, documents added to an order, invoices, payments you report (amount, method, reference), chat messages on an order, reviews of suppliers, and bid-credit (wallet) transactions.</td></tr>
+    <tr><td>Deals</td><td>Requests for quotation (title, description, quantity, budget, optional photo), quotes (prices, notes, attachments), purchase orders, orders, delivery details, documents added to an order, invoices, payments you report (amount, method, reference), chat messages on an order, reviews of suppliers, bid-credit (wallet) transactions, and, for each delivery, how many times the supplier marked it as failed.</td></tr>
     <tr><td>Notifications</td><td>The in-app notifications and e-mails we send you about your account and your deals.</td></tr>
     <tr><td>Phone and WhatsApp consent</td><td>For suppliers we invite: the phone number recorded by the Biddex team and a record of the consent (when, how, and any withdrawal). We use it only to send you invitation links.</td></tr>
     <tr><td>Technical data</td><td>Your IP address and the details of each request are handled by our servers to run and protect the service (for example to limit repeated requests). Our request log keeps the method, the address requested (secret tokens masked), the result and the time. We do not record login times, use analytics or advertising tools, or set cookies; your browser’s local storage keeps your session, theme and language.</td></tr>
@@ -170,7 +170,7 @@
     <li>A buyer’s identity is hidden from suppliers until the buyer awards that supplier’s quote. Suppliers never see each other’s quotes.</li>
     <li>A buyer sees the company name, price and terms of every supplier that quotes on its request. After an award the two companies see each other’s company name and the data of their order (delivery, documents, chat, invoice, payments).</li>
     <li>A supplier’s catalog is visible to buyers once the supplier is verified.</li>
-    <li>Buyers may see a supplier’s quality figures (number of orders, share without claims, average stars, on-time share) once enough orders are counted. The comment of a review is visible only to the reviewed supplier, to its author and to the Biddex team.</li>
+    <li>Buyers may see a supplier’s reliability figures, computed over all buyers for the last 12 months: completed orders, the share without problems, reviews (average stars, delivered on time, as ordered), and — on the supplier’s card — the shares of disputes, declined purchase orders and failed deliveries. A figure is shown only when it is based on at least 5 items from at least 3 different buyers; otherwise buyers see “New supplier”. Only totals and percentages are shown: no buyer is named, and the comment of a review is visible only to the reviewed supplier, to its author and to the Biddex team.</li>
     <li>The Biddex team can see accounts, verification documents, deals and order chats, in order to verify companies, support users and resolve disputes.</li>
     <li>People in the same buyer company see each other’s names, e-mail addresses and roles, and the history of who did what on the company’s requests and orders. Suppliers and other companies never see the names of a buyer’s people.</li>
     <li>Approval requests and the owner’s answers are visible only to the people of the buyer company who may decide on bids (owners and managers). The supplier sees nothing about an approval until the owner approves and the purchase order is issued.</li>
@@ -240,6 +240,7 @@
     <li><strong>Approval requests:</strong> an unanswered request expires after 3 days; every request is kept with its order after that as a business record, without the name of a person who has left.</li>
     <li><strong>Personal notices</strong> (answers to a manager’s request) are deleted when that person leaves or is removed.</li>
     <li><strong>Budget warnings</strong> (80 % and 100 % of the monthly budget) are kept like other notifications.</li>
+    <li><strong>Reliability figures</strong> are calculated from the orders and reviews of the last 12 months; the underlying records are kept as described above, the figures themselves are not stored separately.</li>
   </ul>
 
   <h2>10. Changes to this policy</h2>
