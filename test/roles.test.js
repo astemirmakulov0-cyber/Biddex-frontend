@@ -25,7 +25,7 @@ const guards = {
   'publishing and drafts': /const publishes = can\('rfq\.publish'\)/,
   'close bidding': /r\.status === 'PUBLISHED' && can\('rfq\.publish'\)/,
   'cancel RFQ': /can\('rfq\.cancel'\) && \['DRAFT'/,
-  'shortlist / reject / award': /!can\('quote\.decide'\)\) return shortlisted/,
+  'shortlist / reject / award': /!can\('quote\.decide'\) \|\| aprPending\) return shortlisted/,
   'record payment': /can\('payment\.record'\) && invoice\.id/,
   'review': /can\('review\.write'\) && order\.receivedAt/,
   'spending (menu, route, hint)': /can\('analytics\.view'\) \? \[\['spending'/,

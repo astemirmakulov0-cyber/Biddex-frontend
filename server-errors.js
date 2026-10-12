@@ -72,6 +72,15 @@
     'This e-mail address already belongs to another Biddex account. Ask your company owner to invite a different address.': 'inviteEmailInUse',
     'This company has reached its limit of people': 'peopleLimit',
     'password is required': 'passwordRequired',
+    'This request is already waiting for the owner\'s approval': 'approvalWaiting',
+    'This approval request was already decided or is no longer open': 'approvalNotOpen',
+    'This approval request has expired': 'approvalExpired',
+    'Approval request not found': 'approvalNotFound',
+    'Set a monthly budget first': 'setBudgetFirst',
+    'nothing to change': 'nothingToChange',
+    'budgetRequiresApproval must be true or false': 'flagBool',
+    'This quote can no longer be awarded': 'quoteNoLongerAwardable',
+    'Quote not found': 'quoteNotFound',
     'Request body is too large': 'bodyTooLarge',
     'Invalid JSON body': 'badJson'
   };
@@ -98,6 +107,15 @@
     inviteEmailInUse: 'هذا البريد الإلكتروني يخص حسابًا آخر في Biddex. اطلب من مالك شركتك دعوة عنوان مختلف.',
     peopleLimit: 'بلغت هذه الشركة الحد الأقصى لعدد الأشخاص',
     passwordRequired: 'كلمة المرور مطلوبة',
+    approvalWaiting: 'هذا الطلب بانتظار موافقة المالك بالفعل',
+    approvalNotOpen: 'سبق اتخاذ قرار بشأن طلب الموافقة هذا أو لم يعد مفتوحًا',
+    approvalExpired: 'انتهت مهلة طلب الموافقة هذا',
+    approvalNotFound: 'طلب الموافقة غير موجود',
+    setBudgetFirst: 'حدّد الميزانية الشهرية أولًا',
+    nothingToChange: 'لا يوجد ما يمكن تغييره',
+    flagBool: 'يجب أن تكون قيمة «الموافقة عند تجاوز الميزانية» نعم أو لا',
+    quoteNoLongerAwardable: 'لم يعد بالإمكان ترسية هذا العرض',
+    quoteNotFound: 'العرض غير موجود',
     bodyTooLarge: 'حجم الطلب كبير جدًا',
     badJson: 'تعذّرت قراءة الطلب',
     invalidCredentials: 'بيانات الدخول غير صحيحة',
@@ -149,7 +167,7 @@
     notes: 'الملاحظات', terms: 'الشروط', trackingInfo: 'معلومات التتبع', body: 'الرسالة', category: 'الفئة', reference: 'المرجع',
     password: 'كلمة المرور', currentPassword: 'كلمة المرور الحالية', newPassword: 'كلمة المرور الجديدة', reason: 'السبب', comment: 'التعليق', q: 'نص البحث',
     publish: 'النشر', isActive: 'الحالة', exactBrandOnly: 'العلامة التجارية بالضبط', productId: 'المنتج', duplicateFromId: 'المنتج', companyId: 'الشركة',
-    fullName: 'الاسم الكامل', email: 'البريد الإلكتروني', role: 'الدور', consent: 'الموافقة', deliveryTimeDays: 'مدة التسليم', paymentTermsDays: 'مهلة الدفع', price: 'السعر', unitPrice: 'سعر الوحدة', budget: 'الميزانية', amount: 'المبلغ'
+    approvalThreshold: 'حد الموافقة', monthlyBudget: 'الميزانية الشهرية', budgetRequiresApproval: 'الموافقة عند تجاوز الميزانية', fullName: 'الاسم الكامل', email: 'البريد الإلكتروني', role: 'الدور', consent: 'الموافقة', deliveryTimeDays: 'مدة التسليم', paymentTermsDays: 'مهلة الدفع', price: 'السعر', unitPrice: 'سعر الوحدة', budget: 'الميزانية', amount: 'المبلغ'
   };
   var field = function (f) { return '«' + (FIELDS[f] || f) + '»'; };
   var SHAPES = [
@@ -163,6 +181,7 @@
     [/^A company can have at most (\d+) owners$/, function (m) { return 'يمكن أن يكون للشركة ' + m[1] + ' ملّاك كحد أقصى'; }],
     [/^At most (\d+) invitations can be open at once$/, function (m) { return 'يمكن فتح ' + m[1] + ' دعوات كحد أقصى في الوقت نفسه'; }],
     [/^Your company can have at most (\d+) people, invitations included$/, function (m) { return 'يمكن أن يضم حسابك ' + m[1] + ' أشخاص كحد أقصى، بما في ذلك الدعوات'; }],
+    [/^Cannot award an RFQ in (\w+) status$/, function () { return 'لا يمكن ترسية طلب تسعير في حالته الحالية'; }],
     [/^(\w+) is too large$/, function (m) { return 'قيمة الحقل ' + field(m[1]) + ' كبيرة جدًا'; }]
   ];
 

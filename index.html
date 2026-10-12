@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
 <script src="config.js?v=1"></script>
-<script src="server-errors.js?v=4"></script>
+<script src="server-errors.js?v=5"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
@@ -552,6 +552,25 @@ const I18N = {
     rfqsAllRequests:"All requests",
     rfqsPageTitle:"Your RFQs",
     rfqsCreateNew:"+ Create new RFQ",
+    apWaitingOwner:"Waiting for the owner's approval", apWaitingYou:"Waiting for your approval", apRejectedNote:"Not approved: {reason}", apExpiredNote:"Approval request expired — choose a bid again", apFailedNote:"Approval could not be completed — choose a bid again",
+    apReview:"Review approval", apWithdraw:"Withdraw request", apWithdrawConfirm:"Withdraw the approval request for “{title}”?", apWithdrawn:"Request withdrawn.",
+    apSent:"Sent to the owner for approval. The supplier sees nothing until it is approved.", apBannerWaiting:"{n} order(s) are waiting for your approval.", attnApprovals:"Orders waiting for your approval",
+    apModalTitle:"Approval request", apAsks:"{name} asks to award this request", apAmount:"Order total", apSupplier:"Supplier", apUnitPrice:"Unit price", apDelivery:"Delivery", apDays:"{n} days", apQuantity:"Quantity",
+    apWhy:"Why it needs you", apReasonThreshold:"The order is above your approval limit of {threshold} BHD.", apReasonBudget:"It takes this month's budget over the limit, and you asked to approve such orders.", apReasonBoth:"The order is above your approval limit of {threshold} BHD, and it takes this month's budget over the limit.",
+    apBudgetLine:"Budget this month: {before} before this order, {after} after it, of {budget} BHD.", apOverBy:"Over the budget by {over} BHD", apNeededBy:"Needed by", apExpires:"This request expires on {date}.",
+    apApprove:"Approve and send to supplier", apApproving:"Approving…", apApproveConfirm:"Approve “{title}” and send the purchase order to {supplier}?", apApproved:"Approved. The purchase order was sent to the supplier.",
+    apReject:"Reject…", apRejectReason:"Reason for the manager (required)", apRejectSend:"Send rejection", apRejected:"Rejected. The manager can see your reason.", apDecidedBy:"Decided by {name}", apOpenApproval:"Open approval", ntOpenSpending:"Open Spending",
+    apSt_PENDING:"Waiting for a decision", apSt_APPROVED:"Approved", apSt_REJECTED:"Rejected", apSt_CANCELLED:"Withdrawn", apSt_EXPIRED:"Expired", apSt_FAILED:"Not completed",
+    acTitle:"Choose this bid?", acAmount:"Order total", acNeedsApproval:"This order needs the owner's approval. It will not go to the supplier until the owner approves it.",
+    acWhyThreshold:"It is above the approval limit of {threshold} BHD.", acWhyBudget:"It takes this month's budget over the limit, and the owner asked to approve such orders.", acWhyBoth:"It is above the approval limit of {threshold} BHD, and it takes this month's budget over the limit.",
+    acBudget:"Budget this month after this order: {after} of {budget} BHD ({percent}%).", acOver:"After this order the budget is exceeded by {over} BHD.", acNear:"After this order {percent}% of this month's budget is used.",
+    acAward:"Award", acSend:"Send to owner for approval", acBusy:"Sending…", acOwnerNote:"As an owner you decide yourself: this order goes straight to the supplier.",
+    srTitle:"Spending rules", srIntro:"Control what is ordered, even when your team orders.", srThreshold:"Orders above this amount need the owner's approval (BHD)", srThresholdHint:"Leave empty for no limit. An order of exactly this amount needs no approval.",
+    srBudget:"Monthly budget (BHD)", srBudgetHint:"Counted when a bid is chosen: the purchase orders of the month that are not declined or cancelled. You get a warning at 80% and at 100%.", srRequire:"An order that takes the month over the budget needs my approval",
+    srSave:"Save rules", srSaved:"Spending rules saved.", srMonthUsed:"This month: {committed} of {budget} BHD ({percent}%)", srNotSet:"not set", srOwnerOnly:"Only an owner can change these rules.", srManagerThreshold:"Orders above {amount} BHD need the owner's approval.",
+    sbTitle:"Budget this month", sbOf:"{committed} of {budget} BHD", sbOver:"Over by {over} BHD", sbNote:"Counted when a bid is chosen — the purchase orders of the month that are not declined or cancelled.", sbEdit:"Change in Settings",
+    act_APPROVAL_REQUESTED:"asked the owner to approve an order of {amount}", act_APPROVAL_APPROVED:"approved the order of {amount}", act_APPROVAL_REJECTED:"did not approve the order of {amount}", act_APPROVAL_CANCELLED:"closed an approval request ({amount})",
+    srInvalid:"Enter an amount like 250 or 99.500 (or leave it empty).",
     rfqTabActive:"Active", rfqTabFinished:"Finished", rfqNoFinished:"No finished requests yet.", rfqNoActive:"No active requests. Finished ones are in the Finished tab.",
     rfqOrderStatus:"Order: {status}", rfqAwaitingSupplier:"Purchase order sent — awaiting supplier", rfqSupplierDeclined:"Supplier declined — choose another bid",
     closeBiddingTitle:"Close bidding",
@@ -1244,6 +1263,25 @@ const I18N = {
     rfqsAllRequests:"كل الطلبات",
     rfqsPageTitle:"طلبات التسعير الخاصة بك",
     rfqsCreateNew:"+ طلب تسعير جديد",
+    apWaitingOwner:"بانتظار موافقة المالك", apWaitingYou:"بانتظار موافقتك", apRejectedNote:"لم تتم الموافقة: {reason}", apExpiredNote:"انتهت مهلة طلب الموافقة — اختر عرضًا من جديد", apFailedNote:"تعذّر إكمال الموافقة — اختر عرضًا من جديد",
+    apReview:"مراجعة الموافقة", apWithdraw:"سحب الطلب", apWithdrawConfirm:"سحب طلب الموافقة الخاص بـ«{title}»؟", apWithdrawn:"تم سحب الطلب.",
+    apSent:"أُرسل إلى المالك للموافقة. لا يرى المورّد شيئًا حتى تتم الموافقة.", apBannerWaiting:"{n} من الطلبيات بانتظار موافقتك.", attnApprovals:"طلبيات بانتظار موافقتك",
+    apModalTitle:"طلب موافقة", apAsks:"يطلب {name} ترسية هذا الطلب", apAmount:"إجمالي الطلبية", apSupplier:"المورّد", apUnitPrice:"سعر الوحدة", apDelivery:"التسليم", apDays:"{n} أيام", apQuantity:"الكمية",
+    apWhy:"لماذا تحتاج إلى موافقتك", apReasonThreshold:"الطلبية أعلى من حد الموافقة لديك البالغ {threshold} د.ب.", apReasonBudget:"تتجاوز بها ميزانية هذا الشهر، وقد طلبت الموافقة على مثل هذه الطلبيات.", apReasonBoth:"الطلبية أعلى من حد الموافقة لديك البالغ {threshold} د.ب، وتتجاوز بها ميزانية هذا الشهر.",
+    apBudgetLine:"ميزانية هذا الشهر: {before} قبل هذه الطلبية و{after} بعدها، من أصل {budget} د.ب.", apOverBy:"تجاوز الميزانية بمقدار {over} د.ب", apNeededBy:"مطلوب بحلول", apExpires:"ينتهي هذا الطلب في {date}.",
+    apApprove:"موافقة وإرسال إلى المورّد", apApproving:"جارٍ الموافقة…", apApproveConfirm:"الموافقة على «{title}» وإرسال أمر الشراء إلى {supplier}؟", apApproved:"تمت الموافقة. أُرسل أمر الشراء إلى المورّد.",
+    apReject:"رفض…", apRejectReason:"سبب الرفض للمدير (مطلوب)", apRejectSend:"إرسال الرفض", apRejected:"تم الرفض. يمكن للمدير رؤية السبب.", apDecidedBy:"قرار {name}", apOpenApproval:"فتح الموافقة", ntOpenSpending:"فتح الإنفاق",
+    apSt_PENDING:"بانتظار القرار", apSt_APPROVED:"تمت الموافقة", apSt_REJECTED:"مرفوض", apSt_CANCELLED:"تم سحبه", apSt_EXPIRED:"انتهت مهلته", apSt_FAILED:"لم يكتمل",
+    acTitle:"اختيار هذا العرض؟", acAmount:"إجمالي الطلبية", acNeedsApproval:"تحتاج هذه الطلبية إلى موافقة المالك. لن تصل إلى المورّد قبل أن يوافق عليها.",
+    acWhyThreshold:"إنها أعلى من حد الموافقة البالغ {threshold} د.ب.", acWhyBudget:"تتجاوز بها ميزانية هذا الشهر، وقد طلب المالك الموافقة على مثل هذه الطلبيات.", acWhyBoth:"إنها أعلى من حد الموافقة البالغ {threshold} د.ب، وتتجاوز بها ميزانية هذا الشهر.",
+    acBudget:"ميزانية هذا الشهر بعد هذه الطلبية: {after} من {budget} د.ب ({percent}%).", acOver:"بعد هذه الطلبية ستُتجاوز الميزانية بمقدار {over} د.ب.", acNear:"بعد هذه الطلبية يُستخدم {percent}% من ميزانية هذا الشهر.",
+    acAward:"ترسية", acSend:"إرسال إلى المالك للموافقة", acBusy:"جارٍ الإرسال…", acOwnerNote:"بصفتك مالكًا تقرّر بنفسك: تذهب هذه الطلبية مباشرة إلى المورّد.",
+    srTitle:"قواعد الإنفاق", srIntro:"تحكّم فيما يُطلب، حتى عندما يطلب فريقك.", srThreshold:"الطلبيات التي تزيد عن هذا المبلغ تحتاج إلى موافقة المالك (د.ب)", srThresholdHint:"اتركه فارغًا لعدم وضع حد. الطلبية التي تساوي هذا المبلغ تمامًا لا تحتاج إلى موافقة.",
+    srBudget:"الميزانية الشهرية (د.ب)", srBudgetHint:"تُحتسب عند اختيار العرض: أوامر الشراء في الشهر غير المرفوضة أو الملغاة. يصلك تنبيه عند 80% وعند 100%.", srRequire:"الطلبية التي تتجاوز بها الميزانية الشهرية تحتاج إلى موافقتي",
+    srSave:"حفظ القواعد", srSaved:"تم حفظ قواعد الإنفاق.", srMonthUsed:"هذا الشهر: {committed} من {budget} د.ب ({percent}%)", srNotSet:"غير محدد", srOwnerOnly:"يمكن للمالك وحده تغيير هذه القواعد.", srManagerThreshold:"الطلبيات التي تزيد عن {amount} د.ب تحتاج إلى موافقة المالك.",
+    sbTitle:"ميزانية هذا الشهر", sbOf:"{committed} من {budget} د.ب", sbOver:"تجاوز بمقدار {over} د.ب", sbNote:"تُحتسب عند اختيار العرض — أوامر الشراء في الشهر غير المرفوضة أو الملغاة.", sbEdit:"تغيير في الإعدادات",
+    act_APPROVAL_REQUESTED:"طلب من المالك الموافقة على طلبية بمبلغ {amount}", act_APPROVAL_APPROVED:"وافق على الطلبية بمبلغ {amount}", act_APPROVAL_REJECTED:"لم يوافق على الطلبية بمبلغ {amount}", act_APPROVAL_CANCELLED:"أغلق طلب موافقة ({amount})",
+    srInvalid:"أدخل مبلغًا مثل 250 أو 99.500 (أو اتركه فارغًا).",
     rfqTabActive:"النشطة", rfqTabFinished:"المنتهية", rfqNoFinished:"لا توجد طلبات منتهية بعد.", rfqNoActive:"لا توجد طلبات نشطة. الطلبات المنتهية في تبويب «المنتهية».",
     rfqOrderStatus:"الطلبية: {status}", rfqAwaitingSupplier:"أُرسل أمر الشراء — بانتظار المورّد", rfqSupplierDeclined:"رفض المورّد — اختر عرضًا آخر",
     closeBiddingTitle:"إغلاق باب العروض",
@@ -1715,6 +1753,7 @@ let state = {
   people: null, peopleError: false, peopleBusy: false, nameDraft: null, nameBusy: false,
   showInviteModal: false, inviteForm: { email:'', role:'STAFF' }, inviteBusy: false, showLeaveModal: false, leavePassword: '', leaveBusy: false,
   historyRfqId: null, historyData: null, rfqTab: 'active',
+  awardCheck: null, awardBusy: false, approvalModal: null, spendRules: null, spendForm: null, spendBusy: false,
   teamMembersEnabled: false, // GET /api/config/public; everything about teams is hidden while it is false
 
   rfqs: [], catalog: [], myCatalog: [], stock: [],
@@ -2079,7 +2118,7 @@ async function submitForgotPassword(){
 function logout(){
   notifSeen = null;
   clearSession();
-  setState({ people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState({ approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
 }
 
 let lastPollAt = Date.now(); // when the data was last refreshed (see the polling block at the end of the script)
@@ -2215,6 +2254,235 @@ function openNotifPeople(notifId){
   api('/api/notifications/' + encodeURIComponent(notifId) + '/read', { method: 'PATCH' }).then(() => refreshNotifications()).catch(() => {});
   setSection('profile');
   setTimeout(() => { const el = document.getElementById('people-card'); if (el) { el.scrollIntoView({ block:'start' }); el.classList.add('bx-flash'); } }, 400);
+}
+
+// ---------- Spending control: the owner's approval of a bid, the monthly budget, the spending rules ----------
+// Server side: docs/PROJECT_CONTEXT.md "Spending control". A manager's pick over the owner's limit (or over the budget when the owner asked
+// for that) is not awarded: POST /quotes/:id/award answers 202 { approval } and the request waits. The request list carries r.approval for
+// owners and managers: { id, status: PENDING | REJECTED | EXPIRED | FAILED, reason, amount, requestedBy {name, you}, decisionReason }.
+// Staff never get any of it (403 / no field), and the app never asks them.
+const rfqApproval = (r) => (r && r.approval) || null;
+const approvalPending = (r) => !!r && !!r.approval && r.approval.status === 'PENDING';
+// the note under a request in the list
+function approvalNote(r){
+  const a = rfqApproval(r);
+  if (!a) return '';
+  const line = (txt, color) => '<div class="mt-1 text-[12px] font-semibold" style="color:' + color + '; overflow-wrap:anywhere;">' + txt + '</div>';
+  if (a.status === 'PENDING') return line(t(can('order.approve') ? 'apWaitingYou' : 'apWaitingOwner'), 'var(--pend)');
+  if (a.status === 'REJECTED') return line(tpl('apRejectedNote', { reason: esc(a.decisionReason || '') }), 'var(--bad)');
+  if (a.status === 'EXPIRED') return line(t('apExpiredNote'), 'var(--tx3)');
+  if (a.status === 'FAILED') return line(t('apFailedNote'), 'var(--tx3)');
+  return '';
+}
+function approvalReviewButton(r){
+  return approvalPending(r) && can('order.approve')
+    ? '<button onclick="event.stopPropagation(); openApproval(\'' + esc(r.approval.id) + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('apReview') + '</button>' : '';
+}
+function approvalsWaitingBanner(rfqs){
+  if (!can('order.approve')) return '';
+  const n = rfqs.filter(approvalPending).length;
+  return n ? '<div class="mb-4 rounded-xl border px-4 py-3 text-[13px] font-semibold" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);">' + tpl('apBannerWaiting', { n }) + '</div>' : '';
+}
+// at the top of Compare bids: what the request waits for, with Review (owner) and Withdraw (the manager who asked, or an owner)
+function compareApprovalBanner(r){
+  const a = rfqApproval(r);
+  if (!a) return '';
+  const box = (inner, soft, color) => '<div class="mt-3 rounded-xl border px-3.5 py-3 text-[12.5px]" style="border-color:' + color + '; background:var(' + soft + '); color:' + color + ';">' + inner + '</div>';
+  if (a.status === 'PENDING') {
+    const who = a.requestedBy ? tpl('apAsks', { name: esc(a.requestedBy.name) }) : '';
+    const withdraw = (a.requestedBy && a.requestedBy.you) || can('order.approve');
+    return box('<div class="font-bold">' + t(can('order.approve') ? 'apWaitingYou' : 'apWaitingOwner') + ' · <span class="mono">' + bhdMoney(a.amount) + '</span></div>' + (who ? '<div class="mt-0.5">' + who + '</div>' : '') +
+      '<div class="mt-2 flex flex-wrap gap-2">' + approvalReviewButton(r) +
+      (withdraw ? '<button onclick="withdrawApproval(\'' + esc(a.id) + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2); background:var(--panel);">' + t('apWithdraw') + '</button>' : '') + '</div>', '--pend-soft', 'var(--pend)');
+  }
+  const note = approvalNote(r);
+  return note ? box(note.replace('mt-1 ', ''), '--inset', 'var(--bd2)') : '';
+}
+async function withdrawApproval(id){
+  if (!confirm(tpl('apWithdrawConfirm', { title: (((state.rfqs || []).find(x => x.approval && x.approval.id === id)) || {}).title || '' }))) return;
+  try { await api('/api/approvals/' + encodeURIComponent(id) + '/cancel', { method:'POST' }); showToast(t('apWithdrawn')); refreshRfqs(); }
+  catch(e) { showToast(e.message); refreshRfqs(); }
+}
+
+// Picking a bid. Owners and managers first ask GET /quotes/:id/award-check: when a budget is set, or the pick needs the owner, a window shows
+// what it does (needs approval? what happens to this month's budget?) before anything is sent. With nothing to say it awards at once, as before.
+async function acceptQuote(quoteId){
+  if (state.awardCheck || state.awardBusy) return;
+  let chk = null;
+  try { chk = await api('/api/quotes/' + encodeURIComponent(quoteId) + '/award-check'); } catch(e) { /* the server decides anyway */ }
+  if (chk && (chk.needsApproval || chk.budget != null)) { setState({ awardCheck: { quoteId, chk } }); return; }
+  doAward(quoteId);
+}
+function closeAwardCheck(){ setState({ awardCheck: null, awardBusy: false }); }
+async function doAward(quoteId){
+  setState({ awardBusy: true });
+  try {
+    const r = await api('/api/quotes/' + encodeURIComponent(quoteId) + '/award', { method:'POST', body: JSON.stringify({ terms: 'Standard terms' }) });
+    setState({ awardCheck: null, awardBusy: false });
+    showToast(t(r && r.approval ? 'apSent' : 'toastAwarded'));
+    closeCompare();
+    refreshRfqs(); refreshLpos();
+  } catch(e) {
+    setState({ awardCheck: null, awardBusy: false });
+    showToast(e.message);
+    refreshRfqs(); refreshCompareQuotes();
+  }
+}
+// "after this order" lines of the budget, from an award-check answer
+function budgetAfterHtml(c){
+  if (c.budget == null) return '';
+  const warn = c.overBudget ? 'var(--bad)' : (c.percentAfter != null && c.percentAfter >= 80 ? 'var(--pend)' : 'var(--tx3)');
+  return '<div class="mt-3 text-[12.5px] font-semibold" style="color:' + warn + ';">' +
+    (c.overBudget ? tpl('acOver', { over: c.overBudgetBy }) : (c.percentAfter != null && c.percentAfter >= 80 ? tpl('acNear', { percent: c.percentAfter }) : '')) + '</div>' +
+    '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + tpl('acBudget', { after: c.after, budget: c.budget, percent: c.percentAfter == null ? 0 : c.percentAfter }) + '</div>' +
+    budgetBar(c.percentAfter == null ? 0 : c.percentAfter);
+}
+const budgetColor = (p) => (p >= 100 ? 'var(--bad)' : p >= 80 ? 'var(--pend)' : 'var(--acc)');
+function budgetBar(percent){
+  const p = Math.max(0, Math.min(100, percent));
+  return '<div class="mt-2 h-2.5 w-full overflow-hidden rounded-full" style="background:var(--line);" role="img" aria-label="' + percent + '%"><div class="h-full rounded-full" style="width:' + p + '%; background:' + budgetColor(percent) + ';"></div></div>';
+}
+function renderAwardCheck(){
+  const ac = state.awardCheck;
+  if (!ac) return '';
+  const c = ac.chk;
+  const why = c.reason === 'BOTH' ? tpl('acWhyBoth', { threshold: c.threshold }) : c.reason === 'BUDGET' ? t('acWhyBudget') : tpl('acWhyThreshold', { threshold: c.threshold });
+  const body = '<div class="text-[13px]" style="color:var(--tx3);">' + t('acAmount') + ': <b class="mono" style="color:var(--tx);">' + bhdMoney(c.amount) + '</b></div>' +
+    (c.needsApproval ? '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><b>' + t('acNeedsApproval') + '</b><div class="mt-1">' + why + '</div></div>'
+      : (c.ownerDecides && c.reason ? '<div class="mt-3 text-[12px]" style="color:var(--tx3);">' + t('acOwnerNote') + '</div>' : '')) +
+    budgetAfterHtml(c);
+  return modalWrap(t('acTitle'), 'closeAwardCheck()', body, "doAward('" + ac.quoteId + "')", t(state.awardBusy ? 'acBusy' : (c.needsApproval ? 'acSend' : 'acAward')), state.awardBusy);
+}
+
+// The owner's window for one request: everything needed to decide. GET /approvals/:id; #/approval/<id> opens it (the e-mail button).
+async function openApproval(id){
+  setState({ approvalModal: { id, data: null, busy: false, rejecting: false, reason: '' } });
+  try { const data = await api('/api/approvals/' + encodeURIComponent(id)); if (state.approvalModal && state.approvalModal.id === id) setState({ approvalModal: { ...state.approvalModal, data } }); }
+  catch(e) { setState({ approvalModal: null }); showToast(e.message); }
+}
+function closeApproval(){ setState({ approvalModal: null }); }
+function startReject(){ if (state.approvalModal) setState({ approvalModal: { ...state.approvalModal, rejecting: true } }); }
+async function decideApproval(kind){
+  const m = state.approvalModal;
+  if (!m || !m.data || m.busy) return;
+  if (kind === 'approve' && !confirm(tpl('apApproveConfirm', { title: (m.data.rfq || {}).title || '', supplier: (m.data.supplier || {}).name || '' }))) return;
+  if (kind === 'reject' && !(m.reason || '').trim()) return;
+  setState({ approvalModal: { ...m, busy: true } });
+  try {
+    await api('/api/approvals/' + encodeURIComponent(m.id) + '/' + kind, { method:'POST', body: JSON.stringify(kind === 'reject' ? { reason: m.reason.trim() } : {}) });
+    setState({ approvalModal: null });
+    showToast(t(kind === 'approve' ? 'apApproved' : 'apRejected'));
+    refreshRfqs(); refreshLpos(); refreshOrders();
+  } catch(e) { setState({ approvalModal: { ...state.approvalModal, busy: false } }); showToast(e.message); refreshRfqs(); }
+}
+function approvalReasonText(a){
+  return a.reason === 'BOTH' ? tpl('apReasonBoth', { threshold: a.threshold }) : a.reason === 'BUDGET' ? t('apReasonBudget') : tpl('apReasonThreshold', { threshold: a.threshold });
+}
+function renderApprovalModal(){
+  const m = state.approvalModal;
+  if (!m) return '';
+  const a = m.data;
+  const wrap = (inner) => '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div class="bx-rise bx-modal bx-scroll w-full max-w-md rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel); max-height:90vh; overflow-y:auto;">' +
+    '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('apModalTitle') + '</h3><button onclick="closeApproval()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' + inner + '</div></div>';
+  if (!a) return wrap('<div class="mt-4 text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>');
+  const row = (k, v) => '<div class="flex items-start justify-between gap-3 py-1.5 text-[13px]"><span style="color:var(--tx4);">' + k + '</span><span class="text-end font-semibold" style="color:var(--tx); overflow-wrap:anywhere;">' + v + '</span></div>';
+  const open = a.status === 'PENDING';
+  let html = '<div class="mt-3 text-[13px]" style="color:var(--tx3);">' + (a.requestedBy ? tpl('apAsks', { name: '<b style="color:var(--tx);">' + esc(a.requestedBy.name) + '</b>' }) : '') + '</div>' +
+    '<div class="mt-1 text-[15px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(a.rfq ? a.rfq.title : '') + '</div>' +
+    '<div class="mt-3 divide-y" style="border-color:var(--bd);">' +
+      row(t('apAmount'), '<span class="mono bx-display text-[18px]">' + bhdMoney(a.amount) + '</span>') +
+      row(t('apSupplier'), esc(a.supplier ? a.supplier.name : '')) +
+      (a.unitPrice ? row(t('apUnitPrice'), bhdMoney(a.unitPrice)) : '') +
+      (a.rfq && a.rfq.quantity ? row(t('apQuantity'), esc(a.rfq.quantity) + ' ' + esc(unitLabel ? unitLabel(a.rfq.unit) : a.rfq.unit || '')) : '') +
+      (a.deliveryTimeDays != null ? row(t('apDelivery'), tpl('apDays', { n: a.deliveryTimeDays })) : '') +
+      (a.rfq && a.rfq.neededBy ? row(t('apNeededBy'), fmtDate(a.rfq.neededBy)) : '') +
+    '</div>' +
+    '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><b>' + t('apWhy') + '</b><div class="mt-1">' + approvalReasonText(a) + '</div>' +
+      (a.budget != null && a.committedBefore != null ? '<div class="mt-1">' + tpl('apBudgetLine', { before: a.committedBefore, after: a.committedAfter, budget: a.budget }) + '</div>' : '') +
+      (a.overBudgetBy ? '<div class="mt-1 font-bold">' + tpl('apOverBy', { over: a.overBudgetBy }) + '</div>' : '') + '</div>';
+  if (open) {
+    html += '<div class="mt-2 text-[11.5px]" style="color:var(--tx4);">' + tpl('apExpires', { date: fmtDate(a.expiresAt) }) + '</div>';
+    if (m.rejecting) {
+      html += '<label class="mt-3 flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('apRejectReason') + '</span>' +
+        '<textarea maxlength="500" rows="3" oninput="state.approvalModal.reason=this.value" class="w-full rounded-lg border px-3 py-2 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);">' + esc(m.reason) + '</textarea></label>' +
+        '<button onclick="decideApproval(\'reject\')" ' + (m.busy ? 'disabled' : '') + ' class="mt-3 w-full rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--bad); opacity:' + (m.busy ? '0.6' : '1') + ';">' + t('apRejectSend') + '</button>';
+    } else {
+      html += '<div class="mt-4 flex flex-col gap-2 sm:flex-row"><button onclick="decideApproval(\'approve\')" ' + (m.busy ? 'disabled' : '') + ' class="flex-1 rounded-xl px-4 py-3 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (m.busy ? '0.6' : '1') + ';">' + t(m.busy ? 'apApproving' : 'apApprove') + '</button>' +
+        '<button onclick="startReject()" class="rounded-xl border px-4 py-3 text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('apReject') + '</button></div>';
+    }
+  } else {
+    html += '<div class="mt-3 text-[13px] font-semibold" style="color:var(--tx2);">' + t('apSt_' + a.status) + (a.decidedBy ? ' · ' + tpl('apDecidedBy', { name: esc(a.decidedBy.name) }) : '') + '</div>' +
+      (a.decisionReason ? '<div class="mt-1 text-[12.5px]" style="color:var(--tx3); overflow-wrap:anywhere;">' + esc(a.decisionReason) + '</div>' : '');
+  }
+  return wrap(html);
+}
+// the bell: a request or its reminder opens the request itself; a budget message opens Spending
+function openNotifApproval(rfqId, notifId){
+  setState({ showNotifDropdown: false });
+  api('/api/notifications/' + encodeURIComponent(notifId) + '/read', { method: 'PATCH' }).then(() => refreshNotifications()).catch(() => {});
+  const r = (state.rfqs || []).find(x => x.id === rfqId && approvalPending(x));
+  setSection('rfqs');
+  if (r) openApproval(r.approval.id); else openRfqLink(rfqId);
+}
+function openNotifSpending(notifId){
+  setState({ showNotifDropdown: false });
+  api('/api/notifications/' + encodeURIComponent(notifId) + '/read', { method: 'PATCH' }).then(() => refreshNotifications()).catch(() => {});
+  setSection('spending');
+}
+
+// ----- the owner's rules (Settings): GET/PUT /company/spend-rules -----
+async function refreshSpendRules(){
+  if (!state.token || state.view !== 'buyer' || !can('analytics.view')) return;
+  try {
+    const d = await api('/api/company/spend-rules');
+    setState({ spendRules: d, spendForm: state.spendForm || { threshold: d.approvalThreshold == null ? '' : String(Number(d.approvalThreshold)), budget: d.monthlyBudget == null ? '' : String(Number(d.monthlyBudget)), requires: !!d.budgetRequiresApproval } });
+  } catch(e) { /* the card stays empty */ }
+}
+function spendFormFromRules(d){ return { threshold: d.approvalThreshold == null ? '' : String(Number(d.approvalThreshold)), budget: d.monthlyBudget == null ? '' : String(Number(d.monthlyBudget)), requires: !!d.budgetRequiresApproval }; }
+async function saveSpendRules(){
+  const f = state.spendForm;
+  const num = (s) => { const v = String(s == null ? '' : s).trim(); if (v === '') return { ok: true, value: null }; const n = parseMoneyInput(v); return n == null || n <= 0 ? { ok: false } : { ok: true, value: n }; };
+  const th = num(f.threshold), bu = num(f.budget);
+  if (!th.ok || !bu.ok) { showToast(t('srInvalid')); return; }
+  setState({ spendBusy: true });
+  try {
+    const body = { approvalThreshold: th.value, monthlyBudget: bu.value, budgetRequiresApproval: !!f.requires && bu.value != null };
+    const d = await api('/api/company/spend-rules', { method:'PUT', body: JSON.stringify(body) });
+    setState({ spendRules: d, spendForm: spendFormFromRules(d), spendBusy: false });
+    showToast(t('srSaved'));
+  } catch(e) { setState({ spendBusy: false }); showToast(e.message); }
+}
+function spendRulesCard(){
+  if (state.view !== 'buyer' || !can('analytics.view')) return '';
+  const d = state.spendRules, f = state.spendForm;
+  const card = (inner) => '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' + inner + '</div>';
+  if (!d || !f) return card('<div class="text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>');
+  const inputCss = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  const field = (label, hint, key) => '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + label + '</span>' +
+    '<input type="text" inputmode="decimal" dir="ltr" value="' + esc(f[key]) + '" oninput="state.spendForm.' + key + '=this.value" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="' + inputCss + '" /><span class="text-[11.5px]" style="color:var(--tx4);">' + hint + '</span></label>';
+  const status = d.monthlyBudget != null ? '<div class="mt-4 text-[12.5px]" style="color:var(--tx3);">' + tpl('srMonthUsed', { committed: d.committed, budget: d.monthlyBudget, percent: d.percent }) + '</div>' + budgetBar(d.percent || 0) : '';
+  const head = '<div class="mb-1 text-[15px] font-bold" style="color:var(--tx);">' + t('srTitle') + '</div><div class="mb-4 text-[12.5px]" style="color:var(--tx4);">' + t('srIntro') + '</div>';
+  if (!d.canEdit) {
+    return card(head + '<div class="text-[13px]" style="color:var(--tx2);">' + (d.approvalThreshold != null ? tpl('srManagerThreshold', { amount: d.approvalThreshold }) : '') + '</div>' +
+      '<div class="mt-1 text-[13px]" style="color:var(--tx2);">' + t('sbTitle') + ': ' + (d.monthlyBudget != null ? bhdMoney(d.monthlyBudget) : t('srNotSet')) + '</div>' + status +
+      '<div class="mt-3 text-[11.5px]" style="color:var(--tx4);">' + t('srOwnerOnly') + '</div>');
+  }
+  return card(head + '<div class="flex flex-col gap-4">' +
+    (teamOn() ? field(t('srThreshold'), t('srThresholdHint'), 'threshold') : '') +
+    field(t('srBudget'), t('srBudgetHint'), 'budget') +
+    (teamOn() ? '<label class="flex items-start gap-2.5 text-[13px]" style="color:var(--tx);"><input type="checkbox" ' + (f.requires ? 'checked' : '') + ' onchange="state.spendForm.requires=this.checked" class="mt-1" /><span>' + t('srRequire') + '</span></label>' : '') +
+    '</div>' + status +
+    '<button onclick="saveSpendRules()" ' + (state.spendBusy ? 'disabled' : '') + ' class="bx-btn-block mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.spendBusy ? '0.6' : '1') + ';">' + t('srSave') + '</button>');
+}
+// Spending: this month's budget bar (the data comes with GET /analytics/spending as d.budget)
+function budgetBarHtml(b){
+  if (!b) return '';
+  return '<div class="mb-5 rounded-xl border p-4" style="border-color:var(--line); background:var(--panel);">' +
+    '<div class="flex flex-wrap items-baseline justify-between gap-2"><div class="eyebrow" style="color:var(--tx4);">' + t('sbTitle') + '</div>' +
+    '<div class="mono text-[13px] font-bold" style="color:' + budgetColor(b.percent) + ';">' + b.percent + '%</div></div>' +
+    '<div class="mono bx-display mt-1.5 text-[20px] font-bold" style="color:var(--tx);">' + tpl('sbOf', { committed: b.committed, budget: b.limit }) + '</div>' + budgetBar(b.percent) +
+    (b.overBy ? '<div class="mt-1.5 text-[12.5px] font-semibold" style="color:var(--bad);">' + tpl('sbOver', { over: b.overBy }) + '</div>' : '') +
+    '<div class="mt-1.5 text-[11.5px]" style="color:var(--tx4);">' + t('sbNote') + '</div></div>';
 }
 
 // ---------- People (buyer companies; only while the server says teamMembersEnabled) ----------
@@ -2825,6 +3093,7 @@ function setSection(sec){
   if (sec === 'spending' && state.view === 'buyer') spendInit();
   if (sec === 'profile') {
     refreshPeople();
+    refreshSpendRules();
     const c = state.company || {};
     state.profileForm = { name: c.name||'', country: c.country||'', phone: c.phone||'', registrationNumber: c.registrationNumber||'' };
   }
@@ -3702,15 +3971,6 @@ async function changeQuoteStatus(quoteId, action){
   refreshCompareQuotes();
 }
 
-async function acceptQuote(quoteId){
-  try {
-    await api('/api/quotes/' + quoteId + '/award', { method:'POST', body: JSON.stringify({ terms: 'Standard terms' }) });
-    showToast(t('toastAwarded'));
-    closeCompare();
-    refreshRfqs();
-  } catch(e) { showToast(e.message); }
-}
-
 function openSubmitQuote(rfqId){ setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'', paymentTerms:'30' }, quoteFiles: [], quoteUploadNote: '' }); }
 function closeSubmitQuote(){ setState({ submitQuoteRfqId:null }); }
 function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
@@ -4395,6 +4655,7 @@ function buyerAttentionItems(){
   return [
     ['attnOverdue', pending.filter(o => o.invoice.status === 'OVERDUE').length, "setSection('lpos')", true],
     ['attnReceipts', orders.filter(o => ['SHIPPED', 'DELIVERED'].includes(o.status) && !o.receivedAt).length, "setSection('lpos')", false],
+    ['attnApprovals', can('order.approve') ? rfqs.filter(approvalPending).length : 0, "setSection('rfqs')", true],
     ['attnQuotes', rfqs.filter(r => ['PUBLISHED', 'QUOTING_CLOSED'].includes(r.status) && rfqBidCount(r) > 0).length, "setSection('rfqs')", false],
     ['attnPay', pending.filter(o => o.receivedAt && invoiceTotals(o.invoice).outstanding > 0 && o.invoice.status !== 'OVERDUE').length, "setSection('lpos')", false],
     ['attnLowStock', (state.stock || []).filter(isLowStock).length, "setSection('stock')", false]
@@ -4460,10 +4721,11 @@ const rfqTabOf = (r) => (rfqIsFinished(r) ? 'finished' : 'active');
 const rfqHasTimer = (r) => r.status === 'DRAFT' || r.status === 'PUBLISHED';
 function rfqFollowUpNote(r){
   const f = rfqFollowUp(r);
-  return f && f.kind === 'declined' ? '<div class="mt-1 text-[12px] font-semibold" style="color:var(--bad);">' + t('rfqSupplierDeclined') + '</div>' : '';
+  return (f && f.kind === 'declined' ? '<div class="mt-1 text-[12px] font-semibold" style="color:var(--bad);">' + t('rfqSupplierDeclined') + '</div>' : '') + approvalNote(r);
 }
 function rfqFollowUpButton(r){
   const f = rfqFollowUp(r);
+  if (approvalPending(r) && can('order.approve')) return approvalReviewButton(r);
   if (f && f.kind === 'order') return '<button onclick="event.stopPropagation(); openOrderDetail(\'' + esc(f.order.id) + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--acc); color:var(--acc-ink); background:var(--acc-soft);">' + tpl('rfqOrderStatus', { status: esc(orderStatusLabel(f.order.status)) }) + '</button>';
   if (f && f.kind === 'waiting') return '<button onclick="event.stopPropagation(); setSection(\'lpos\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('rfqAwaitingSupplier') + '</button>';
   return '';
@@ -4547,7 +4809,7 @@ function statusPill(status){
 function renderBuyerRfqsPage(){
   const rfqs = state.rfqs || [];
   const shown = rfqs.filter(r => rfqTabOf(r) === state.rfqTab);
-  return draftsWaitingBanner(rfqs) + '<div class="flex flex-wrap items-center justify-between gap-3 mb-6">' +
+  return approvalsWaitingBanner(rfqs) + draftsWaitingBanner(rfqs) + '<div class="flex flex-wrap items-center justify-between gap-3 mb-6">' +
     '<div><div class="eyebrow mb-1.5">' + t('rfqsAllRequests') + '</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('rfqsPageTitle') + hint('rfq') + '</h1></div>' +
     '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc); white-space:nowrap;">' + t('rfqsCreateNew') + '</button>' +
   '</div>' +
@@ -4991,7 +5253,7 @@ function renderSpendTab(){
   const card = (label, val, sub, big) => '<div class="rounded-xl border p-4' + (big ? ' sm:col-span-2' : '') + '" style="border-color:var(--line); background:var(--panel);">' +
     '<div class="eyebrow" style="color:var(--tx4);">' + label + '</div><div class="mono bx-display mt-1.5 text-[' + (big ? 26 : 21) + 'px] font-bold" style="color:var(--tx);">' + val + '</div>' +
     (sub ? '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + sub + '</div>' : '') + '</div>';
-  const cards = '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-4">' +
+  const cards = budgetBarHtml(d.budget) + '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-4">' +
     card(t('spReceived'), spendMoney(tt.received), tpl('spOrdersN', { n: tt.orders }) + ' · ' + t('spReceivedHint'), true) +
     card(t('spPaid'), spendMoney(tt.paid), t('spPaidHint')) +
     card(t('spToPay'), spendMoney(tt.toPay), (Number(tt.overdue) > 0 ? '<span style="color:var(--bad); font-weight:600;">' + tpl('spOverdueOf', { amount: spendMoney(tt.overdue) }) + '</span>' : t('spToPayHint'))) +
@@ -5408,6 +5670,7 @@ function renderSettings(){
     (can('company.edit') ? '<button onclick="saveProfile()" ' + (state.profileBusy?'disabled':'') + ' class="bx-btn-block mt-5 rounded-xl px-4 py-2.5 text-sm font-bold text-white" style="background:var(--acc); opacity:' + (state.profileBusy?'0.6':'1') + ';">' + t(state.profileBusy ? 'saving' : 'saveChanges') + '</button>' : '') +
   '</div>' +
   onboardingRestoreBlock() +
+  spendRulesCard() +
   peopleCard() +
   '<div class="mt-6 max-w-lg rounded-2xl border p-5" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="mb-4 text-[15px] font-bold" style="color:var(--tx);">' + t(peopleOn() ? 'settingsEmailHeadingMine' : 'settingsEmailHeading') + '</div>' +
@@ -5688,11 +5951,11 @@ function notifBell(){
         (state.notifUnread > 0 ? '<button onclick="markAllNotifRead()" class="text-[11px] font-semibold" style="color:var(--acc);">' + t('notifMarkAll') + '</button>' : '') +
         '</div>' +
         (list.length === 0 ? '<div class="px-3.5 py-8 text-center text-[12px]" style="color:var(--tx4);">' + t('notifEmpty') + '</div>' :
-          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + (n.type === 'MEMBER_JOINED' && peopleOn() ? ' cursor:pointer;" onclick="openNotifPeople(\'' + esc(n.id) + '\')' : n.relatedRfqId ? ' cursor:pointer;" onclick="openNotifRfq(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? ' cursor:pointer;" onclick="openNotifOrder(\'' + esc(n.relatedOrderId) + '\',\'' + esc(n.id) + '\')' : '')) + '">' +
+          list.map(n => '<div class="border-b px-3.5 py-2.5 text-[12px]" style="border-color:var(--bd); ' + (n.read?'':'background:var(--acc-soft2);') + (/^APPROVAL_(REQUESTED|REMINDER)$/.test(n.type) && n.relatedRfqId && can('order.approve') ? ' cursor:pointer;" onclick="openNotifApproval(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : /^BUDGET_/.test(n.type) && can('analytics.view') ? ' cursor:pointer;" onclick="openNotifSpending(\'' + esc(n.id) + '\')' : n.type === 'MEMBER_JOINED' && peopleOn() ? ' cursor:pointer;" onclick="openNotifPeople(\'' + esc(n.id) + '\')' : n.relatedRfqId ? ' cursor:pointer;" onclick="openNotifRfq(\'' + esc(n.relatedRfqId) + '\',\'' + esc(n.id) + '\')' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? ' cursor:pointer;" onclick="openNotifOrder(\'' + esc(n.relatedOrderId) + '\',\'' + esc(n.id) + '\')' : '')) + '">' +
             '<div class="font-semibold" style="color:var(--tx);">' + esc(n.title) + '</div>' +
             (n.body ? '<div class="mt-0.5" style="color:var(--tx3);">' + esc(n.body) + '</div>' : '') +
             (n.type === 'STOCK_RECEIPT_UNMATCHED' && n.relatedOrderId ? '<button onclick="createStockFromNotification(\'' + n.relatedOrderId + '\')" class="mt-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white" style="background:var(--acc);">' + t('addToStock') + '</button>' : '') +
-            (n.type === 'MEMBER_JOINED' && peopleOn() ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('tmOpenPeople') + '</div>' : n.relatedRfqId ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenRfq') + '</div>' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenOrder') + '</div>' : '')) +
+            (/^APPROVAL_(REQUESTED|REMINDER)$/.test(n.type) && n.relatedRfqId && can('order.approve') ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('apOpenApproval') + '</div>' : /^BUDGET_/.test(n.type) && can('analytics.view') ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('ntOpenSpending') + '</div>' : n.type === 'MEMBER_JOINED' && peopleOn() ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('tmOpenPeople') + '</div>' : n.relatedRfqId ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenRfq') + '</div>' : (n.relatedOrderId && /^(RATE_SUPPLIER|REVIEW_)/.test(n.type) ? '<div class="mt-1 text-[11px] font-semibold" style="color:var(--acc);">' + t('notifOpenOrder') + '</div>' : '')) +
             '<div class="mono mt-1 text-[10px]" style="color:var(--tx4);">' + fmtDateTime(n.createdAt) + '</div>' +
           '</div>').join('')) +
       '</div>' : '') +
@@ -6407,6 +6670,7 @@ function renderModals(){
     const compareRfq = (state.rfqs || []).find(r => r.id === state.compareRfqId);
     // quotes can be evaluated while bidding is open or closed, until the RFQ is awarded or cancelled
     const evaluating = !compareRfq || ['PUBLISHED', 'QUOTING_CLOSED'].includes(compareRfq.status);
+    const aprPending = approvalPending(compareRfq); // a pick waits for the owner: nobody picks, shortlists or rejects meanwhile
     const pill = (txt, style) => '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="' + style + '">' + txt + '</span>';
     const quoteActions = (x) => {
       if (x.status === 'AWARDED') return pill(t('stAwarded'), 'background:var(--pend-soft); color:var(--pend);');
@@ -6414,7 +6678,7 @@ function renderModals(){
       if (x.status === 'WITHDRAWN') return pill(t('stWithdrawn'), 'background:var(--line); color:var(--tx2);');
       const busy = state.compareBusyId === x.id;
       const shortlisted = x.status === 'SHORTLISTED' ? pill(t('stShortlisted'), 'background:var(--info-soft); color:var(--info);') : '';
-      if (!evaluating || !can('quote.decide')) return shortlisted;
+      if (!evaluating || !can('quote.decide') || aprPending) return shortlisted;
       const btn = (label, fn, style) => '<button onclick="' + (busy || state.compareBusyId ? '' : fn) + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="' + style + ' opacity:' + (busy?'0.6':'1') + ';">' + label + '</button>';
       return shortlisted +
         (x.status === 'SUBMITTED' ? btn(t('btnShortlist'), "changeQuoteStatus('" + x.id + "','shortlist')", 'border-color:var(--bd2); color:var(--tx);') : '') +
@@ -6433,6 +6697,7 @@ function renderModals(){
             '</div>'
           : '') +
         (state.compareLastPaid ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12.5px]" style="background:var(--acc-soft); color:var(--acc-ink);">' + tpl(state.compareLastPaid.unit ? 'cmpLastPaid' : 'cmpLastPaidNoUnit', { price: bhdMoney(state.compareLastPaid.unitPrice), unit: esc(state.compareLastPaid.unit ? unitLabel(state.compareLastPaid.unit) : ''), supplier: esc(state.compareLastPaid.supplier), date: esc(spendDayLabel(state.compareLastPaid.day, spLocale())) }) + '</div>' : '') +
+        compareApprovalBanner(compareRfq) +
         '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
         (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">' + t('cmpLoading') + '</div>' :
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">' + t('cmpNone') + '</div>' :
@@ -6568,6 +6833,8 @@ function renderModals(){
         '<textarea data-deliveryfail="reason" maxlength="1000" rows="3" class="w-full rounded-lg border px-3 py-2.5 text-sm outline-none" style="border-color:var(--bd); background:var(--inset); color:var(--tx);" placeholder="' + esc(t('dfPlaceholder')) + '">' + esc(state.deliveryFailReason) + '</textarea></label>',
       'confirmDeliveryFail()', state.ordersBusyId ? t('working') : t('dfSubmit'), !!state.ordersBusyId);
   }
+  // on top of everything else (Compare bids stays open underneath the question)
+  html += renderAwardCheck() + renderApprovalModal();
   return html;
 }
 
@@ -6803,6 +7070,8 @@ const OVERLAYS = [
   ['stockCount', s => !!s.showStockCount, () => closeStockCount()],
   ['verify', s => !!s.showVerifyModal, () => closeVerifyModal()],
   ['invite', s => !!s.showInviteModal, () => closeInviteModal()],
+  ['awardCheck', s => !!s.awardCheck, () => closeAwardCheck()],
+  ['approval', s => !!s.approvalModal, () => closeApproval()],
   ['history', s => !!s.historyRfqId, () => closeRfqHistory()],
   ['leave', s => !!s.showLeaveModal, () => closeLeaveModal()],
   ['deliveryFail', s => !!s.showDeliveryFailModal, () => closeDeliveryFailModal()],
@@ -6849,15 +7118,17 @@ function parseHash(h){
   if (m[1] === 'register') return { section: 'main', auth: 'register', role: new URLSearchParams(str.split('?')[1] || '').get('role') === 'supplier' ? 'SUPPLIER' : 'BUYER' };
   if (m[1] === 'rfq' && m[2]) return { section: 'rfqLink', rfqId: safeDecode(m[2]) };
   if (m[1] === 'order' && m[2]) return { section: 'orderDetail', orderId: safeDecode(m[2]) };
+  if (m[1] === 'approval' && m[2]) return { section: 'approvalLink', approvalId: safeDecode(m[2]) };
   const am = str.match(/^#\/admin\/company\/([^/?#]+)/);
   if (am) return { section: 'adminCompany', companyId: safeDecode(am[1]) }; // from the admin's registration e-mail
   return { section: ROUTE_NAMES[m[1]] || 'main' };
 }
-function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?(?:\?[^#]*)?$/); return !!m && (['order', 'rfq', 'login', 'register'].includes(m[1]) || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
+function isKnownRoute(h){ if (h === '#') return false; const m = String(h || '').match(/^#\/?([\w-]*)(?:\/[^/?#]+)?(?:\?[^#]*)?$/); return !!m && (['order', 'rfq', 'approval', 'login', 'register'].includes(m[1]) || Object.prototype.hasOwnProperty.call(ROUTE_NAMES, m[1])); }
 function applyRoute(r){
   if (!isDashboardView()) return;
   const supplier = state.view === 'supplier';
   if (r.section === 'rfqLink' && r.rfqId) { openRfqLink(r.rfqId); return; }
+  if (r.section === 'approvalLink' && r.approvalId) { if (can('order.approve') && !supplier) { setSection('rfqs'); openApproval(r.approvalId); } else setSection('main'); return; }
   if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId, true); return; }
   if ((r.section === 'stock' || r.section === 'spending') && supplier) r = { section: 'main' };
   if (r.section === 'spending' && !can('analytics.view')) r = { section: 'main' };
@@ -6871,7 +7142,7 @@ function applyDeepRoute(r){
   if (r.auth) { if (!state.token) openAuth(r.role || 'BUYER', r.auth); else if (isDashboardView()) setSection('main'); return; }
   if (isDashboardView()) { applyRoute(r); return; }
   pendingRoute = r;
-  if (r.section === 'orderDetail' || r.section === 'rfqLink') openAuth('BUYER', 'login');
+  if (r.section === 'orderDetail' || r.section === 'rfqLink' || r.section === 'approvalLink') openAuth('BUYER', 'login');
 }
 function applyPendingRoute(){
   if (pendingRoute && state.view === 'admin') { const r = pendingRoute; pendingRoute = null; if (r.section === 'adminCompany') openAdminCompany(r.companyId); return; }
