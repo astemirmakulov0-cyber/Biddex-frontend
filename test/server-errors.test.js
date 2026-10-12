@@ -30,7 +30,7 @@ for (const s of samples) check('translated: ' + s, arabic(tr(s)) && tr(s) !== s 
 check('the field name is shown in Arabic and the numbers stay', /«العنوان»/.test(tr('title must be at most 200 characters')) && /200/.test(tr('title must be at most 200 characters')) && /1/.test(tr('quantity must be a whole number between 1 and 100000000')) && /100000000/.test(tr('quantity must be a whole number between 1 and 100000000')));
 check('an unknown field name is shown as it is', /«someNewField»/.test(tr('someNewField must be text')));
 check('too-large and malformed bodies', tr('Request body is too large') === 'حجم الطلب كبير جدًا' && tr('Invalid JSON body') === 'تعذّرت قراءة الطلب');
-check('other texts are left as written', tr('Something else entirely') === 'Something else entirely' && tr('Cannot award an RFQ in CANCELLED status') === 'Cannot award an RFQ in CANCELLED status');
+check('other texts are left as written', tr('Something else entirely') === 'Something else entirely' && tr('Cannot cancel an RFQ in AWARDED status') === 'Cannot cancel an RFQ in AWARDED status');
 check('a user\'s own text inside an error is not touched', tr('Account suspended: late deliveries').indexOf('late deliveries') > 0);
 check('not text -> returned as is', tr(undefined) === undefined && tr(42) === 42);
 
