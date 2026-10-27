@@ -723,6 +723,7 @@ const I18N = {
     biErrUnitUnknown:"Unknown unit \"{unit}\" — must be one of: {units}",
     biErrPrice:"Price is required",
     biErrPriceBad:"Price is not a valid number",
+    biErrPriceZero:"Price must be greater than 0",
     biNoRows:"No rows to save — everything is either invalid or skipped.",
     toastBulkAdded:"{ok} item(s) added to your catalog.",
     toastBulkAddedFail:"{ok} item(s) added, {failed} failed.",
@@ -1443,6 +1444,7 @@ const I18N = {
     biErrUnitUnknown:"وحدة غير معروفة \"{unit}\" — يجب أن تكون إحدى: {units}",
     biErrPrice:"السعر مطلوب",
     biErrPriceBad:"السعر ليس رقمًا صحيحًا",
+    biErrPriceZero:"يجب أن يكون السعر أكبر من صفر",
     biNoRows:"لا توجد صفوف للحفظ — كل الصفوف إما غير صالحة أو متجاهلة.",
     toastBulkAdded:"تمت إضافة {ok} منتج إلى كتالوجك.",
     toastBulkAddedFail:"تمت إضافة {ok} منتج، وتعذّرت إضافة {failed}.",
@@ -4249,6 +4251,11 @@ async function downloadImportTemplate(){
 }
 
 // name+brand+unit, normalized, for duplicate detection (both within the file and against the existing catalog)
+// a numeric Excel cell can carry float noise (0.1 + 0.2 = 0.30000000000000004): that, and only that, is rounded to 3 decimals
+function importPriceText(v){
+  if (typeof v === 'number' && isFinite(v)) { const r = Math.round(v * 1000) / 1000; if (Math.abs(v - r) < 1e-9 * Math.max(1, Math.abs(v))) return String(r); }
+  return String(v == null ? '' : v).trim();
+}
 const dupKey = (row) => [row.name, row.brand, row.unit].map((v) => String(v || '').trim().toLowerCase()).join('|');
 
 async function onBulkImportFileChange(e){
@@ -4274,7 +4281,7 @@ async function onBulkImportFileChange(e){
         unit: String(pick(r, 'unit', 'packing', 'packsize')).trim(),
         category: String(pick(r, 'category')).trim(),
         description: String(pick(r, 'description', 'desc')).trim(),
-        price: String(pick(r, 'price')).trim(),
+        price: importPriceText(pick(r, 'price')),
       };
       let error = '';
       if (!row.name) error = t('biErrName');
@@ -4283,6 +4290,7 @@ async function onBulkImportFileChange(e){
       else if (!CATALOG_UNITS.includes(row.unit.toLowerCase())) error = tpl('biErrUnitUnknown', { unit: row.unit, units: CATALOG_UNITS.join(', ') });
       else if (!row.price) error = t('biErrPrice');
       else if (parseMoneyInput(row.price) == null) error = t('biErrPriceBad');
+      else if (parseMoneyInput(row.price) === 0) error = t('biErrPriceZero');
       const key = dupKey(row);
       const dupCatalog = !error && existingKeys.has(key);
       const dupFile = !error && seenInFile.has(key);
@@ -4302,7 +4310,7 @@ function toggleBulkImportRowSkip(i){
 async function submitBulkImport(){
   const items = state.bulkImportRows
     .filter((r) => !r._error && !r._skip)
-    .map((r) => ({ name: r.name, brand: r.brand || undefined, unit: r.unit || undefined, category: r.category || undefined, description: r.description || undefined, price: r.price || undefined }));
+    .map((r) => ({ name: r.name, brand: r.brand || undefined, unit: r.unit || undefined, category: r.category || undefined, description: r.description || undefined, price: parseMoneyInput(r.price) }));
   if (!items.length) { showToast(t('biNoRows')); return; }
   setState({ bulkImportBusy:true });
   try {
