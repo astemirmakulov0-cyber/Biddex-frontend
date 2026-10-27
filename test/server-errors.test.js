@@ -50,6 +50,11 @@ const team = [
 for (const s2 of team) check('team text translated: ' + s2.slice(0, 50), arabic(tr(s2)) && tr(s2) !== s2 && !/[A-Za-z]{4,}/.test(tr(s2).replace(/Biddex/g, '')));
 check('numbers of the team limits stay', /3/.test(tr('A company can have at most 3 owners')) && /10/.test(tr('At most 10 invitations can be open at once')));
 check('English team text is never changed', tr('You are no longer a member of this company', 'en') === 'You are no longer a member of this company');
+// catalog import (catalog.controller.js bulkCreateItems): the per-row texts
+const importTexts = ['name required', 'name must be at most 200 characters', 'brand must be text', 'brand must be at most 200 characters', 'unit required', 'unit must be one of: kg, pcs, box, carton, litre, ton',
+  'price required', 'price must be a positive number', 'price can have at most 3 decimal places', 'price is too large', 'Could not save this row, please try again', 'at most 200 items per import'];
+for (const s3 of importTexts) check('import text translated: ' + s3.slice(0, 50), arabic(tr(s3)) && tr(s3) !== s3 && !/\b(must|required|is|at most)\b/.test(tr(s3).replace(/kg, pcs, box, carton, litre, ton/, '')));
+check('the units of the import text stay as written', tr('unit must be one of: kg, pcs, box, carton, litre, ton').includes('kg, pcs, box, carton, litre, ton') && tr('unit required', 'en') === 'unit required');
 const loaders = ['index.html', 'bid.html', 'accept-invite.html', 'verify.html', 'reset-password.html'];
 const versions = loaders.map((f) => (fs.readFileSync(path.join(__dirname, '..', f), 'utf8').match(/server-errors\.js\?v=(\d+)/) || [])[1]);
 check('every page that loads server-errors.js uses the same ?v= (bumped together)', versions.every((v) => v && v === versions[0]), versions.join(','));
