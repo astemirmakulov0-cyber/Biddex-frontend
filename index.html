@@ -4247,7 +4247,7 @@ async function downloadImportTemplate(){
     const XLSX = await loadSheetJS();
     const rows = [
       ['name', 'brand', 'unit', 'category', 'description', 'price'],
-      ['Mozzarella cheese', 'Almarai', 'kg', 'Restaurants & Cafés', 'Soft white cheese, 1kg block', '2.500'],
+      ['Mozzarella cheese', 'Almarai', 'kg', 'Restaurants & Cafés', 'Soft white cheese, 1kg block', 2.5],
     ];
     const sheet = XLSX.utils.aoa_to_sheet(rows);
     const book = XLSX.utils.book_new();
