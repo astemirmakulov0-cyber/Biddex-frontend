@@ -83,6 +83,8 @@
     'budgetRequiresApproval must be true or false': 'flagBool',
     'This quote can no longer be awarded': 'quoteNoLongerAwardable',
     'Quote not found': 'quoteNotFound',
+    'Could not save this row, please try again': 'rowSaveFailed',
+    'at most 200 items per import': 'importTooMany',
     'Request body is too large': 'bodyTooLarge',
     'Invalid JSON body': 'badJson'
   };
@@ -120,6 +122,8 @@
     flagBool: 'يجب أن تكون قيمة «الموافقة عند تجاوز الميزانية» نعم أو لا',
     quoteNoLongerAwardable: 'لم يعد بالإمكان ترسية هذا العرض',
     quoteNotFound: 'العرض غير موجود',
+    rowSaveFailed: 'تعذّر حفظ هذا الصف، حاول مرة أخرى',
+    importTooMany: 'الحد الأقصى 200 صف في كل عملية استيراد',
     bodyTooLarge: 'حجم الطلب كبير جدًا',
     badJson: 'تعذّرت قراءة الطلب',
     invalidCredentials: 'بيانات الدخول غير صحيحة',
@@ -179,6 +183,8 @@
     [/^(\w+) must be text$/, function (m) { return 'يجب أن يكون الحقل ' + field(m[1]) + ' نصًا'; }],
     [/^(\w+) is required$/, function (m) { return 'الحقل ' + field(m[1]) + ' مطلوب'; }],
     [/^(\w+) must be a whole number between (\d+) and (\d+)$/, function (m) { return 'يجب أن يكون الحقل ' + field(m[1]) + ' عددًا صحيحًا بين ' + m[2] + ' و' + m[3]; }],
+    [/^(\w+) required$/, function (m) { return 'الحقل ' + field(m[1]) + ' مطلوب'; }],
+    [/^unit must be one of: (.+)$/, function (m) { return 'يجب أن تكون الوحدة إحدى: ' + m[1]; }],
     [/^(\w+) must be true or false$/, function (m) { return 'يجب أن تكون قيمة الحقل ' + field(m[1]) + ' نعم أو لا'; }],
     [/^(\w+) must be a positive number$/, function (m) { return 'يجب أن يكون الحقل ' + field(m[1]) + ' رقمًا أكبر من صفر'; }],
     [/^(\w+) can have at most 3 decimal places$/, function (m) { return 'يمكن أن يحتوي الحقل ' + field(m[1]) + ' على 3 خانات عشرية كحد أقصى'; }],
