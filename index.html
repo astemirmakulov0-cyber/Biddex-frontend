@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2">
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
 <script src="config.js?v=1"></script>
-<script src="server-errors.js?v=7"></script>
+<script src="server-errors.js?v=8"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
@@ -509,6 +509,44 @@ const I18N = {
     sbxBack:"Back to admin",
     sbxSwitchFailed:"Could not switch to the test company. Try again.",
     sbxEnded:"The test session ended. You are back in the admin console.",
+    bkNew:"New basket", bkModalNew:"New basket", bkModalEdit:"Edit basket", bkModalRepost:"Post the missing items again",
+    bkTitleLabel:"Name (optional)", bkTitlePh:"e.g. Weekly order", bkTitleAutoHint:"Left empty, it is called “Basket · N items”.",
+    bkItems:"Items", bkItemCount:"{n} of {max} items", bkItemName:"Item", bkItemNamePh:"e.g. Tomato sauce",
+    bkQty:"Quantity", bkUnit:"Unit", bkBrand:"Brand (optional)", bkBrandPh:"e.g. Al Marai",
+    bkAnalogueOk:"Analogue is fine", bkOnlyBrand:"Only this brand", bkRemoveItem:"Remove",
+    bkAddItem:"+ Add item", bkAddFromCatalog:"Add from the catalog", bkCatalogPh:"Search products…", bkCatalogNone:"No matches", bkSearching:"Searching…",
+    bkNeedItems:"Add at least one item.", bkItemNameRequired:"Item {n}: enter a name.", bkItemQtyWhole:"Item {n}: the quantity must be a whole number, 1 or more.", bkTooMany:"A basket has at most {max} items.",
+    bkPost:"Post basket", bkRepostSubmit:"Post missing items", bkPosted:"Basket posted to suppliers.", bkDraftSaved:"Basket saved as a draft. A manager or the owner can publish it.", bkUpdated:"Basket updated.", bkReposted:"The missing items were posted again.",
+    bkLocked:"This basket can no longer be edited: bids have arrived.", bkRepostNotAvailable:"These items cannot be posted again.",
+    bkBadge:"Basket", bkItemsPill:"{n} items", bkItemsPillOne:"1 item",
+    bkAutoTitle:"Basket · {n} items", bkAutoTitleOne:"Basket · 1 item", bkMissingSuffix:"missing items",
+    bkaTitle:"Answer the basket", bkaIntro:"Answer every item: a price, “not in stock”, or an analogue (a replacement you name). At least one item needs a price.",
+    bkaPrice:"Price", bkaNotInStock:"Not in stock", bkaAnalogue:"Analogue", bkaUnitPrice:"Unit price (BHD)", bkaSubName:"Analogue name", bkaSubNamePh:"e.g. Other brand tomato sauce", bkaSubBrand:"Analogue brand (optional)",
+    bkaLineTotal:"Line total", bkaRestNotInStock:"Mark the rest as not in stock", bkaClear:"Clear answers",
+    bkaProgress:"{done} of {n} items answered", bkaSummary:"You can supply {covered} of {n} items · total {total}",
+    bkaMinOrder:"Minimum order (BHD, optional)", bkaMinOrderHint:"If the buyer's order comes out smaller, he is asked to confirm it.", bkaNotes:"Notes (optional)",
+    bkaSubmit:"Send answer", bkaRevise:"Change your answer", bkaSaveChanges:"Save changes", bkaSending:"Sending…", bkaSent:"Answer sent.", bkaChanged:"Answer changed.",
+    bkaOnlyBrandTag:"Only this brand", bkaAnalogueOkTag:"Analogue is fine", bkaLocked:"This answer can no longer be changed.", bkaApprovalWaits:"The buyer is deciding on this request: your answer can no longer be changed.",
+    bkaNeedAnswers:"Answer every item first ({left} left), or use “Mark the rest as not in stock”.", bkaNeedOnePrice:"Price at least one item.", bkaPriceBad:"Item {n}: enter a price (up to 3 decimals).",
+    bkaSubNameNeeded:"Item {n}: name the analogue.", bkaDaysNeeded:"Enter the delivery time in days (0-365).", bkaMinBad:"The minimum order must be an amount with up to 3 decimals.",
+    bkaYourAnswer:"Your answer: {price} for the items you can supply", bkaItemsOf:"{n} items",
+    bkcCovered:"{covered} of {n} items", bkcAnalogue1:"1 analogue", bkcAnaloguesN:"{n} analogues", bkcMissingN:"{n} not covered", bkcAllItems:"All items",
+    bkcPricedTotal:"{total} for the items it can supply", bkcMinOrder:"Minimum order {amount}", bkcDetails:"Item by item", bkcHide:"Hide",
+    bkcNotInStock:"Not in stock", bkcAnalogueFor:"Analogue: {name}", bkcBestPrice:"Best price", bkcNotCovered:"Not covered: {items}", bkcThItem:"Item", bkcThAnswer:"Answer", bkcThLine:"Line total", bkcBestHint:"The lowest price for the item as asked",
+    bkwTitle:"Award the basket", bkwTo:"Order from {name}", bkwOrderTotal:"Order total", bkwCovered:"{covered} of {n} items are in this order",
+    bkwAnalogues:"Analogues offered", bkwAnaloguesHint:"Tick the ones you accept. An analogue is another product than the one you asked for.", bkwAnalogueLine:"{name} instead of {item} · {price} × {qty} = {line}",
+    bkwMissing:"Not in this order: {items}", bkwNoMissing:"Every item is in this order.", bkwPartialCheck:"I understand: these {n} items are not in this order.",
+    bkwBelowMin:"The order total {total} is below this supplier's minimum order of {min}.", bkwBelowCheck:"Order anyway.",
+    bkwRepost:"Automatically re-post missing items", bkwRepostHint:"When you place the order, a new request with only the missing items goes to suppliers. Suppliers who have none of them are not asked. You can also do it later with “Re-post RFQ” on the order.",
+    bkwAward:"Place the order", bkwChecking:"Checking…", bkwChanged:"The offer changed. Check the order and try again.",
+    bkwAwarded:"Order placed.", bkwAwardedRepost:"Order placed. The missing items were posted again.", bkwAwardedRepostDraft:"Order placed. The missing items are saved as a draft: publish them when you are ready.", bkwAwardedRepostExisting:"Order placed. The missing items were already posted again.",
+    bkoLines:"Items in this order", bkoThItem:"Item", bkoThQty:"Quantity", bkoThPrice:"Unit price", bkoThLine:"Line total", bkoAnalogueFor:"Analogue: {name}",
+    bkoItemsRow:"Items", bkoItemsOf:"{n} of {total} in this order", bkoNotInOrder:"Not in this order", bkoRepostBtn:"Re-post RFQ",
+    bkoRepostHint:"Post these items again as a new request. Suppliers who have none of them are not asked.", bkoRepostedAs:"Posted again as “{title}”", bkoOpen:"Open",
+    bkoReasonInactive:"This order is no longer active, so its missing items cannot be posted again.", bkoShortfall:"If something is not delivered as ordered, report a problem on this order: a shortfall at delivery is handled as a dispute.",
+    spBasketNote:"For basket orders every line is a row. A line has no payment of its own (the payment belongs to the whole order), so its Paid column is empty. An analogue is listed under the item it replaced.",
+    csvAnalogue:"analogue", prBasketTag:"Basket", prBasketNote:"Requests marked “Basket” are baskets: each item has its own history, with the prices asked for that item as asked. The price of an analogue is another product's price, so it is not shown here.",
+    bkCopyLink:"Copy link", bkWhatsApp:"Share via WhatsApp", bkLinkCopied:"Link copied", bkCopyFailed:"Could not copy. Select the link and copy it.", bkShareText:"Biddex request: {title}",
     noLongerMember:"You are no longer a member of that company. Please log in again.",
     accountDeactivated:"This account has been deactivated.",
     verifyTitle2:"Submit verification document",
@@ -1240,6 +1278,44 @@ const I18N = {
     sbxBack:"العودة إلى لوحة الإدارة",
     sbxSwitchFailed:"تعذّر التبديل إلى شركة الاختبار. حاول مرة أخرى.",
     sbxEnded:"انتهت جلسة الاختبار. عدت إلى لوحة الإدارة.",
+    bkNew:"سلة جديدة", bkModalNew:"سلة جديدة", bkModalEdit:"تعديل السلة", bkModalRepost:"إعادة نشر العناصر الناقصة",
+    bkTitleLabel:"الاسم (اختياري)", bkTitlePh:"مثال: الطلب الأسبوعي", bkTitleAutoHint:"إذا تُرك فارغًا يُسمّى «سلة · N عناصر».",
+    bkItems:"العناصر", bkItemCount:"{n} من {max} عنصرًا", bkItemName:"العنصر", bkItemNamePh:"مثال: صلصة الطماطم",
+    bkQty:"الكمية", bkUnit:"الوحدة", bkBrand:"العلامة التجارية (اختياري)", bkBrandPh:"مثال: المراعي",
+    bkAnalogueOk:"البديل مقبول", bkOnlyBrand:"هذه العلامة فقط", bkRemoveItem:"حذف",
+    bkAddItem:"+ إضافة عنصر", bkAddFromCatalog:"إضافة من الكتالوج", bkCatalogPh:"ابحث عن المنتجات…", bkCatalogNone:"لا توجد نتائج", bkSearching:"جارٍ البحث…",
+    bkNeedItems:"أضف عنصرًا واحدًا على الأقل.", bkItemNameRequired:"العنصر {n}: أدخل اسمًا.", bkItemQtyWhole:"العنصر {n}: يجب أن تكون الكمية عددًا صحيحًا 1 أو أكثر.", bkTooMany:"يمكن أن تضم السلة {max} عنصرًا كحد أقصى.",
+    bkPost:"نشر السلة", bkRepostSubmit:"نشر العناصر الناقصة", bkPosted:"تم نشر السلة للموردين.", bkDraftSaved:"تم حفظ السلة كمسودة. يمكن للمدير أو المالك نشرها.", bkUpdated:"تم تحديث السلة.", bkReposted:"أُعيد نشر العناصر الناقصة.",
+    bkLocked:"لم يعد بالإمكان تعديل هذه السلة: وصلت عروض.", bkRepostNotAvailable:"لا يمكن إعادة نشر هذه العناصر.",
+    bkBadge:"سلة", bkItemsPill:"{n} عناصر", bkItemsPillOne:"عنصر واحد",
+    bkAutoTitle:"سلة · {n} عناصر", bkAutoTitleOne:"سلة · عنصر واحد", bkMissingSuffix:"العناصر الناقصة",
+    bkaTitle:"الرد على السلة", bkaIntro:"أجب عن كل عنصر: بسعر، أو «غير متوفر»، أو ببديل (تُسمّيه أنت). يجب تسعير عنصر واحد على الأقل.",
+    bkaPrice:"السعر", bkaNotInStock:"غير متوفر", bkaAnalogue:"بديل", bkaUnitPrice:"سعر الوحدة (د.ب)", bkaSubName:"اسم البديل", bkaSubNamePh:"مثال: صلصة طماطم من علامة أخرى", bkaSubBrand:"علامة البديل (اختياري)",
+    bkaLineTotal:"إجمالي السطر", bkaRestNotInStock:"وسم الباقي بأنه غير متوفر", bkaClear:"مسح الإجابات",
+    bkaProgress:"تمت الإجابة عن {done} من {n} عنصرًا", bkaSummary:"يمكنك توريد {covered} من {n} عنصرًا · الإجمالي {total}",
+    bkaMinOrder:"الحد الأدنى للطلب (د.ب، اختياري)", bkaMinOrderHint:"إذا كان طلب المشتري أقل من ذلك يُطلب منه التأكيد.", bkaNotes:"ملاحظات (اختياري)",
+    bkaSubmit:"إرسال الرد", bkaRevise:"تعديل ردك", bkaSaveChanges:"حفظ التغييرات", bkaSending:"جارٍ الإرسال…", bkaSent:"تم إرسال الرد.", bkaChanged:"تم تعديل الرد.",
+    bkaOnlyBrandTag:"هذه العلامة فقط", bkaAnalogueOkTag:"البديل مقبول", bkaLocked:"لم يعد بالإمكان تعديل هذا الرد.", bkaApprovalWaits:"المشتري يدرس هذا الطلب: لم يعد بالإمكان تعديل ردك.",
+    bkaNeedAnswers:"أجب عن كل عنصر أولًا (متبقٍ {left})، أو استخدم «وسم الباقي بأنه غير متوفر».", bkaNeedOnePrice:"سعّر عنصرًا واحدًا على الأقل.", bkaPriceBad:"العنصر {n}: أدخل سعرًا (حتى 3 منازل عشرية).",
+    bkaSubNameNeeded:"العنصر {n}: سمِّ البديل.", bkaDaysNeeded:"أدخل مدة التسليم بالأيام (0-365).", bkaMinBad:"يجب أن يكون الحد الأدنى للطلب مبلغًا بحد أقصى 3 منازل عشرية.",
+    bkaYourAnswer:"ردّك: {price} للعناصر التي يمكنك توريدها", bkaItemsOf:"{n} عناصر",
+    bkcCovered:"{covered} من {n} عنصرًا", bkcAnalogue1:"بديل واحد", bkcAnaloguesN:"{n} بدائل", bkcMissingN:"{n} غير مغطّى", bkcAllItems:"كل العناصر",
+    bkcPricedTotal:"{total} للعناصر التي يمكنه توريدها", bkcMinOrder:"الحد الأدنى للطلب {amount}", bkcDetails:"عنصرًا بعنصر", bkcHide:"إخفاء",
+    bkcNotInStock:"غير متوفر", bkcAnalogueFor:"بديل: {name}", bkcBestPrice:"أفضل سعر", bkcNotCovered:"غير مغطّى: {items}", bkcThItem:"العنصر", bkcThAnswer:"الرد", bkcThLine:"إجمالي السطر", bkcBestHint:"أقل سعر للعنصر كما طُلب",
+    bkwTitle:"ترسية السلة", bkwTo:"الطلب من {name}", bkwOrderTotal:"إجمالي الطلبية", bkwCovered:"{covered} من {n} عنصرًا ضمن هذه الطلبية",
+    bkwAnalogues:"البدائل المعروضة", bkwAnaloguesHint:"حدّد البدائل التي تقبلها. البديل منتج مختلف عن الذي طلبته.", bkwAnalogueLine:"{name} بدلًا من {item} · {price} × {qty} = {line}",
+    bkwMissing:"ليست ضمن هذه الطلبية: {items}", bkwNoMissing:"جميع العناصر ضمن هذه الطلبية.", bkwPartialCheck:"أفهم أن هذه العناصر ({n}) ليست ضمن هذه الطلبية.",
+    bkwBelowMin:"إجمالي الطلبية {total} أقل من الحد الأدنى للطلب لدى هذا المورّد وقدره {min}.", bkwBelowCheck:"المتابعة بالطلب رغم ذلك.",
+    bkwRepost:"إعادة نشر العناصر الناقصة تلقائيًا", bkwRepostHint:"عند إصدار الطلبية يُرسل إلى الموردين طلب جديد يضم العناصر الناقصة فقط. لا يُسأل الموردون الذين ليس لديهم أي منها. يمكنك أيضًا فعل ذلك لاحقًا بزر «إعادة نشر الطلب» في الطلبية.",
+    bkwAward:"إصدار الطلبية", bkwChecking:"جارٍ التحقق…", bkwChanged:"تغيّر العرض. راجع الطلبية وحاول مرة أخرى.",
+    bkwAwarded:"تم إصدار الطلبية.", bkwAwardedRepost:"تم إصدار الطلبية. وأُعيد نشر العناصر الناقصة.", bkwAwardedRepostDraft:"تم إصدار الطلبية. حُفظت العناصر الناقصة كمسودة: انشرها عندما تكون جاهزًا.", bkwAwardedRepostExisting:"تم إصدار الطلبية. وسبق أن أُعيد نشر العناصر الناقصة.",
+    bkoLines:"العناصر في هذه الطلبية", bkoThItem:"العنصر", bkoThQty:"الكمية", bkoThPrice:"سعر الوحدة", bkoThLine:"إجمالي السطر", bkoAnalogueFor:"بديل: {name}",
+    bkoItemsRow:"العناصر", bkoItemsOf:"{n} من {total} ضمن هذه الطلبية", bkoNotInOrder:"ليست ضمن هذه الطلبية", bkoRepostBtn:"إعادة نشر الطلب",
+    bkoRepostHint:"انشر هذه العناصر مرة أخرى كطلب جديد. لا يُسأل الموردون الذين ليس لديهم أي منها.", bkoRepostedAs:"أُعيد نشرها باسم «{title}»", bkoOpen:"فتح",
+    bkoReasonInactive:"لم تعد هذه الطلبية فعّالة، لذا لا يمكن إعادة نشر عناصرها الناقصة.", bkoShortfall:"إذا لم يُسلَّم شيء كما طُلب، فأبلِغ عن مشكلة في هذه الطلبية: يُعامل النقص عند التسليم كنزاع.",
+    spBasketNote:"في طلبيات السلة يظهر كل سطر في صف. لا يملك السطر دفعة خاصة به (الدفعة للطلبية كلها)، لذا يبقى عمود «المدفوع» فارغًا لهذه الأسطر. ويُذكر البديل تحت العنصر الذي حلّ محله.",
+    csvAnalogue:"بديل", prBasketTag:"سلة", prBasketNote:"الطلبات الموسومة «سلة» هي سلال: لكل عنصر فيها سجله الخاص، بالأسعار المعروضة لذلك العنصر كما طُلب. سعر البديل هو سعر منتج آخر، لذا لا يظهر هنا.",
+    bkCopyLink:"نسخ الرابط", bkWhatsApp:"مشاركة عبر واتساب", bkLinkCopied:"تم نسخ الرابط", bkCopyFailed:"تعذّر النسخ. حدّد الرابط وانسخه.", bkShareText:"طلب تسعير على Biddex: {title}",
     noLongerMember:"لم تعد عضواً في تلك الشركة. يرجى تسجيل الدخول مرة أخرى.",
     accountDeactivated:"تم تعطيل هذا الحساب.",
     verifyTitle2:"إرسال مستند التوثيق",
@@ -1847,7 +1923,9 @@ let state = {
 
   adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
   // admin sandbox (test mode): the test companies, their requests, the switcher of the banner
-  sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false,
+  sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false, adminDocNotices: null, adminDocNoticesAll: false,
+  // baskets: the form (new, edit, re-post) and its busy flag
+  showBasket: false, basketForm: null, basketBusy: false, bkAnswer: null, compareRfq: null, cmpOpen: {}, bkAward: null,
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
@@ -2331,6 +2409,19 @@ async function sandboxDemo(rfqId){
     refreshAdminSandbox();
   } catch(e) { setState({ sandboxBusy: false }); showToast(e.message); }
 }
+// How to switch baskets on for the sandbox only: BASKET_ENABLED takes a list of BUYER company ids (a basket is posted by a buyer)
+function basketSwitchBox(profiles){
+  const buyer = (profiles || []).find((p) => p.type === 'BUYER');
+  if (!buyer) return '';
+  const line = 'BASKET_ENABLED=' + buyer.id;
+  return '<div class="mt-8 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="text-[15px] font-bold" style="color:var(--tx);">Baskets on production, for the sandbox only</div>' +
+    '<p class="mt-1.5 max-w-[640px] text-[12.5px]" style="color:var(--tx3);">In Railway, open the backend service, then Variables, and set exactly this (the id of the test buyer; suppliers need no id, because a basket is posted by a buyer):</p>' +
+    '<div class="mt-2 flex flex-wrap items-center gap-2"><code class="mono rounded-lg border px-3 py-2 text-[12px]" style="border-color:var(--bd2); background:var(--inset); color:var(--tx); overflow-wrap:anywhere;">' + esc(line) + '</code>' +
+      '<button type="button" onclick="copyToClipboard(' + jsAttr(line) + ')" class="rounded-lg border px-3 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Copy</button></div>' +
+    '<p class="mt-2 max-w-[640px] text-[12px]" style="color:var(--tx4);">A comma-separated list of buyer company ids (no spaces needed) switches baskets on for those companies only. Later, <span class="mono">BASKET_ENABLED=1</span> switches them on for every buyer. Removing the variable switches creating and re-posting off; baskets that exist keep working.</p>' +
+  '</div>';
+}
 function renderAdminSandbox(){
   const box = state.sandbox;
   const profiles = sandboxProfiles(box && box.companies);
@@ -2346,9 +2437,11 @@ function renderAdminSandbox(){
         const c = full.find((x) => x.id === p.id) || {};
         return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
           '<div class="flex items-center gap-3">' + avatarHtml(p.name, 36) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +
-          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + (p.type === 'SUPPLIER' ? 'SUPPLIER · ' + esc(c.credits || '0.000') + ' credits' : 'BUYER') + '</div></div></div>' +
+          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + (p.type === 'SUPPLIER' ? 'SUPPLIER · ' + esc(c.credits || '0.000') + ' credits' : 'BUYER') + '</div>' +
+          '<div class="mono mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px]" style="color:var(--tx4);"><span style="overflow-wrap:anywhere;">id ' + esc(p.id) + '</span><button type="button" onclick="copyToClipboard(' + jsAttr(p.id) + ')" class="font-semibold" style="color:var(--acc);">Copy</button></div></div></div>' +
           actionBtn('Work as this company', 'sandboxEnter(' + jsAttr(p.id) + ')', !!state.sandboxBusy) + '</div>';
       }).join('') + '</div>' +
+      basketSwitchBox(profiles) +
       '<div class="mt-8 mb-2 text-[15px] font-bold" style="color:var(--tx);">Test requests</div>' +
       (rfqs.length === 0 ? '<div class="text-[13px]" style="color:var(--tx3);">None yet. Work as the test buyer and post one.</div>' :
         '<div class="flex flex-col gap-2">' + rfqs.map((r) =>
@@ -2361,7 +2454,7 @@ function renderAdminSandbox(){
 
 // Everything a session leaves in the page, back to the signed-out values (used by logout and when the admin enters or leaves the test mode)
 function signedOutState(){
-  return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminTest:false, adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null  };
+  return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminTest:false, adminDocNotices:null, adminDocNoticesAll:false, adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null  };
 }
 function logout(){
   // in the test mode "sign out" goes back to the admin console (the admin stays signed in)
@@ -2557,7 +2650,9 @@ async function withdrawApproval(id){
 // Picking a bid. Owners and managers first ask GET /quotes/:id/award-check: when a budget is set, or the pick needs the owner, a window shows
 // what it does (needs approval? what happens to this month's budget?) before anything is sent. With nothing to say it awards at once, as before.
 async function acceptQuote(quoteId){
-  if (state.awardCheck || state.awardBusy) return;
+  if (state.awardCheck || state.awardBusy || state.bkAward) return;
+  const bq = (state.compareQuotes || []).find(x => x.id === quoteId);
+  if (bq && bq.coverage) { openBasketAward(quoteId); return; } // a basket: the plan, the analogues, the confirmations
   let chk = null;
   try { chk = await api('/api/quotes/' + encodeURIComponent(quoteId) + '/award-check'); } catch(e) { /* the server decides anyway */ }
   if (chk && (chk.needsApproval || chk.budget != null)) { setState({ awardCheck: { quoteId, chk } }); return; }
@@ -2832,7 +2927,7 @@ async function setCompanyVerification(companyId, status){
     await api('/api/admin/companies/' + companyId + '/verify', { method:'PATCH', body: JSON.stringify({ status }) });
     showToast(status === 'VERIFIED' ? 'Company verified.' : 'Company rejected.');
     setState({ adminBusyId:null });
-    refreshAdminCompanies();
+    refreshAdminCompanies(); refreshAdminDocNotices();
   } catch(e) { setState({ adminBusyId:null }); showToast(e.message); }
 }
 // The DELETED tab asks the server for deleted companies only (erased accounts kept for other companies' records);
@@ -2845,7 +2940,7 @@ function setAdminFilter(f){
 
 // ---------- Admin: disputes ----------
 
-function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); }
+function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); refreshAdminDocNotices(); }
 
 async function refreshAdminDisputes(){
   if (!state.token) return;
@@ -3076,6 +3171,43 @@ function renderAdminReviews(){
           '</div><div>' + (rv.commentHidden
             ? '<button onclick="hideReviewComment(\'' + rv.id + '\', false)" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">Show comment</button>'
             : '<button onclick="hideReviewComment(\'' + rv.id + '\', true)" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Hide comment</button>') + '</div></div></div>').join('') + '</div>');
+}
+
+// ---------- Admin: documents waiting for review ----------
+// GET /api/admin/document-notices: companies with a verification document the admin has not answered yet (a company waiting for its first
+// decision lists all its documents; a decided one only those uploaded after the decision). The answer is verify / reject in the card.
+// BEGIN ADMIN DOCUMENT NOTICE HELPERS (pure functions: test/basket.test.js loads this block on its own)
+const ADMIN_DOC_LABELS = { TRADE_LICENSE: 'Trade license', CR_CERTIFICATE: 'CR certificate', OTHER: 'Other document' };
+// one row of the list, as plain text parts (the page escapes them): "2 documents · last: CR certificate"
+function adminDocNoticeText(n){
+  const docs = Number(n && n.documents) || 0;
+  return (docs === 1 ? '1 document' : docs + ' documents') + ' · last: ' + (ADMIN_DOC_LABELS[n && n.lastDocType] || 'Document');
+}
+// the rows to show: the newest first as the server sends them, the first few unless "Show all"
+function adminDocNoticeRows(items, showAll, limit){
+  const list = Array.isArray(items) ? items : [];
+  return showAll ? list : list.slice(0, limit || 5);
+}
+// END ADMIN DOCUMENT NOTICE HELPERS
+async function refreshAdminDocNotices(){
+  if (!state.token || state.view !== 'admin') return;
+  try { const data = await api('/api/admin/document-notices'); setIfChanged('adminDocNotices', data); syncOk('adminDocNotices'); }
+  catch(e) { syncFailed('adminDocNotices', e); }
+}
+function adminDocNoticesHtml(){
+  const d = state.adminDocNotices;
+  if (!d || !d.total) return '';
+  const rows = adminDocNoticeRows(d.items, state.adminDocNoticesAll, 5);
+  return '<div class="mb-6 rounded-xl border p-4" style="border-color:var(--pend); background:var(--pend-soft);">' +
+    '<div class="flex flex-wrap items-center gap-2"><div class="text-[14px] font-bold" style="color:var(--tx);">Documents waiting for review</div><span class="mono rounded-full px-2 py-0.5 text-[11px] font-bold" style="background:var(--panel); color:var(--pend);">' + esc(d.total) + '</span></div>' +
+    '<p class="mt-1 max-w-[640px] text-[12px]" style="color:var(--tx3);">A company uploaded a document and has not been decided on since. Open the company, look at the document, then verify or reject the company.</p>' +
+    '<div class="mt-3 flex flex-col gap-2">' + rows.map((n) =>
+      '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="min-w-0"><div class="text-[13px] font-semibold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(n.companyName) + ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">' + esc(n.type) + '</span> <span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">' + esc(n.verificationStatus) + '</span></div>' +
+        '<div class="mono mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + esc(adminDocNoticeText(n)) + (n.lastUploadedAt ? ' · ' + esc(fmtDateTime(n.lastUploadedAt)) : '') + '</div></div>' +
+        '<button onclick="openAdminCompany(' + jsAttr(n.companyId) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Open</button></div>').join('') + '</div>' +
+    (d.items.length > 5 ? '<button type="button" onclick="setState({ adminDocNoticesAll: ' + (state.adminDocNoticesAll ? 'false' : 'true') + ' })" class="mt-2 text-[12px] font-bold" style="color:var(--acc-ink);">' + (state.adminDocNoticesAll ? 'Show fewer' : 'Show all (' + d.items.length + ')') + '</button>' : '') +
+  '</div>';
 }
 
 // The link in the admin's "new company registered" e-mail: Companies tab, the tab that fits the company's state
@@ -4027,6 +4159,7 @@ function specsHtml(text, id){
 function openEditRfq(rfqId){
   const r = (state.rfqs || []).find(x => x.id === rfqId);
   if (!r) return;
+  if (r.isBasket) { openEditBasket(rfqId); return; }
   resetProductSearch();
   setState({ showPostRfq:true, editRfqId: rfqId, rfqMore:null, rfqDatePick:false, newRfq:{
     title: r.title || '', quantity: r.quantity != null ? String(r.quantity) : '', unit: r.unit || 'pcs',
@@ -4175,6 +4308,705 @@ async function submitNewRfq(){
   }
 }
 
+// ---------- Baskets: one request for many items ----------
+// BEGIN BASKET HELPERS (pure functions: test/basket.test.js loads this block on its own)
+const BASKET_MAX_ITEMS = 50; // as the server
+const BASKET_TITLE_RE = /^Basket · (\d+) items?$/;
+const BASKET_MISSING_SUFFIX = ' · missing items';
+// The server stores English names ("Basket · 6 items", "<title> · missing items"); the apps show them in the user's language. dict = the texts of one language.
+function bkTitleText(title, dict){
+  let s = String(title == null ? '' : title);
+  let missing = false;
+  if (s.endsWith(BASKET_MISSING_SUFFIX)) { missing = true; s = s.slice(0, -BASKET_MISSING_SUFFIX.length); }
+  const m = BASKET_TITLE_RE.exec(s);
+  if (m) { const n = Number(m[1]); s = (n === 1 ? dict.bkAutoTitleOne : dict.bkAutoTitle).replace('{n}', String(n)); }
+  return s + (missing ? ' · ' + dict.bkMissingSuffix : '');
+}
+const bkIsAutoTitle = (title) => BASKET_TITLE_RE.test(String(title || ''));
+const bkEmptyItem = () => ({ name: '', quantity: '', unit: 'kg', brand: '', productId: undefined, allowSubstitute: true });
+// the rows of the form -> the "items" of the request, or { error: <text key>, n: <row number> } for the first row that is wrong
+function bkItemsForRequest(rows){
+  if (!Array.isArray(rows) || rows.length === 0) return { error: 'bkNeedItems' };
+  if (rows.length > BASKET_MAX_ITEMS) return { error: 'bkTooMany' };
+  const items = [];
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || {};
+    const name = String(r.name || '').trim();
+    if (!name) return { error: 'bkItemNameRequired', n: i + 1 };
+    const qs = String(r.quantity == null ? '' : r.quantity).trim();
+    const q = Number(qs);
+    if (!/^\d+$/.test(qs) || q < 1 || q > 100000000) return { error: 'bkItemQtyWhole', n: i + 1 };
+    const brand = String(r.brand || '').trim();
+    items.push({ name, unit: r.unit || 'pcs', quantity: q, ...(brand ? { brand } : {}), ...(r.productId ? { productId: r.productId } : {}), allowSubstitute: r.allowSubstitute !== false });
+  }
+  return { items };
+}
+// rows from the server: a basket (GET /rfqs/:id) or the missing items of an order (GET /lpos/:id/repost)
+function bkRowsFromServer(items){
+  return (items || []).map((i) => ({ name: i.name || '', quantity: String(i.quantity), unit: i.unit || 'pcs', brand: i.brand || '', productId: i.productId || undefined, allowSubstitute: i.allowSubstitute !== false }));
+}
+// the address of a request (the apps use hash routes) and the text WhatsApp gets: the title and the link only, in both languages
+const bkLinkOf = (origin, pathname, id) => origin + pathname + '#/rfq/' + encodeURIComponent(id);
+function bkShareText(title, link, en, ar){
+  return en.bkShareText.replace('{title}', bkTitleText(title, en)) + '\n' + ar.bkShareText.replace('{title}', bkTitleText(title, ar)) + '\n' + link;
+}
+const bkWhatsAppUrl = (text) => 'https://wa.me/?text=' + encodeURIComponent(text);
+// END BASKET HELPERS
+
+const basketOn = () => state.view === 'buyer' && !!(state.user && state.user.basketEnabled === true) && can('rfq.draft');
+function i18nDict(lang){ return { ...I18N.en, ...(I18N[lang] || {}) }; }
+// a request's title in the user's language ("Basket · 6 items" is stored in English)
+function rfqTitle(r){ return bkTitleText(r ? r.title : '', i18nDict(state.lang)); }
+function bkItemsPill(r){
+  if (!r || !r.isBasket) return '';
+  const n = r.itemCount != null ? r.itemCount : (r._count && r._count.items) || 0;
+  return '<span class="ml-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--acc-soft); color:var(--acc-ink);">' + t('bkBadge') + (n ? ' · ' + (n === 1 ? t('bkItemsPillOne') : tpl('bkItemsPill', { n })) : '') + '</span>';
+}
+
+// ----- the form
+function bkNewForm(extra){
+  return { editId: null, repostOfLpoId: null, title: '', items: [bkEmptyItem(), bkEmptyItem()], deadline: '', category: defaultRfqCategory(), budget: '', specifications: '', more: false, datePick: false, ...extra };
+}
+function openBasket(){
+  if (!basketOn()) return;
+  bkSearchReset();
+  setState({ showBasket: true, basketBusy: false, basketForm: bkNewForm() });
+}
+async function openEditBasket(id){
+  try {
+    const r = await api('/api/rfqs/' + encodeURIComponent(id));
+    bkSearchReset();
+    const cat = categoryLabel(r.category);
+    setState({ showBasket: true, basketBusy: false, basketForm: bkNewForm({
+      editId: id, title: bkIsAutoTitle(r.title) ? '' : (r.title || ''), items: bkRowsFromServer(r.items), deadline: bahrainDateOf(r.deadline),
+      category: ACTIVE_CATEGORIES.includes(cat) ? cat : ACTIVE_CATEGORIES[0], budget: r.budget != null ? String(Number(r.budget)) : '', specifications: r.specifications || '', more: !!(r.budget != null || r.specifications),
+    }) });
+  } catch(e) { showToast(e.message); }
+}
+// "Re-post RFQ": the form for the items of a purchase order nobody covered (GET /lpos/:id/repost), filled in, the buyer reviews and posts
+async function openRepostBasket(lpoId){
+  try {
+    const d = await api('/api/lpos/' + encodeURIComponent(lpoId) + '/repost');
+    if (!d.canRepost) { showToast(t('bkRepostNotAvailable')); return; }
+    bkSearchReset();
+    const cat = categoryLabel(d.category);
+    setState({ showBasket: true, basketBusy: false, basketForm: bkNewForm({
+      repostOfLpoId: lpoId, title: d.title || '', items: bkRowsFromServer(d.items), deadline: bahrainDateOf(d.suggestedDeadline),
+      category: ACTIVE_CATEGORIES.includes(cat) ? cat : ACTIVE_CATEGORIES[0], specifications: d.specifications || '', more: !!d.specifications,
+    }) });
+  } catch(e) { showToast(e.message); }
+}
+function closeBasket(){ bkSearchReset(); setState({ showBasket: false, basketForm: null, basketBusy: false }); }
+function bkAddItem(){
+  const f = state.basketForm;
+  if (f.items.length >= BASKET_MAX_ITEMS) { showToast(tpl('bkTooMany', { max: BASKET_MAX_ITEMS })); return; }
+  setState({ basketForm: { ...f, items: f.items.concat([bkEmptyItem()]) } });
+}
+function bkRemoveItem(i){
+  const f = state.basketForm;
+  setState({ basketForm: { ...f, items: f.items.filter((_, k) => k !== i) } });
+}
+function bkSetAnalogue(i, ok){
+  const f = state.basketForm;
+  setState({ basketForm: { ...f, items: f.items.map((it, k) => (k === i ? { ...it, allowSubstitute: ok } : it)) } });
+}
+function bkSetDeadline(kind){
+  const f = state.basketForm;
+  if (kind === 'custom') {
+    setState({ basketForm: { ...f, datePick: true } });
+    setTimeout(() => { const el = document.querySelector('input[data-bk="deadline"]'); if (el && el.showPicker) { try { el.showPicker(); } catch(e) {} } }, 50);
+    return;
+  }
+  setState({ basketForm: { ...f, datePick: false, deadline: addDaysBahrain(kind === 'tomorrow' ? 1 : 7) } });
+}
+function bkToggleMore(){ setState({ basketForm: { ...state.basketForm, more: !state.basketForm.more } }); }
+
+// typing never re-renders the form (it would lose the focus): the value goes straight into the state
+function bkDocInput(e){
+  const el = e.target;
+  if (!el || !el.getAttribute || !state.showBasket || !state.basketForm) return;
+  const k = el.getAttribute('data-bk');
+  if (!k) return;
+  const f = state.basketForm;
+  if (k === 'search') { bkOnSearchInput(el.value); return; }
+  const i = el.getAttribute('data-i');
+  if (i !== null && f.items[Number(i)]) {
+    const row = f.items[Number(i)];
+    row[k] = el.value;
+    if (k === 'name' && row.productId) row.productId = undefined; // the words no longer describe the picked product
+    return;
+  }
+  if (['title', 'budget', 'specifications', 'deadline'].includes(k)) f[k] = el.value;
+}
+function bkDocChange(e){
+  const el = e.target;
+  if (!el || !el.getAttribute || !state.showBasket || !state.basketForm) return;
+  const k = el.getAttribute('data-bks');
+  if (!k) return;
+  const f = state.basketForm;
+  const i = el.getAttribute('data-i');
+  if (i !== null && f.items[Number(i)]) f.items[Number(i)][k] = el.value;
+  else if (k === 'category') f.category = el.value;
+}
+document.addEventListener('input', bkDocInput);
+document.addEventListener('change', bkDocChange);
+
+// ----- adding an item from the catalog (search under the list; the results are painted without a render, like the single request's)
+let bkSearchResults = [], bkSearchedFor = null, bkSearchTimer = null, bkSearchBusy = false;
+function bkSearchReset(){ bkSearchResults = []; bkSearchedFor = null; bkSearchBusy = false; clearTimeout(bkSearchTimer); }
+function bkPaintSearch(){ const box = document.getElementById('bk-search-area'); if (box) box.innerHTML = bkSearchHtml(); }
+function bkSearchHtml(){
+  if (bkSearchBusy) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('bkSearching') + '</div>';
+  if (bkSearchedFor === null) return '';
+  if (!bkSearchResults.length) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('bkCatalogNone') + '</div>';
+  return '<div class="bx-scroll flex max-h-48 flex-col gap-1.5 overflow-y-auto">' + bkSearchResults.map((it) =>
+    '<button type="button" onclick="bkPickProduct(' + jsAttr(it.id) + ')" class="flex items-center gap-2.5 rounded-lg border p-2 text-start" style="border-color:var(--bd); background:var(--panel);">' +
+      (it.imageUrl ? '<img src="' + esc(it.imageUrl) + '" class="h-9 w-9 shrink-0 rounded object-cover" alt="" />' : '<div class="h-9 w-9 shrink-0 rounded" style="background:var(--sunken);"></div>') +
+      '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(it.name) + '</div>' +
+      '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([it.brand, unitLabel(it.unit), it.category].filter(Boolean).join(' · ') || ' ') + '</div></div></button>').join('') + '</div>';
+}
+function bkOnSearchInput(value){
+  const q = String(value || '').trim();
+  clearTimeout(bkSearchTimer);
+  if (q.length < 2) { bkSearchResults = []; bkSearchedFor = null; bkSearchBusy = false; bkPaintSearch(); return; }
+  bkSearchBusy = true; bkPaintSearch();
+  bkSearchTimer = setTimeout(async () => {
+    let results;
+    try { results = await api('/api/catalog/search?q=' + encodeURIComponent(q)); } catch (e) { results = []; }
+    bkSearchBusy = false; bkSearchResults = results; bkSearchedFor = q; bkPaintSearch();
+  }, 300);
+}
+function bkPickProduct(id){
+  const p = bkSearchResults.find((x) => x.id === id);
+  const f = state.basketForm;
+  if (!p || !f) return;
+  if (f.items.length >= BASKET_MAX_ITEMS && f.items.every((it) => (it.name || '').trim())) { showToast(tpl('bkTooMany', { max: BASKET_MAX_ITEMS })); return; }
+  const row = { ...bkEmptyItem(), name: p.name, unit: CATALOG_UNITS.includes(p.unit) ? p.unit : 'pcs', brand: p.brand || '', productId: p.id };
+  const items = f.items.slice();
+  const free = items.findIndex((it) => !(it.name || '').trim() && !String(it.quantity || '').trim()); // an empty row is used first
+  if (free >= 0) items[free] = row; else items.push(row);
+  bkSearchReset();
+  setState({ basketForm: { ...f, items } });
+}
+
+// ----- sending it
+async function submitBasket(){
+  const f = state.basketForm;
+  if (!f || state.basketBusy) return;
+  const built = bkItemsForRequest(f.items);
+  if (built.error) { showToast(tpl(built.error, { n: built.n, max: BASKET_MAX_ITEMS })); return; }
+  if (!f.deadline) { showToast(t('rfqFillFields')); return; }
+  const hasBudget = String(f.budget || '').trim() !== '';
+  let budget;
+  if (bidFeePercent() > 0 && !hasBudget) { setState({ basketForm: { ...f, more: true } }); showToast(t('rfqBudgetRequired')); return; }
+  if (hasBudget) {
+    budget = parseMoneyInput(f.budget);
+    if (budget == null) { setState({ basketForm: { ...f, more: true } }); showToast(t('rfqBudgetNumber')); return; }
+    if (budget <= 0) { setState({ basketForm: { ...f, more: true } }); showToast(t('rfqBudgetPositive')); return; }
+  }
+  const specs = (f.specifications || '').trim();
+  if (specs.length > MAX_SPECIFICATIONS) { showToast(t('rfqSpecsMax').replace('{max}', MAX_SPECIFICATIONS)); return; }
+  const fields = {
+    ...((f.title || '').trim() ? { title: f.title.trim() } : {}), items: built.items, category: ACTIVE_CATEGORIES.includes(f.category) ? f.category : ACTIVE_CATEGORIES[0],
+    deadline: bahrainEndOfDay(f.deadline), ...(budget != null ? { budget } : {}), ...(specs ? { specifications: specs } : {}),
+  };
+  setState({ basketBusy: true });
+  try {
+    const publishes = can('rfq.publish');
+    const editId = f.editId;
+    const editedDraft = editId && ((state.rfqs || []).find((x) => x.id === editId) || {}).status === 'DRAFT';
+    if (editId) await api('/api/rfqs/' + encodeURIComponent(editId), { method: 'PATCH', body: JSON.stringify(editedDraft && publishes ? { ...fields, status: 'PUBLISHED' } : fields) });
+    else await api('/api/rfqs', { method: 'POST', body: JSON.stringify({ ...fields, publish: publishes, ...(f.repostOfLpoId ? { repostOfLpoId: f.repostOfLpoId } : {}) }) });
+    bkSearchReset();
+    setState({ showBasket: false, basketForm: null, basketBusy: false });
+    showToast(t(f.repostOfLpoId ? (publishes ? 'bkReposted' : 'bkDraftSaved') : editId ? (editedDraft && publishes ? 'bkPosted' : 'bkUpdated') : (publishes ? 'bkPosted' : 'bkDraftSaved')));
+    refreshRfqs();
+    if (state.section === 'orderDetail' && state.selectedOrderId) openOrderDetail(state.selectedOrderId);
+  } catch(e) {
+    setState({ basketBusy: false });
+    if (f.editId && e.status === 409) { bkSearchReset(); setState({ showBasket: false, basketForm: null }); showToast(t('bkLocked')); refreshRfqs(); }
+    else showToast(e.message);
+  }
+}
+
+function renderBasketModal(){
+  const f = state.basketForm;
+  if (!f) return '';
+  const label = (txt) => '<span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + txt + '</span>';
+  const box = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  const inp = 'w-full rounded-lg border px-3 py-2.5 text-sm outline-none';
+  const tomorrow = addDaysBahrain(1), inWeek = addDaysBahrain(7);
+  const customDate = !!f.datePick || !!(f.deadline && f.deadline !== tomorrow && f.deadline !== inWeek);
+  const chip = (text, on, click) => '<button type="button" onclick="' + click + '" class="min-w-0 flex-1 rounded-lg border px-2 py-2.5 text-[12.5px] font-bold" style="' +
+    (on ? 'background:var(--acc); color:var(--on-acc); border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + text + '</button>';
+  const toggle = (text, on, click) => '<button type="button" onclick="' + click + '" aria-pressed="' + on + '" class="min-w-0 flex-1 rounded-lg border px-2 py-2 text-[12px] font-bold" style="' +
+    (on ? 'background:var(--acc-soft); color:var(--acc-ink); border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + '">' + text + '</button>';
+  const rows = f.items.map((it, i) => {
+    const units = CATALOG_UNITS.concat(it.unit && !CATALOG_UNITS.includes(it.unit) ? [it.unit] : []);
+    return '<div class="rounded-xl border p-3" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="flex items-center gap-2"><span class="mono w-5 shrink-0 text-[11px] font-bold" style="color:var(--tx4);">' + (i + 1) + '</span>' +
+        '<input data-bk="name" data-i="' + i + '" type="text" autocomplete="off" maxlength="200" value="' + esc(it.name) + '" placeholder="' + esc(t('bkItemNamePh')) + '" aria-label="' + esc(t('bkItemName') + ' ' + (i + 1)) + '" class="' + inp + ' min-w-0 flex-1" style="' + box + '" />' +
+        '<button type="button" onclick="bkRemoveItem(' + i + ')" aria-label="' + esc(t('bkRemoveItem')) + '" class="shrink-0 rounded-lg border px-3 py-2.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">&times;</button></div>' +
+      '<div class="mt-2 grid grid-cols-2 gap-2">' +
+        '<input data-bk="quantity" data-i="' + i + '" type="text" inputmode="numeric" value="' + esc(it.quantity) + '" placeholder="' + esc(t('bkQty')) + '" aria-label="' + esc(t('bkQty')) + '" class="' + inp + '" style="' + box + '" />' +
+        '<select data-bks="unit" data-i="' + i + '" aria-label="' + esc(t('bkUnit')) + '" class="' + inp + '" style="' + box + '">' + units.map((u) => '<option value="' + esc(u) + '"' + (it.unit === u ? ' selected' : '') + '>' + esc(unitLabel(u)) + '</option>').join('') + '</select></div>' +
+      '<input data-bk="brand" data-i="' + i + '" type="text" autocomplete="off" maxlength="120" value="' + esc(it.brand) + '" placeholder="' + esc(t('bkBrandPh')) + '" aria-label="' + esc(t('bkBrand')) + '" class="' + inp + ' mt-2" style="' + box + '" />' +
+      '<div class="mt-2 flex gap-2">' + toggle(t('bkAnalogueOk'), it.allowSubstitute !== false, 'bkSetAnalogue(' + i + ',true)') + toggle(t('bkOnlyBrand'), it.allowSubstitute === false, 'bkSetAnalogue(' + i + ',false)') + '</div>' +
+    '</div>';
+  }).join('');
+  const feeOn = bidFeePercent() > 0;
+  const editing = !!f.editId, reposting = !!f.repostOfLpoId;
+  const body =
+    '<label class="flex flex-col gap-1.5">' + label(t('bkTitleLabel')) +
+      '<input data-bk="title" type="text" autocomplete="off" maxlength="200" value="' + esc(f.title) + '" placeholder="' + esc(t('bkTitlePh')) + '" class="' + inp + '" style="' + box + '" />' +
+      '<span class="text-[11px]" style="color:var(--tx4);">' + t('bkTitleAutoHint') + '</span></label>' +
+    '<div class="flex flex-col gap-2"><div class="flex items-center justify-between gap-2">' + label(t('bkItems')) + '<span class="mono text-[11px]" style="color:var(--tx4);">' + tpl('bkItemCount', { n: f.items.length, max: BASKET_MAX_ITEMS }) + '</span></div>' +
+      '<div class="flex flex-col gap-2.5">' + rows + '</div>' +
+      '<button type="button" onclick="bkAddItem()" class="rounded-lg border border-dashed px-3 py-2.5 text-[13px] font-bold" style="border-color:var(--bd2); color:var(--acc-ink);">' + t('bkAddItem') + '</button></div>' +
+    '<div class="flex flex-col gap-1.5">' + label(t('bkAddFromCatalog')) +
+      '<input data-bk="search" type="text" autocomplete="off" placeholder="' + esc(t('bkCatalogPh')) + '" class="' + inp + '" style="' + box + '" />' +
+      '<div id="bk-search-area">' + bkSearchHtml() + '</div></div>' +
+    '<div class="flex flex-col gap-1.5">' + label(t('rfqWhen')) +
+      '<div class="flex gap-2">' + chip(t('rfqTomorrow'), !customDate && f.deadline === tomorrow, "bkSetDeadline('tomorrow')") + chip(t('rfqWithinWeek'), !customDate && f.deadline === inWeek, "bkSetDeadline('week')") + chip(t('rfqPickDate'), customDate, "bkSetDeadline('custom')") + '</div>' +
+      (customDate ? '<input data-bk="deadline" type="date" min="' + addDaysBahrain(0) + '" value="' + esc(f.deadline) + '" class="' + inp + '" style="' + box + '" />' : '') + '</div>' +
+    '<div class="flex flex-col gap-4">' +
+      '<button type="button" onclick="bkToggleMore()" aria-expanded="' + !!f.more + '" class="flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-start" style="border-color:var(--bd2); color:var(--tx2);">' +
+        '<span class="text-[13px] font-bold">' + t(f.more ? 'rfqLessDetails' : 'rfqMoreDetails') + '</span><span class="shrink-0 text-[12px]" aria-hidden="true">' + (f.more ? '▲' : '▼') + '</span></button>' +
+      (f.more
+        ? '<label class="flex flex-col gap-1.5">' + label(feeOn ? t('rfqBudget') + t('rfqBudgetFee').replace('{n}', bidFeePercent()) : t('rfqBudgetOpt')) + '<input data-bk="budget" type="text" inputmode="decimal" value="' + esc(f.budget) + '" placeholder="' + esc(t('rfqBudgetPh')) + '" class="' + inp + '" style="' + box + '" /></label>' +
+          '<label class="flex flex-col gap-1.5">' + label(t('rfqCategory')) + '<select data-bks="category" class="' + inp + '" style="' + box + '">' + ACTIVE_CATEGORIES.map((c) => '<option value="' + esc(c) + '"' + (f.category === c ? ' selected' : '') + '>' + esc(categoryOptionLabel(c)) + '</option>').join('') + '</select></label>' +
+          '<label class="flex flex-col gap-1.5">' + label(t('rfqSpecs')) + '<textarea data-bk="specifications" rows="3" maxlength="' + MAX_SPECIFICATIONS + '" placeholder="' + esc(t('rfqSpecsPh')) + '" class="' + inp + '" style="' + box + '">' + esc(f.specifications || '') + '</textarea></label>'
+        : '') +
+    '</div>';
+  const submitLabel = state.basketBusy ? t(editing ? 'rfqSaving' : 'rfqPosting') : t(reposting ? (can('rfq.publish') ? 'bkRepostSubmit' : 'rfqSaveDraft') : !can('rfq.publish') ? (editing ? 'saveChanges' : 'rfqSaveDraft') : (editing && ((state.rfqs || []).find((x) => x.id === f.editId) || {}).status !== 'DRAFT') ? 'saveChanges' : 'bkPost');
+  return '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
+    '<div class="bx-rise bx-modal bx-scroll w-full max-w-xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel); max-height:92vh; overflow-y:auto;">' +
+      '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t(reposting ? 'bkModalRepost' : editing ? 'bkModalEdit' : 'bkModalNew') + '</h3>' +
+      '<button onclick="closeBasket()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
+      '<div class="mt-4 flex flex-col gap-4">' + body + '</div>' +
+      '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="submitBasket()" ' + (state.basketBusy ? 'disabled' : '') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); opacity:' + (state.basketBusy ? '0.6' : '1') + ';">' + submitLabel + '</button></div>' +
+    '</div></div>';
+}
+
+// ----- share a published basket: the link (hash route #/rfq/<id>; a supplier who opens it lands on the answer form) and WhatsApp (title and link only)
+function bkLink(id){ return bkLinkOf(location.origin, location.pathname, id); }
+// copies text; resolves true when it worked. The clipboard API first (it needs a secure page and a click), then the old way; false if both refuse
+function bkCopyText(text){
+  return new Promise((resolve) => {
+    const legacy = () => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch(e) { ok = false; }
+      document.body.removeChild(ta);
+      resolve(ok);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => resolve(true), legacy);
+    else legacy();
+  });
+}
+// when the browser refuses to copy, the link is shown in a box the person can copy from by hand
+function copyBasketLink(id){
+  const link = bkLink(id);
+  bkCopyText(link).then((ok) => { if (ok) showToast(t('bkLinkCopied')); else window.prompt(t('bkCopyFailed'), link); });
+}
+function shareBasketWhatsApp(id){
+  const r = (state.rfqs || []).find((x) => x.id === id);
+  if (!r) return;
+  const text = bkShareText(r.title, bkLink(id), I18N.en, I18N.ar);
+  window.open(bkWhatsAppUrl(text), '_blank', 'noopener');
+}
+// the two small buttons of a published basket (a draft or a finished one has nothing to share)
+function bkShareButtons(r){
+  if (!r.isBasket || r.status !== 'PUBLISHED') return '';
+  const b = 'rounded-lg border px-3 py-1.5 text-[12px] font-bold';
+  return '<button onclick="event.stopPropagation(); copyBasketLink(' + jsAttr(r.id) + ')" class="' + b + '" style="border-color:var(--bd2); color:var(--tx2);">' + t('bkCopyLink') + '</button>' +
+    '<button onclick="event.stopPropagation(); shareBasketWhatsApp(' + jsAttr(r.id) + ')" class="' + b + '" style="border-color:var(--bd2); color:var(--tx2);">' + t('bkWhatsApp') + '</button>';
+}
+// the button next to "Create new RFQ", only for a buyer the baskets are switched on for
+function bkNewButton(cls){
+  return basketOn() ? '<button onclick="openBasket()" class="' + cls + '" style="border:1px solid var(--bd2); color:var(--tx2); background:var(--panel);">' + t('bkNew') + '</button>' : '';
+}
+
+// ---------- Baskets: the supplier's answer (one answer per item) ----------
+// BEGIN BASKET ANSWER HELPERS (pure functions: test/basket.test.js loads this block on its own; parseMoneyInput comes from the page)
+// rows: { [rfqItemId]: { status: '' | 'PRICED' | 'UNAVAILABLE' | 'SUBSTITUTE', unitPrice, substituteName, substituteBrand } }
+const bkaLineFils = (item, row) => {
+  if (!row || (row.status !== 'PRICED' && row.status !== 'SUBSTITUTE')) return null;
+  const p = parseMoneyInput(row.unitPrice);
+  return p == null || p <= 0 ? null : Math.round(p * 1000) * item.quantity;
+};
+// how far the form is: answered rows, rows with a price (what the supplier can supply) and their total
+function bkaSummary(items, rows){
+  let answered = 0, covered = 0, totalFils = 0;
+  for (const it of items) {
+    const row = rows[it.id];
+    if (row && row.status) answered++;
+    const f = bkaLineFils(it, row);
+    if (f != null) { covered++; totalFils += f; }
+  }
+  return { n: items.length, answered, covered, totalFils };
+}
+// the form -> the body of POST /rfqs/:id/quotes (PUT .../quotes/mine when revising), or { error: <text key>, n?, left? }
+function bkaBuild(items, rows, head, revising){
+  const answered = items.filter((it) => rows[it.id] && rows[it.id].status).length;
+  if (answered < items.length) return { error: 'bkaNeedAnswers', left: items.length - answered };
+  const out = [];
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i], row = rows[it.id];
+    if (row.status === 'UNAVAILABLE') { out.push({ rfqItemId: it.id, status: 'UNAVAILABLE' }); continue; }
+    const price = parseMoneyInput(row.unitPrice);
+    if (price == null || price <= 0) return { error: 'bkaPriceBad', n: i + 1 };
+    if (row.status === 'SUBSTITUTE') {
+      const name = String(row.substituteName || '').trim();
+      if (!it.allowSubstitute || !name) return { error: 'bkaSubNameNeeded', n: i + 1 };
+      const brand = String(row.substituteBrand || '').trim();
+      out.push({ rfqItemId: it.id, status: 'SUBSTITUTE', unitPrice: price, substituteName: name, ...(brand ? { substituteBrand: brand } : {}) });
+    } else out.push({ rfqItemId: it.id, status: 'PRICED', unitPrice: price });
+  }
+  if (!out.some((x) => x.status !== 'UNAVAILABLE')) return { error: 'bkaNeedOnePrice' };
+  const days = String(head.days == null ? '' : head.days).trim();
+  if (!/^\d+$/.test(days) || Number(days) > 365) return { error: 'bkaDaysNeeded' };
+  const terms = String(head.terms == null ? '' : head.terms).trim() === '' ? 30 : Number(String(head.terms).trim());
+  if (!Number.isInteger(terms) || terms < 0 || terms > 120) return { error: 'bidTermsError' };
+  const body = { items: out, deliveryTimeDays: Number(days), paymentTermsDays: terms };
+  const minRaw = String(head.minOrder == null ? '' : head.minOrder).trim();
+  if (minRaw) { const m = parseMoneyInput(minRaw); if (m == null || m <= 0) return { error: 'bkaMinBad' }; body.minOrderAmount = m; }
+  else if (revising) body.minOrderAmount = null; // an emptied box clears the minimum
+  const notes = String(head.notes || '').trim();
+  if (notes) body.notes = notes;
+  return { body };
+}
+// the form's rows from the supplier's own earlier answer (GET /rfqs/:id/quotes -> its items), for "Change your answer"
+function bkaRowsFromQuote(quote){
+  const rows = {};
+  for (const a of (quote && quote.items) || []) rows[a.rfqItemId] = { status: a.status, unitPrice: a.unitPrice != null ? String(Number(a.unitPrice)) : '', substituteName: a.substituteName || '', substituteBrand: a.substituteBrand || '' };
+  return rows;
+}
+// END BASKET ANSWER HELPERS
+
+const bkaEmptyRow = () => ({ status: '', unitPrice: '', substituteName: '', substituteBrand: '' });
+async function openBasketAnswer(rfqId){
+  setState({ bkAnswer: { rfqId, rfq: null, quoteId: null, rows: {}, head: { days: '', terms: '30', minOrder: '', notes: '' }, busy: false, error: '' } });
+  try {
+    const rfq = await api('/api/rfqs/' + encodeURIComponent(rfqId));
+    const own = ((rfq.quotes || []).find((q) => q.status !== 'WITHDRAWN')) || null;
+    let rows = {}, head = { days: '', terms: '30', minOrder: '', notes: '' }, quoteId = null;
+    if (own) {
+      // changing an answer that is still open: the earlier one fills the form
+      const full = (await api('/api/rfqs/' + encodeURIComponent(rfqId) + '/quotes')).find((q) => q.id === own.id) || null;
+      if (full) { quoteId = full.id; rows = bkaRowsFromQuote(full); head = { days: String(full.deliveryTimeDays == null ? '' : full.deliveryTimeDays), terms: String(full.paymentTermsDays == null ? 30 : full.paymentTermsDays), minOrder: full.minOrderAmount != null ? String(Number(full.minOrderAmount)) : '', notes: full.notes || '' }; }
+    }
+    if (!state.bkAnswer || state.bkAnswer.rfqId !== rfqId) return; // closed meanwhile
+    setState({ bkAnswer: { ...state.bkAnswer, rfq, quoteId, rows, head } });
+  } catch(e) { setState({ bkAnswer: null }); showToast(e.message); }
+}
+function closeBasketAnswer(){ setState({ bkAnswer: null }); }
+function bkaSetStatus(id, status){
+  const a = state.bkAnswer;
+  const row = { ...bkaEmptyRow(), ...(a.rows[id] || {}), status };
+  if (status === 'UNAVAILABLE') { row.unitPrice = ''; row.substituteName = ''; row.substituteBrand = ''; }
+  if (status === 'PRICED') { row.substituteName = ''; row.substituteBrand = ''; }
+  setState({ bkAnswer: { ...a, rows: { ...a.rows, [id]: row } } });
+}
+// "Mark the rest as not in stock": every item without an answer yet
+function bkaRestNotInStock(){
+  const a = state.bkAnswer;
+  const rows = { ...a.rows };
+  for (const it of a.rfq.items) if (!(rows[it.id] && rows[it.id].status)) rows[it.id] = { ...bkaEmptyRow(), status: 'UNAVAILABLE' };
+  setState({ bkAnswer: { ...a, rows } });
+}
+function bkaClear(){ setState({ bkAnswer: { ...state.bkAnswer, rows: {} } }); }
+// typing: into the state, and the totals are repainted in place (a render would lose the focus)
+function bkaDocInput(e){
+  const el = e.target;
+  if (!el || !el.getAttribute || !state.bkAnswer || !state.bkAnswer.rfq) return;
+  const k = el.getAttribute('data-ba');
+  if (!k) return;
+  const a = state.bkAnswer;
+  const id = el.getAttribute('data-id');
+  if (id) { a.rows[id] = { ...bkaEmptyRow(), ...(a.rows[id] || {}), [k]: el.value }; bkaPaintTotals(); return; }
+  if (['days', 'terms', 'minOrder', 'notes'].includes(k)) a.head[k] = el.value;
+}
+document.addEventListener('input', bkaDocInput);
+function bkaPaintTotals(){
+  const a = state.bkAnswer;
+  if (!a || !a.rfq) return;
+  const s = bkaSummary(a.rfq.items, a.rows);
+  const box = document.getElementById('bka-total');
+  if (box) box.innerHTML = bkaTotalHtml(s);
+  for (const it of a.rfq.items) {
+    const el = document.getElementById('bka-line-' + it.id);
+    if (el) el.innerHTML = bkaLineHtml(it, a.rows[it.id]);
+  }
+}
+const bkaLineHtml = (it, row) => { const f = bkaLineFils(it, row); return f == null ? '' : t('bkaLineTotal') + ': <b class="mono" style="color:var(--tx);">' + bhdMoney(f / 1000) + '</b>'; };
+function bkaTotalHtml(s){
+  return '<div>' + tpl('bkaProgress', { done: s.answered, n: s.n }) + '</div>' +
+    '<div class="mt-0.5 font-semibold" style="color:var(--tx);">' + tpl('bkaSummary', { covered: s.covered, n: s.n, total: '<span class="mono">' + bhdMoney(s.totalFils / 1000) + '</span>' }) + '</div>';
+}
+async function submitBasketAnswer(){
+  const a = state.bkAnswer;
+  if (!a || !a.rfq || a.busy) return;
+  const revising = !!a.quoteId;
+  const built = bkaBuild(a.rfq.items, a.rows, a.head, revising);
+  if (built.error) { showToast(tpl(built.error, { n: built.n, left: built.left })); return; }
+  setState({ bkAnswer: { ...a, busy: true } });
+  try {
+    const rfqId = a.rfqId;
+    const quote = revising
+      ? await api('/api/rfqs/' + encodeURIComponent(rfqId) + '/quotes/mine', { method: 'PUT', body: JSON.stringify(built.body) })
+      : await api('/api/rfqs/' + encodeURIComponent(rfqId) + '/quotes', { method: 'POST', body: JSON.stringify(built.body) });
+    setState({ bkAnswer: null, rfqs: (state.rfqs || []).map((r) => (r.id === rfqId ? { ...r, quotes: [{ id: quote.id, status: quote.status, price: quote.price, unitPrice: null, createdAt: quote.createdAt, _count: { attachments: 0 } }] } : r)) });
+    showToast(t(revising ? 'bkaChanged' : 'bkaSent'));
+    refreshWallet(); refreshRfqs();
+  } catch(e) {
+    setState({ bkAnswer: { ...state.bkAnswer, busy: false } });
+    if (e.status === 409) { setState({ bkAnswer: null }); showToast(/deciding/.test(e.message) ? t('bkaApprovalWaits') : /already submitted/.test(e.message) ? t('quoteAlreadySubmitted') : t('bkaLocked')); refreshRfqs(); }
+    else showToast(e.message);
+  }
+}
+function renderBasketAnswer(){
+  const a = state.bkAnswer;
+  if (!a) return '';
+  const wrap = (inner, foot) => '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div class="bx-rise bx-modal bx-scroll w-full max-w-2xl rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel); max-height:92vh; overflow-y:auto;">' +
+    '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('bkaTitle') + '</h3><button onclick="closeBasketAnswer()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' + inner + (foot || '') + '</div></div>';
+  if (!a.rfq) return wrap('<div class="py-10 text-center text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>');
+  const items = a.rfq.items || [];
+  const box = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
+  const inp = 'w-full rounded-lg border px-3 py-2.5 text-sm outline-none';
+  const seg = (id, status, text, on, disabled) => '<button type="button" ' + (disabled ? 'disabled' : 'onclick="bkaSetStatus(' + jsAttr(id) + ',\'' + status + '\')"') + ' aria-pressed="' + on + '" class="min-w-0 flex-1 rounded-lg border px-2 py-2 text-[12px] font-bold" style="' +
+    (on ? 'background:var(--acc); color:var(--on-acc); border-color:var(--acc);' : 'border-color:var(--bd2); color:var(--tx2);') + (disabled ? ' opacity:.4; cursor:not-allowed;' : '') + '">' + text + '</button>';
+  const rows = items.map((it, i) => {
+    const row = a.rows[it.id] || bkaEmptyRow();
+    const unanswered = !row.status;
+    return '<div class="rounded-xl border p-3" style="border-color:' + (unanswered ? 'var(--bd)' : 'var(--bd)') + '; background:var(--panel);">' +
+      '<div class="flex flex-wrap items-start justify-between gap-2"><div class="min-w-0"><div class="text-[13.5px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;"><span class="mono mr-1.5 text-[11px]" style="color:var(--tx4);">' + (i + 1) + '</span>' + esc(it.name) + '</div>' +
+        '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(it.quantity) + ' ' + esc(unitLabel(it.unit)) + (it.brand ? ' · ' + esc(it.brand) : '') + '</div></div>' +
+        '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="' + (it.allowSubstitute ? 'background:var(--ok-soft); color:var(--ok);' : 'background:var(--bad-soft); color:var(--bad);') + '">' + t(it.allowSubstitute ? 'bkaAnalogueOkTag' : 'bkaOnlyBrandTag') + '</span></div>' +
+      '<div class="mt-2.5 flex gap-2">' + seg(it.id, 'PRICED', t('bkaPrice'), row.status === 'PRICED') + seg(it.id, 'UNAVAILABLE', t('bkaNotInStock'), row.status === 'UNAVAILABLE') + seg(it.id, 'SUBSTITUTE', t('bkaAnalogue'), row.status === 'SUBSTITUTE', !it.allowSubstitute) + '</div>' +
+      (row.status === 'SUBSTITUTE'
+        ? '<div class="mt-2 grid gap-2 sm:grid-cols-2"><input data-ba="substituteName" data-id="' + esc(it.id) + '" type="text" maxlength="200" autocomplete="off" value="' + esc(row.substituteName) + '" placeholder="' + esc(t('bkaSubNamePh')) + '" aria-label="' + esc(t('bkaSubName')) + '" class="' + inp + '" style="' + box + '" />' +
+          '<input data-ba="substituteBrand" data-id="' + esc(it.id) + '" type="text" maxlength="200" autocomplete="off" value="' + esc(row.substituteBrand) + '" placeholder="' + esc(t('bkaSubBrand')) + '" aria-label="' + esc(t('bkaSubBrand')) + '" class="' + inp + '" style="' + box + '" /></div>' : '') +
+      (row.status === 'PRICED' || row.status === 'SUBSTITUTE'
+        ? '<div class="mt-2 flex flex-wrap items-center gap-3"><input data-ba="unitPrice" data-id="' + esc(it.id) + '" type="text" inputmode="decimal" autocomplete="off" value="' + esc(row.unitPrice) + '" placeholder="' + esc(t('bkaUnitPrice')) + '" aria-label="' + esc(t('bkaUnitPrice')) + '" class="' + inp + '" style="' + box + ' max-width:11rem;" />' +
+          '<span id="bka-line-' + esc(it.id) + '" class="text-[12px]" style="color:var(--tx3);">' + bkaLineHtml(it, row) + '</span></div>' : '') +
+    '</div>';
+  }).join('');
+  const s = bkaSummary(items, a.rows);
+  const field = (k, label, ph, value, extra) => '<label class="flex flex-col gap-1.5"><span class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + label + '</span><input data-ba="' + k + '" type="text" inputmode="' + (k === 'notes' ? 'text' : 'decimal') + '" autocomplete="off" value="' + esc(value) + '" placeholder="' + esc(ph) + '" class="' + inp + '" style="' + box + '" />' + (extra || '') + '</label>';
+  const revising = !!a.quoteId;
+  const body = '<div class="mt-1 text-[14px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(rfqTitle(a.rfq)) + '</div>' +
+    (a.rfq.specifications ? '<div class="mt-2 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx2); white-space:pre-wrap; overflow-wrap:anywhere; max-height:120px; overflow-y:auto;">' + esc(a.rfq.specifications) + '</div>' : '') +
+    '<p class="mt-2 text-[12.5px]" style="color:var(--tx3);">' + t('bkaIntro') + '</p>' +
+    '<div class="mt-3 flex flex-wrap gap-2"><button type="button" onclick="bkaRestNotInStock()" class="rounded-lg border px-3 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('bkaRestNotInStock') + '</button>' +
+      '<button type="button" onclick="bkaClear()" class="rounded-lg border px-3 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">' + t('bkaClear') + '</button></div>' +
+    '<div class="mt-3 flex flex-col gap-2.5">' + rows + '</div>' +
+    '<div id="bka-total" class="mt-4 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--bd); background:var(--inset); color:var(--tx2);">' + bkaTotalHtml(s) + '</div>' +
+    '<div class="mt-4 flex flex-col gap-3.5">' +
+      field('minOrder', t('bkaMinOrder'), '0.000', a.head.minOrder, '<span class="text-[11px]" style="color:var(--tx4);">' + t('bkaMinOrderHint') + '</span>') +
+      field('days', t('bidDelivery'), '2', a.head.days) + field('terms', t('bidTerms'), '30', a.head.terms) + field('notes', t('bkaNotes'), '', a.head.notes) + '</div>';
+  const foot = '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="submitBasketAnswer()" ' + (a.busy ? 'disabled' : '') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); opacity:' + (a.busy ? '0.6' : '1') + ';">' + (a.busy ? t('bkaSending') : t(revising ? 'bkaSaveChanges' : 'bkaSubmit')) + '</button></div>';
+  return wrap(body, foot);
+}
+
+// ---------- Baskets: comparing the answers ----------
+// BEGIN BASKET COMPARE HELPERS (pure functions: test/basket.test.js loads this block on its own)
+// how far one answer covers the basket: 'full' (every item), 'partial', 'none'
+function bkCoverageLevel(c){
+  if (!c || !c.total) return 'none';
+  return c.covered >= c.total ? 'full' : c.covered === 0 ? 'none' : 'partial';
+}
+// one answer, item by item, in the order of the items: what the supplier said, the price and the line total
+function bkCmpRows(quote, items){
+  const byId = {};
+  for (const a of (quote && quote.items) || []) byId[a.rfqItemId] = a;
+  return (items || []).map((it) => {
+    const a = byId[it.id];
+    const price = a && a.unitPrice != null ? Number(a.unitPrice) : null;
+    return { id: it.id, name: it.name, quantity: it.quantity, unit: it.unit, status: a ? a.status : null, unitPrice: price, lineFils: price != null ? Math.round(price * 1000) * it.quantity : null,
+      best: !!(a && a.isBestPrice), substituteName: (a && a.substituteName) || '', substituteBrand: (a && a.substituteBrand) || '' };
+  });
+}
+// END BASKET COMPARE HELPERS
+
+// the request with its items (the list of requests carries only their number): Compare bids and the award window need the names
+async function loadCompareItems(rfqId){
+  try {
+    const rfq = await api('/api/rfqs/' + encodeURIComponent(rfqId));
+    if (state.compareRfqId === rfqId) setState({ compareRfq: rfq });
+  } catch(e) { /* the summary still shows; only the item-by-item view needs it */ }
+}
+function toggleCmpDetails(id){ setState({ cmpOpen: { ...(state.cmpOpen || {}), [id]: !(state.cmpOpen || {})[id] } }); }
+
+// under a bid's name: how much of the basket it covers, what it costs, the minimum order
+function bkQuoteSummaryHtml(x){
+  const c = x.coverage;
+  const level = bkCoverageLevel(c);
+  const style = level === 'full' ? 'background:var(--ok-soft); color:var(--ok);' : level === 'partial' ? 'background:var(--pend-soft); color:var(--pend);' : 'background:var(--bad-soft); color:var(--bad);';
+  const pill = (txt, st) => '<span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="' + st + '">' + txt + '</span>';
+  return '<div class="mt-1 flex flex-wrap items-center gap-1.5">' + pill(tpl('bkcCovered', { covered: c.covered, n: c.total }), style) +
+    (c.substitutes ? pill(c.substitutes === 1 ? t('bkcAnalogue1') : tpl('bkcAnaloguesN', { n: c.substitutes }), 'background:var(--info-soft); color:var(--info);') : '') +
+    (c.missing && c.missing.length ? pill(tpl('bkcMissingN', { n: c.missing.length }), 'background:var(--line); color:var(--tx2);') : '') + '</div>' +
+    '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">' + tpl('bkcPricedTotal', { total: '<b>' + bhdMoney(x.price) + '</b>' }) +
+      (x.minOrderAmount != null ? ' &middot; ' + tpl('bkcMinOrder', { amount: bhdMoney(x.minOrderAmount) }) : '') + '</div>';
+}
+// the "Item by item" view of one bid (collapsed), with the not-covered list and the best prices marked
+function bkQuoteDetailHtml(x){
+  const open = !!(state.cmpOpen || {})[x.id];
+  const items = (state.compareRfq && state.compareRfq.items) || null;
+  const btn = '<button type="button" onclick="toggleCmpDetails(' + jsAttr(x.id) + ')" aria-expanded="' + open + '" class="mt-2 text-[12px] font-bold" style="color:var(--acc-ink);">' + t(open ? 'bkcHide' : 'bkcDetails') + ' ' + (open ? '▲' : '▼') + '</button>';
+  if (!open || !items) return btn;
+  const rows = bkCmpRows(x, items);
+  const missing = rows.filter((r) => r.status !== 'PRICED' && r.status !== 'SUBSTITUTE');
+  return btn + '<div class="mt-2 overflow-x-auto rounded-lg border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel); min-width:300px;"><thead><tr><th>' + t('bkcThItem') + '</th><th>' + t('bkcThAnswer') + '</th><th>' + t('bkcThLine') + '</th></tr></thead><tbody>' +
+    rows.map((r) => {
+      const answer = r.status === 'PRICED' ? '<span class="mono">' + bhdMoney(r.unitPrice) + '</span>' + (r.best ? ' <span class="rounded-full px-1.5 py-0.5 text-[10px] font-bold" title="' + esc(t('bkcBestHint')) + '" style="background:var(--ok-soft); color:var(--ok);">★ ' + t('bkcBestPrice') + '</span>' : '')
+        : r.status === 'SUBSTITUTE' ? '<span class="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style="background:var(--info-soft); color:var(--info);">' + esc(tpl('bkcAnalogueFor', { name: r.substituteName + (r.substituteBrand ? ' (' + r.substituteBrand + ')' : '') })) + '</span> <span class="mono">' + bhdMoney(r.unitPrice) + '</span>'
+        : '<span style="color:var(--tx4);">' + t('bkcNotInStock') + '</span>';
+      return '<tr><td><div class="font-semibold" style="color:var(--tx);">' + esc(r.name) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">' + esc(r.quantity) + ' ' + esc(unitLabel(r.unit)) + '</div></td><td>' + answer + '</td><td class="mono">' + (r.lineFils != null ? bhdMoney(r.lineFils / 1000) : '—') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    (missing.length ? '<div class="mt-1.5 text-[12px]" style="color:var(--tx3); overflow-wrap:anywhere;">' + tpl('bkcNotCovered', { items: esc(missing.map((r) => r.name).join(', ')) }) + '</div>' : '');
+}
+
+// ---------- Baskets: the award window ----------
+// BEGIN BASKET AWARD HELPERS (pure functions: test/basket.test.js loads this block on its own)
+// the analogues one answer offers: [{ id, name, substituteName, substituteBrand, unitPrice, quantity, lineFils }]
+function bkAnalogueRows(quote, items){
+  const byId = {};
+  for (const it of items || []) byId[it.id] = it;
+  const out = [];
+  for (const a of (quote && quote.items) || []) {
+    if (a.status !== 'SUBSTITUTE' || !byId[a.rfqItemId]) continue;
+    const it = byId[a.rfqItemId], price = Number(a.unitPrice);
+    out.push({ id: it.id, name: it.name, unit: it.unit, quantity: it.quantity, substituteName: a.substituteName || '', substituteBrand: a.substituteBrand || '', unitPrice: price, lineFils: Math.round(price * 1000) * it.quantity });
+  }
+  return out;
+}
+// w: { accepted: [item ids], confirmPartial, confirmBelow, repost }; plan: the "basket" part of GET /quotes/:id/award-check.
+// The body ALWAYS says whether to re-post (true / false), never leaves it to a default; a confirmation is sent only where the plan asks for one.
+function bkAwardBody(w, plan){
+  const missing = plan && plan.missing ? plan.missing.length : 0;
+  return { terms: 'Standard terms', acceptedItemIds: (w.accepted || []).slice(), confirmPartial: missing > 0 && !!w.confirmPartial, confirmBelowMin: !!(plan && plan.belowMin) && !!w.confirmBelow, repostMissing: missing > 0 && !!w.repost };
+}
+// the button works only when every warning has its confirmation
+function bkAwardReady(w, plan){
+  if (!plan) return false;
+  if (plan.partial && !w.confirmPartial) return false;
+  if (plan.belowMin && !w.confirmBelow) return false;
+  return true;
+}
+// END BASKET AWARD HELPERS
+
+async function openBasketAward(quoteId){
+  if (state.bkAward) return;
+  setState({ bkAward: { quoteId, accepted: [], chk: null, loading: true, busy: false, confirmPartial: false, confirmBelow: false, repost: true } });
+  await bkAwardCheck();
+}
+// what the order would be for the analogues accepted so far (and what the owner's rules say about that amount)
+async function bkAwardCheck(){
+  const w = state.bkAward;
+  if (!w) return;
+  try {
+    const chk = await api('/api/quotes/' + encodeURIComponent(w.quoteId) + '/award-check' + (w.accepted.length ? '?accept=' + w.accepted.map(encodeURIComponent).join(',') : ''));
+    if (!state.bkAward || state.bkAward.quoteId !== w.quoteId) return;
+    setState({ bkAward: { ...state.bkAward, chk, loading: false } });
+  } catch(e) { setState({ bkAward: null }); showToast(e.message); }
+}
+function closeBasketAward(){ setState({ bkAward: null }); }
+function bkAwardToggle(itemId){
+  const w = state.bkAward;
+  if (!w || w.busy) return;
+  const accepted = w.accepted.includes(itemId) ? w.accepted.filter((x) => x !== itemId) : w.accepted.concat([itemId]);
+  setState({ bkAward: { ...w, accepted, loading: true, confirmPartial: false, confirmBelow: false } }); // the plan changes, so the confirmations start again
+  bkAwardCheck();
+}
+function bkAwardSet(field, value){ setState({ bkAward: { ...state.bkAward, [field]: !!value } }); }
+async function doBasketAward(){
+  const w = state.bkAward;
+  if (!w || !w.chk || w.busy || w.loading) return;
+  const plan = w.chk.basket;
+  if (!bkAwardReady(w, plan)) return;
+  setState({ bkAward: { ...w, busy: true } });
+  try {
+    const r = await api('/api/quotes/' + encodeURIComponent(w.quoteId) + '/award', { method: 'POST', body: JSON.stringify(bkAwardBody(w, plan)) });
+    setState({ bkAward: null });
+    showToast(t(r && r.approval ? 'apSent' : !r || !r.repost ? 'bkwAwarded' : r.repost.existing ? 'bkwAwardedRepostExisting' : r.repost.status === 'DRAFT' ? 'bkwAwardedRepostDraft' : 'bkwAwardedRepost'));
+    closeCompare();
+    refreshRfqs(); refreshLpos();
+  } catch(e) {
+    if (e.status === 409 && e.data && e.data.code) {
+      // the plan is not what the buyer saw (the supplier changed its answer): look again and confirm again
+      setState({ bkAward: { ...state.bkAward, busy: false, loading: true, confirmPartial: false, confirmBelow: false } });
+      showToast(t('bkwChanged'));
+      bkAwardCheck(); refreshCompareQuotes();
+      return;
+    }
+    setState({ bkAward: null });
+    showToast(e.message);
+    refreshRfqs(); refreshCompareQuotes();
+  }
+}
+function renderBasketAward(){
+  const w = state.bkAward;
+  if (!w) return '';
+  const quote = (state.compareQuotes || []).find((x) => x.id === w.quoteId);
+  const items = state.compareRfq && state.compareRfq.items;
+  const wrap = (inner, foot) => '<div class="bx-overlay fixed inset-0 z-[55] flex items-center justify-center bg-black/50 p-4"><div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel); max-height:92vh; overflow-y:auto;">' +
+    '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('bkwTitle') + '</h3><button onclick="closeBasketAward()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' + inner + (foot || '') + '</div></div>';
+  if (!quote || !items || !w.chk) return wrap('<div class="py-10 text-center text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>');
+  const c = w.chk, plan = c.basket;
+  if (!plan) return wrap('<div class="py-10 text-center text-[13px]" style="color:var(--bad);">' + t('bkwChanged') + '</div>');
+  const check = (field, on, text) => '<label class="flex items-start gap-2.5 text-[12.5px]" style="color:var(--tx2);"><input type="checkbox" ' + (on ? 'checked ' : '') + 'onchange="bkAwardSet(\'' + field + '\', this.checked)" class="mt-0.5 h-4 w-4 shrink-0" style="accent-color:var(--acc);" /><span>' + text + '</span></label>';
+  const analogues = bkAnalogueRows(quote, items);
+  const why = c.reason === 'BOTH' ? tpl('acWhyBoth', { threshold: c.threshold }) : c.reason === 'BUDGET' ? t('acWhyBudget') : tpl('acWhyThreshold', { threshold: c.threshold });
+  const body = '<div class="mt-1 text-[13px]" style="color:var(--tx3);">' + tpl('bkwTo', { name: '<b style="color:var(--tx);">' + esc(quote.supplierCompany ? quote.supplierCompany.name : '') + '</b>' }) + '</div>' +
+    '<div class="mt-3 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset); opacity:' + (w.loading ? '0.6' : '1') + ';"><div class="flex items-baseline justify-between gap-3"><span class="text-[12px]" style="color:var(--tx4);">' + t('bkwOrderTotal') + '</span><span class="mono bx-display text-[20px]" style="color:var(--tx);">' + bhdMoney(plan.orderTotal) + '</span></div>' +
+      '<div class="mt-1 text-[12.5px]" style="color:var(--tx3);">' + tpl('bkwCovered', { covered: plan.covered, n: plan.itemsTotal }) + (w.loading ? ' · ' + t('bkwChecking') : '') + '</div></div>' +
+    (analogues.length ? '<div class="mt-4"><div class="text-[12.5px] font-bold" style="color:var(--tx);">' + t('bkwAnalogues') + '</div><div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + t('bkwAnaloguesHint') + '</div><div class="mt-2 flex flex-col gap-2">' +
+      analogues.map((a) => '<label class="flex items-start gap-2.5 rounded-lg border p-2.5 text-[12.5px]" style="border-color:var(--bd); color:var(--tx2); cursor:pointer;"><input type="checkbox" ' + (w.accepted.includes(a.id) ? 'checked ' : '') + (w.busy ? 'disabled ' : '') + 'onchange="bkAwardToggle(' + jsAttr(a.id) + ')" class="mt-0.5 h-4 w-4 shrink-0" style="accent-color:var(--acc);" /><span style="overflow-wrap:anywhere;">' +
+        tpl('bkwAnalogueLine', { name: '<b style="color:var(--tx);">' + esc(a.substituteName + (a.substituteBrand ? ' (' + a.substituteBrand + ')' : '')) + '</b>', item: esc(a.name), price: bhdMoney(a.unitPrice), qty: esc(a.quantity), line: '<b class="mono">' + bhdMoney(a.lineFils / 1000) + '</b>' }) + '</span></label>').join('') + '</div></div>' : '') +
+    (plan.missing.length
+      ? '<div class="mt-4 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><div style="overflow-wrap:anywhere;">' + tpl('bkwMissing', { items: '<b>' + esc(plan.missing.map((m) => m.name).join(', ')) + '</b>' }) + '</div>' +
+          '<div class="mt-2" style="color:var(--tx2);">' + check('confirmPartial', w.confirmPartial, tpl('bkwPartialCheck', { n: plan.missing.length })) + '</div></div>'
+      : '<div class="mt-4 text-[12.5px] font-semibold" style="color:var(--ok);">' + t('bkwNoMissing') + '</div>') +
+    (plan.belowMin ? '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);">' + tpl('bkwBelowMin', { total: '<b>' + bhdMoney(plan.orderTotal) + '</b>', min: '<b>' + bhdMoney(plan.minOrderAmount) + '</b>' }) + '<div class="mt-2" style="color:var(--tx2);">' + check('confirmBelow', w.confirmBelow, t('bkwBelowCheck')) + '</div></div>' : '') +
+    (plan.missing.length && basketOn() ? '<div class="mt-4 rounded-lg border p-3" style="border-color:var(--bd); background:var(--inset);">' + check('repost', w.repost, '<b style="color:var(--tx);">' + t('bkwRepost') + '</b>') + '<div class="mt-1.5 text-[11.5px]" style="color:var(--tx4);">' + t('bkwRepostHint') + '</div></div>' : '') +
+    (c.needsApproval ? '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><b>' + t('acNeedsApproval') + '</b><div class="mt-1">' + why + '</div></div>'
+      : (c.ownerDecides && c.reason ? '<div class="mt-3 text-[12px]" style="color:var(--tx3);">' + t('acOwnerNote') + '</div>' : '')) +
+    budgetAfterHtml(c);
+  const ready = bkAwardReady(w, plan) && !w.loading && !w.busy;
+  const foot = '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="doBasketAward()" ' + (ready ? '' : 'disabled') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); opacity:' + (ready ? '1' : '0.5') + ';">' + (w.busy ? t('acBusy') : t(c.needsApproval ? 'acSend' : 'bkwAward')) + '</button></div>';
+  return wrap(body, foot);
+}
+
+// ---------- Baskets: the order (its lines), what is missing, "Re-post RFQ" ----------
+// the lines of a basket's purchase order, what was left out, and (for the buyer) the way to post the rest again
+function bkOrderLinesCard(order, isSupplier){
+  const lpo = order.lpo || {};
+  const lines = lpo.items;
+  if (!lpo.rfq || !lpo.rfq.isBasket || !Array.isArray(lines)) return '';
+  const missing = !isSupplier && Array.isArray(order.missingItems) ? order.missingItems : [];
+  const rp = !isSupplier ? order.repost : null;
+  const table = '<div class="overflow-x-auto rounded-lg border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel); min-width:320px;"><thead><tr><th>' + t('bkoThItem') + '</th><th>' + t('bkoThQty') + '</th><th>' + t('bkoThPrice') + '</th><th>' + t('bkoThLine') + '</th></tr></thead><tbody>' +
+    lines.map((l) => '<tr><td><div class="font-semibold" style="color:var(--tx);">' + esc(l.name) + '</div>' +
+      (l.isSubstitute ? '<div class="mt-0.5"><span class="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style="background:var(--info-soft); color:var(--info);">' + esc(tpl('bkoAnalogueFor', { name: (l.substituteName || '') + (l.substituteBrand ? ' (' + l.substituteBrand + ')' : '') })) + '</span></div>' : '') + '</td>' +
+      '<td class="mono">' + esc(l.quantity) + ' ' + esc(unitLabel(l.unit)) + '</td><td class="mono">' + bhdMoney(l.unitPrice) + '</td><td class="mono font-semibold">' + bhdMoney(l.lineTotal) + '</td></tr>').join('') + '</tbody></table></div>';
+  let missingBox = '';
+  if (missing.length) {
+    const action = rp && rp.canRepost
+      ? '<button onclick="openRepostBasket(' + jsAttr(lpo.id) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold" style="background:var(--acc); color:var(--on-acc);">' + t('bkoRepostBtn') + '</button><div class="mt-1.5 text-[11.5px]" style="color:var(--tx4);">' + t('bkoRepostHint') + '</div>'
+      : rp && rp.existing
+      ? '<div class="flex flex-wrap items-center gap-2 text-[12.5px]" style="color:var(--tx2);"><span style="overflow-wrap:anywhere;">' + tpl('bkoRepostedAs', { title: esc(bkTitleText(rp.existing.title, i18nDict(state.lang))) }) + '</span><button onclick="openRfqLink(' + jsAttr(rp.existing.id) + ')" class="rounded-lg border px-3 py-1 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('bkoOpen') + '</button></div>'
+      : rp && rp.reason === 'LPO_NOT_ACTIVE' ? '<div class="text-[12px]" style="color:var(--tx4);">' + t('bkoReasonInactive') + '</div>' : '';
+    missingBox = '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><div class="font-bold">' + t('bkoNotInOrder') + '</div>' +
+      '<div class="mt-0.5" style="color:var(--tx2); overflow-wrap:anywhere;">' + esc(missing.map((m) => m.name + ' (' + m.quantity + ' ' + unitLabel(m.unit) + ')').join(', ')) + '</div>' + (action ? '<div class="mt-2">' + action + '</div>' : '') + '</div>';
+  }
+  return '<div class="mt-4 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);"><div class="mb-3 text-[13px] font-bold" style="color:var(--tx);">' + t('bkoLines') + '</div>' + table + missingBox +
+    (!isSupplier ? '<div class="mt-3 text-[11.5px]" style="color:var(--tx4);">' + t('bkoShortfall') + '</div>' : '') + '</div>';
+}
+
 // Close bidding early: no more quotes; awarding a submitted quote stays possible
 function openCloseBidding(rfqId){ setState({ closeBiddingRfqId: rfqId, closeBiddingBusy: false }); }
 function closeCloseBidding(){ setState({ closeBiddingRfqId: null }); }
@@ -4223,7 +5055,9 @@ async function openRfqLink(rfqId){
 function closeNotFound(){ setState({ notFound:null }); }
 
 async function openCompare(rfqId){
-  setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true, compareLastPaid: null });
+  setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true, compareLastPaid: null, compareRfq: null, cmpOpen: {} });
+  const listed = (state.rfqs || []).find(x => x.id === rfqId);
+  if (!listed || listed.isBasket) loadCompareItems(rfqId);
   try {
     const data = await api('/api/rfqs/' + rfqId + '/quotes');
     setState({ compareQuotes: data, compareLoading:false });
@@ -4240,7 +5074,7 @@ async function loadLastPaid(rfqId){
     if (state.compareRfqId === rfqId) setState({ compareLastPaid: lastPaidOf(d, rfqId) });
   } catch(e) { /* no history yet, or offline: no hint */ }
 }
-function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[], compareBusyId:null, compareLastPaid:null }); }
+function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[], compareBusyId:null, compareLastPaid:null, compareRfq:null, cmpOpen:{} }); }
 async function refreshCompareQuotes(){
   const rfqId = state.compareRfqId;
   if (!rfqId) return;
@@ -4262,7 +5096,10 @@ async function changeQuoteStatus(quoteId, action){
   refreshCompareQuotes();
 }
 
-function openSubmitQuote(rfqId){ setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'', paymentTerms:'30' }, quoteFiles: [], quoteUploadNote: '' }); }
+function openSubmitQuote(rfqId){
+  const basket = (state.rfqs || []).find(r => r.id === rfqId);
+  if (basket && basket.isBasket) { openBasketAnswer(rfqId); return; }
+  setState({ submitQuoteRfqId: rfqId, quoteForm:{ price:'', days:'', paymentTerms:'30' }, quoteFiles: [], quoteUploadNote: '' }); }
 function closeSubmitQuote(){ setState({ submitQuoteRfqId:null }); }
 function onQuoteField(field, e){ state.quoteForm[field] = e.target.value; }
 
@@ -5084,7 +5921,7 @@ function renderBuyerHub(){
   '<div class="flex flex-wrap items-start justify-between gap-4 mb-6">' +
     '<div><h1 class="text-[26px] font-extrabold" style="color:var(--tx); letter-spacing:-0.01em;"><span class="hidden md:inline">' + t('dashTitleBuyer') + '</span><span class="md:hidden">' + t('dashTitleBuyerShort') + '</span></h1>' +
     '<p class="mt-1 hidden md:block text-[13.5px] max-w-[520px]" style="color:var(--tx3);">' + t('dashSubBuyer') + '</p></div>' +
-    '<button onclick="openPostRfq()" class="w-full md:w-auto rounded-xl px-4 py-3 md:py-2.5 text-[14px] md:text-[13px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('createRfq') + '</button>' +
+    '<div class="flex w-full flex-wrap items-center gap-2 md:w-auto">' + bkNewButton('flex-1 md:flex-none rounded-xl px-4 py-3 md:py-2.5 text-[14px] md:text-[13px] font-bold shrink-0') + '<button onclick="openPostRfq()" class="flex-1 md:flex-none rounded-xl px-4 py-3 md:py-2.5 text-[14px] md:text-[13px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('createRfq') + '</button></div>' +
   '</div>' + attentionBlock() + reorderCard() +
   statsBar([[t('statActiveRfqs'), active], [t('statTotalQuotes'), totalQuotes], [t('statAwarded'), awarded], [t('statOpenOrders'), openOrders]]) +
   '<div class="flex items-center justify-between mb-4"><h2 class="text-[15px] font-bold" style="color:var(--tx);">' + t('recentRfqs') + hint('rfq') + '</h2><button onclick="setSection(\'rfqs\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('viewAll') + '</button></div>' +
@@ -5158,6 +5995,7 @@ function rfqTable(rfqs){
     (r.status === 'PUBLISHED' && can('rfq.publish') ? '<button onclick="event.stopPropagation(); openCloseBidding(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('btnCloseBidding') + '</button>' : '') +
     (teamOn() ? '<button onclick="event.stopPropagation(); openRfqHistory(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">' + t('tmHistory') + '</button>' : '') +
     (canCancelRfq(r) ? '<button onclick="event.stopPropagation(); openCancelRfq(\'' + r.id + '\')" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--bad);">' + t('btnCancel') + '</button>' : '') +
+    bkShareButtons(r) +
     rfqFollowUpButton(r) +
     (rfqBidCount(r) > 0 && r.status !== 'CANCELLED' && !(r.status === 'AWARDED' && ['order', 'waiting'].includes((rfqFollowUp(r) || {}).kind)) ? '<button onclick="event.stopPropagation(); openCompare(\'' + r.id + '\')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">' + t('btnCompare') + '</button>' : '')
   }));
@@ -5165,7 +6003,7 @@ function rfqTable(rfqs){
   const table = '<div class="hidden sm:block overflow-x-auto rounded-xl border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel);">' +
     '<thead><tr><th>' + esc(t('thRfqTitleId')) + '</th><th>' + t('thCategory') + '</th><th>' + t('thBids') + '</th><th>' + t('thClosingIn') + '</th><th>' + t('thStatus') + '</th><th></th></tr></thead><tbody>' +
     rows.map(({r,tl,actions}) => '<tr data-rfq="' + esc(r.id) + '">' +
-      '<td><div class="flex items-center gap-2.5">' + rfqThumb(r, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div><div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div>' + preparedByPill(r) + rfqFollowUpNote(r) + '</div></div></td>' +
+      '<td><div class="flex items-center gap-2.5">' + rfqThumb(r, 30) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(rfqTitle(r)) + '</div><div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span>' + bkItemsPill(r) + '</div>' + preparedByPill(r) + rfqFollowUpNote(r) + '</div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(categoryDisplay(r.category)) + '</td>' +
       '<td><span class="mono font-semibold" style="color:var(--tx);">' + (r._count ? r._count.quotes : 0) + '</span></td>' +
       (rfqHasTimer(r) ? '<td class="mono" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx3)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx3)') + ';">' + tl.label + '</td>' : '<td class="mono" style="color:var(--tx4);">—</td>') +
@@ -5178,8 +6016,8 @@ function rfqTable(rfqs){
     rows.map(({r,tl,actions}) => { const tap = rfqCardTap(r); const oneCategory = ACTIVE_CATEGORIES.length === 1;
       return '<div data-rfq="' + esc(r.id) + '" class="rounded-xl border p-3.5' + (tap ? ' bx-tap bx-tapcard' : '') + '" style="border-color:var(--bd); background:var(--panel);"' + (tap ? ' role="button" tabindex="0" onclick="' + tap + '"' : '') + '>' +
         '<div class="flex items-start gap-2.5">' + rfqThumb(r, 32) +
-          '<div class="min-w-0 flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
-          '<div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span></div>' + preparedByPill(r) + rfqFollowUpNote(r) + '</div>' +
+          '<div class="min-w-0 flex-1"><div class="font-semibold" style="color:var(--tx);">' + esc(rfqTitle(r)) + '</div>' +
+          '<div class="text-[11px]" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span>' + bkItemsPill(r) + '</div>' + preparedByPill(r) + rfqFollowUpNote(r) + '</div>' +
           '<div class="shrink-0">' + statusPill(r.status) + '</div>' + (tap ? CHEVRON : '') +
         '</div>' +
         '<div class="mt-3 grid ' + (oneCategory ? 'grid-cols-2' : 'grid-cols-3') + ' gap-2 text-[12px]">' +
@@ -5212,7 +6050,7 @@ function renderBuyerRfqsPage(){
   const shown = rfqs.filter(r => rfqTabOf(r) === state.rfqTab);
   return approvalsWaitingBanner(rfqs) + draftsWaitingBanner(rfqs) + '<div class="flex flex-wrap items-center justify-between gap-3 mb-6">' +
     '<div><div class="eyebrow mb-1.5">' + t('rfqsAllRequests') + '</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('rfqsPageTitle') + hint('rfq') + '</h1></div>' +
-    '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc); white-space:nowrap;">' + t('rfqsCreateNew') + '</button>' +
+    '<div class="flex flex-wrap items-center gap-2">' + bkNewButton('rounded-xl px-4 py-2.5 text-[13px] font-bold') + '<button onclick="openPostRfq()" class="rounded-xl px-4 py-2.5 text-[13px] font-bold text-white" style="background:var(--acc); white-space:nowrap;">' + t('rfqsCreateNew') + '</button></div>' +
   '</div>' +
   (rfqs.length === 0 ? emptyState(t('emptyRfqsTitle'), t('emptyRfqsBody')) : rfqTabsHtml(rfqs) + (shown.length === 0 ? emptyState(t(state.rfqTab === 'finished' ? 'rfqNoFinished' : 'rfqNoActive'), '') : rfqTable(shown)));
 }
@@ -5245,7 +6083,7 @@ function renderBuyerPendingLpos(){
   return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">' + t('lpoAwaitingSupplier') + '</h2>' +
     '<div class="flex flex-col gap-3 mb-8">' + pending.map(l =>
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : t('lpoPurchaseOrder')) + '</div>' +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? rfqTitle(l.rfq) : t('lpoPurchaseOrder')) + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
         '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold shrink-0" style="background:var(--warn-soft); color:var(--warn);">' + t('lpoWaitingSupplier') + '</span>' +
       '</div>').join('') + '</div>';
@@ -5265,17 +6103,18 @@ function renderClosedOrders(closed, isBuyer){
 }
 
 function lpoTrackerRow(o, isBuyer){
-  const title = o.lpo && o.lpo.rfq ? o.lpo.rfq.title : t('lpoOrderFallback');
+  const title = o.lpo && o.lpo.rfq ? rfqTitle(o.lpo.rfq) : t('lpoOrderFallback');
+  const linesPill = o.lpo && o.lpo.rfq && o.lpo.rfq.isBasket ? bkItemsPill({ isBasket: true, itemCount: o.lpo._count ? o.lpo._count.items : 0 }) : '';
   const idLabel = 'LPO-' + esc(String(o.lpo ? o.lpo.id : o.id).slice(-4).toUpperCase());
   const counterpartyCompany = isBuyer ? (o.lpo && o.lpo.supplierCompany) : (o.lpo && o.lpo.buyerCompany);
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);' + (isOrderClosed(o) ? ' opacity:0.85;' : '') + '">' +
     '<div class="flex flex-wrap items-center justify-between gap-3">' +
-      '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) +
+      '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) + linesPill +
         (o.invoice && o.invoice.status === 'OVERDUE' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">' + overdueDaysLabel(o.invoice.dueDate) + '</span>' : '') + '</div>' +
         '<div class="text-[11.5px] mt-0.5" style="color:var(--tx4);"><span class="bx-id">' + idLabel + '</span>' + (counterpartyCompany ? ' · ' + companyLabel(counterpartyCompany) : '') + '</div></div>' +
       '<div class="flex-1 min-w-[180px]">' + orderProgressHtml(o, 'mt-1.5 text-[11.5px] font-semibold') + '</div>' +
       '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
-      (isBuyer && o.status === 'COMPLETED' ? '<button onclick="reorderFromOrder(\'' + o.id + '\')" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold shrink-0" style="border-color:var(--bd2); color:var(--tx2);">' + t('reorder') + '</button>' : '') +
+      (isBuyer && o.status === 'COMPLETED' && !(o.lpo && o.lpo.rfq && o.lpo.rfq.isBasket) ? '<button onclick="reorderFromOrder(\'' + o.id + '\')" class="rounded-lg border px-3.5 py-2 text-[12px] font-bold shrink-0" style="border-color:var(--bd2); color:var(--tx2);">' + t('reorder') + '</button>' : '') +
       '<button onclick="openOrderDetail(\'' + o.id + '\')" class="rounded-lg px-3.5 py-2 text-[12px] font-bold text-white shrink-0" style="background:var(--acc);">' + t('lpoOpenOrder') + '</button>' +
     '</div>' +
   '</div>';
@@ -5287,7 +6126,7 @@ function renderAwaitingLpos(){
   return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">' + t('lpoAwaitingYou') + '</h2>' +
     '<div class="flex flex-col gap-3 mb-8">' + pending.map(l =>
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? l.rfq.title : t('lpoPurchaseOrder')) + '</div>' +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? rfqTitle(l.rfq) : t('lpoPurchaseOrder')) + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
         '<div class="flex items-center gap-2 shrink-0">' +
           '<button onclick="' + (state.ordersBusyId === l.id ? '' : "declineLpo('" + l.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">' + t('lpoDecline') + '</button>' +
@@ -5363,18 +6202,19 @@ function opportunityCard(r){
     '<div class="flex flex-wrap items-center gap-4">' +
       rfqThumb(r, 40) +
       '<div class="flex-1 min-w-[200px]">' +
-        '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(r.title) + '</div>' +
+        '<div class="font-bold text-[14.5px]" style="color:var(--tx);">' + esc(rfqTitle(r)) + bkItemsPill(r) + '</div>' +
         '<div class="text-[11.5px] mt-0.5" style="color:var(--tx4);"><span class="bx-id">RFQ-' + esc(String(r.id).slice(-4).toUpperCase()) + '</span> &middot; ' + t('oppVerifiedBuyer') + ' &middot; ' + esc(categoryDisplay(r.category)) + '</div>' +
         (r.brand ? '<div class="mt-1 flex items-center gap-1.5 text-[11.5px]" style="color:var(--tx3);"><span class="font-semibold">' + esc(r.brand) + '</span>' +
           '<span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" style="' + (r.exactBrandOnly ? 'background:var(--bad-soft); color:var(--bad);' : 'background:var(--ok-soft); color:var(--ok);') + '">' + t(r.exactBrandOnly ? 'brandExact' : 'brandEquivalent') + '</span>' + hint('exact') + '</div>' : '') +
-        (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">' + tpl('oppYourQuote', { price: quotePriceText(ownQuote) }) + '</div>' : '') +
+        (ownQuote ? '<div class="mono text-[11.5px] mt-0.5" style="color:var(--tx3);">' + (r.isBasket ? tpl('bkaYourAnswer', { price: '<b>' + bhdMoney(ownQuote.price) + '</b>' }) : tpl('oppYourQuote', { price: quotePriceText(ownQuote) })) + '</div>' : '') +
         specsHtml(r.specifications, r.id) +
       '</div>' +
-      '<div><div class="eyebrow" style="color:var(--tx4);">' + t('oppQuantity') + '</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + esc(r.quantity||'—') + ' ' + esc(unitLabel(r.unit||'')) + '</div></div>' +
+      '<div><div class="eyebrow" style="color:var(--tx4);">' + t('oppQuantity') + '</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.isBasket ? esc(tpl('bkaItemsOf', { n: r.itemCount || 0 })) : esc(r.quantity||'—') + ' ' + esc(unitLabel(r.unit||''))) + '</div></div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">' + t('oppBudget') + '</div><div class="mono text-[13px] font-bold" style="color:var(--tx);">' + (r.budget ? fmt(r.budget) : '<span class="text-[12px] font-semibold" style="color:var(--tx4);">' + t('budgetNotSpecified') + '</span>') + '</div></div>' +
       '<div><div class="eyebrow" style="color:var(--tx4);">' + t('oppClosesIn') + '</div><div class="mono text-[13px] font-bold" data-deadline="' + esc(r.deadline) + '" data-basecolor="var(--tx)" style="color:' + (tl.urgent?'var(--acc)':'var(--tx)') + ';">' + tl.label + '</div></div>' +
       (quoted
         ? '<div class="flex items-center gap-2 shrink-0"><button onclick="openAttachments(\'' + r.id + '\')" class="rounded-lg border px-3 py-2 text-[12px] font-semibold" style="border-color:var(--bd2); color:var(--tx2);">' + tpl('oppFiles', { n: (ownQuote._count && ownQuote._count.attachments) || 0 }) + '</button>' +
+          (r.isBasket && ownQuote.status === 'SUBMITTED' && !tl.past ? '<button onclick="openBasketAnswer(' + jsAttr(r.id) + ')" class="rounded-lg border px-3 py-2 text-[12px] font-bold" style="border-color:var(--acc); color:var(--acc-ink); background:var(--acc-soft);">' + t('bkaRevise') + '</button>' : '') +
           '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold" style="' + quotedLabel[1] + '">' + quotedLabel[0] + '</span></div>'
         : tl.past
         ? '<span class="rounded-lg px-3 py-2 text-[12px] font-semibold shrink-0" style="background:var(--line); color:var(--tx2);">' + t('oppBiddingClosed') + '</span>'
@@ -5508,7 +6348,7 @@ function buildSpendingCsv(lines, tr, invLabel){
   ];
   const rows = [cols.map(c => csvCell(tr(c[1]))).join(',')];
   for (const l of lines) {
-    const v = { ...l, lpo: 'LPO-' + String(l.lpoId || '').slice(-4).toUpperCase(), invoice: l.invoiceStatus ? invLabel(l.invoiceStatus) : '' };
+    const v = { ...l, title: l.substitute ? String(l.title) + ' (' + tr('csvAnalogue') + ': ' + String(l.substituteName || '') + ')' : l.title, lpo: 'LPO-' + String(l.lpoId || '').slice(-4).toUpperCase(), invoice: l.invoiceStatus ? invLabel(l.invoiceStatus) : '' };
     rows.push(cols.map(c => csvCell(v[c[0]], !!c[2])).join(','));
   }
   return '﻿' + rows.join('\r\n') + '\r\n';
@@ -5648,7 +6488,8 @@ function renderSpendTab(){
   const tt = d.totals;
   const actions = '<div class="bx-noprint mb-5 flex flex-wrap gap-2">' +
     '<button type="button" onclick="downloadSpendingCsv()"' + (d.lines.length ? '' : ' disabled') + ' class="rounded-lg border px-3.5 py-2 text-[12.5px] font-bold" style="border-color:var(--line); color:var(--tx); opacity:' + (d.lines.length ? 1 : 0.5) + ';">' + t('spCsv') + '</button>' +
-    '<button type="button" onclick="printSpending()" class="rounded-lg border px-3.5 py-2 text-[12.5px] font-bold" style="border-color:var(--line); color:var(--tx);">' + t('spPrint') + '</button></div>';
+    '<button type="button" onclick="printSpending()" class="rounded-lg border px-3.5 py-2 text-[12.5px] font-bold" style="border-color:var(--line); color:var(--tx);">' + t('spPrint') + '</button></div>' +
+    (d.lines.some((l) => l.basket) ? '<div class="bx-noprint mb-4 max-w-[640px] text-[12px]" style="color:var(--tx4);">' + t('spBasketNote') + '</div>' : '');
   const printHead = '<div class="bx-printonly mb-4"><div style="font-size:20px; font-weight:800;">' + esc(state.company ? state.company.name : '') + ' — ' + t('spReportTitle') + '</div>' +
     '<div style="font-size:12px;">' + tpl('spReportPeriod', { from: spendDayLabel(d.period.from, spLocale()), to: spendDayLabel(d.period.to, spLocale()) }) + '</div><div style="font-size:11px;">' + t('spReportNote') + '</div></div>';
   const card = (label, val, sub, big) => '<div class="rounded-xl border p-4' + (big ? ' sm:col-span-2' : '') + '" style="border-color:var(--line); background:var(--panel);">' +
@@ -5730,9 +6571,10 @@ function renderPriceDetail(){
   const unit = d.unit ? unitLabel(d.unit) : '';
   return back + '<h2 class="text-[20px] font-extrabold break-words" style="color:var(--tx);">' + esc(d.title.trim()) + '</h2>' +
     '<div class="mb-4 text-[12px]" style="color:var(--tx4);">' + (unit ? esc(unit) + ' · ' : '') + tpl('prRequests', { n: d.rfqs.length }) + '</div>' +
+    (d.rfqs.some((r) => r.isBasket) ? '<div class="mb-3 max-w-[640px] rounded-lg px-3 py-2 text-[12px]" style="background:var(--inset); color:var(--tx3);">' + t('prBasketNote') + '</div>' : '') +
     priceChart(d.series) +
     d.rfqs.map(r => '<section class="mb-4 rounded-2xl border p-4" style="border-color:var(--line); background:var(--panel);">' +
-      '<div class="mb-2 flex flex-wrap items-center justify-between gap-2"><div class="text-[13px] font-bold" style="color:var(--tx);">' + esc(spendDayLabel(r.day, spLocale())) + ' · <span class="bx-id">RFQ-' + esc(String(r.rfqId).slice(-4).toUpperCase()) + '</span>' +
+      '<div class="mb-2 flex flex-wrap items-center justify-between gap-2"><div class="text-[13px] font-bold" style="color:var(--tx);">' + esc(spendDayLabel(r.day, spLocale())) + ' · <span class="bx-id">RFQ-' + esc(String(r.rfqId).slice(-4).toUpperCase()) + '</span>' + (r.isBasket ? ' <span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--acc-soft); color:var(--acc-ink);">' + t('prBasketTag') + '</span>' : '') +
         (r.quantity ? ' · ' + tpl('prQtyUnit', { qty: r.quantity, unit: esc(r.unit ? unitLabel(r.unit) : '') }) : '') + '</div>' + statusPill(r.status) + '</div>' +
       (r.bids.length === 0 ? '<div class="text-[12px]" style="color:var(--tx4);">' + t('prNoBids') + '</div>' : r.bids.map(b =>
         '<div class="flex items-start justify-between gap-3 py-2" style="border-top:1px solid var(--line);"><div class="min-w-0"><div class="text-[13px] font-semibold break-words" style="color:var(--tx);">' + esc(b.supplier) + '</div>' +
@@ -6221,7 +7063,7 @@ function renderOrderDetail(){
 
   return '<button onclick="closeOrderDetail()" class="mb-4 text-[12px] font-semibold" style="color:var(--tx4);">' + t('odBack') + '</button>' +
   '<div class="eyebrow mb-1.5">' + tpl('odEyebrow', { status: esc(orderStatusLabel(order.status)) }) + '</div>' +
-  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfq.title : t('lpoOrderFallback')) + '</h1>' + disputeNote +
+  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfqTitle(rfq) : t('lpoOrderFallback')) + '</h1>' + disputeNote +
   '<div class="rounded-xl border p-4 mb-6" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-end justify-between gap-3">' +
       '<div class="flex-1 min-w-[220px]">' + orderProgressHtml(order, 'mt-2 text-[12.5px] font-semibold') + '</div>' +
@@ -6229,11 +7071,9 @@ function renderOrderDetail(){
     '</div>' +
   '</div>' +
   '<div class="grid gap-4 sm:grid-cols-2">' +
-    detailCard(t('cardRequest'), [
-      [t('rowQuantity'), rfq ? (rfq.quantity || '—') + ' ' + unitLabel(rfq.unit || '') : '—'],
-      [t('rowNeededBy'), rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—'],
-      [t('rowDescription'), rfq ? rfq.description : '—']
-    ]) +
+    detailCard(t('cardRequest'), (lpo.rfq && lpo.rfq.isBasket && Array.isArray(lpo.items)
+      ? [[t('bkoItemsRow'), tpl('bkoItemsOf', { n: lpo.items.length, total: rfq && rfq.items ? rfq.items.length : lpo.items.length })], [t('rowNeededBy'), rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—']]
+      : [[t('rowQuantity'), rfq ? (rfq.quantity || '—') + ' ' + unitLabel(rfq.unit || '') : '—'], [t('rowNeededBy'), rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—'], [t('rowDescription'), rfq ? rfq.description : '—']])) +
     detailCard(t('cardPo'), [
       [t('rowLpo'), 'LPO-' + String(lpo.id || '').slice(-4).toUpperCase()],
       [t(isSupplier ? 'rowBuyer' : 'rowSupplier'), (isSupplier ? lpo.buyerCompany : lpo.supplierCompany)?.name || '—'],
@@ -6259,6 +7099,7 @@ function renderOrderDetail(){
       [t('rowOutstanding'), fmt(totals.outstanding)]
     ]) +
   '</div>' +
+  bkOrderLinesCard(order, isSupplier) +
   renderPaymentsPanel(invoice, isSupplier) +
   renderReviewPanel(order, isSupplier) +
   historyCard(isSupplier ? null : order.activity) +
@@ -6443,6 +7284,7 @@ function renderAdmin(){
     state.adminTab === 'audit' ? renderAdminAudit() :
     state.adminTab === 'analytics' ? renderAdminAnalyticsPage() :
     state.adminTab === 'sandbox' ? renderAdminSandbox() :
+    (state.adminTest ? '' : adminDocNoticesHtml()) +
     '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
     '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +
@@ -6992,6 +7834,8 @@ function renderModals(){
       '</div>',
       'submitNewRfq()', state.postBusy ? t(editing ? 'rfqSaving' : 'rfqPosting') : t(!can('rfq.publish') ? (editing ? 'saveChanges' : 'rfqSaveDraft') : (editing && ((state.rfqs || []).find(x => x.id === state.editRfqId) || {}).status !== 'DRAFT') ? 'saveChanges' : 'rfqPostSubmit'), state.postBusy, true);
   }
+  if (state.showBasket) html += renderBasketModal();
+  if (state.bkAnswer) html += renderBasketAnswer();
   if (state.showPayModal) {
     const f = state.payForm;
     const inputStyle = 'border-color:var(--bd); background:var(--inset); color:var(--tx);';
@@ -7107,7 +7951,7 @@ function renderModals(){
         '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + t('btnAward') + '</button>' + hint('award');
     };
     html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-      '<div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="bx-rise bx-modal bx-scroll w-full ' + (compareRfq && compareRfq.isBasket ? 'max-w-3xl' : 'max-w-lg') + ' rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('cmpTitle') + hint('quote') + '</h3>' +
         '<button onclick="closeCompare()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
         (compareRfq && (compareRfq.imageUrl || compareRfq.brand)
@@ -7119,7 +7963,8 @@ function renderModals(){
           : '') +
         (state.compareLastPaid ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12.5px]" style="background:var(--acc-soft); color:var(--acc-ink);">' + tpl(state.compareLastPaid.unit ? 'cmpLastPaid' : 'cmpLastPaidNoUnit', { price: bhdMoney(state.compareLastPaid.unitPrice), unit: esc(state.compareLastPaid.unit ? unitLabel(state.compareLastPaid.unit) : ''), supplier: esc(state.compareLastPaid.supplier), date: esc(spendDayLabel(state.compareLastPaid.day, spLocale())) }) + '</div>' : '') +
         compareApprovalBanner(compareRfq) +
-        '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
+        (compareRfq && compareRfq.isBasket ? '<div class="mt-2 text-[13px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(rfqTitle(compareRfq)) + bkItemsPill(compareRfq) + '</div>' : '') +
+        '<div class="mt-4 flex flex-col gap-2.5 bx-scroll ' + (compareRfq && compareRfq.isBasket ? 'max-h-[62vh]' : 'max-h-[340px]') + ' overflow-y-auto pr-1">' +
         (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">' + t('cmpLoading') + '</div>' :
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">' + t('cmpNone') + '</div>' :
           q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
@@ -7127,10 +7972,12 @@ function renderModals(){
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + (x.supplierCompany && 'supplierRating' in x ? '<button type="button" onclick="openSupplierCard(' + jsAttr(x.supplierCompany.id) + ',' + jsAttr(x.supplierCompany.name) + ')" title="' + esc(t('rtDetails')) + '" class="text-start font-semibold underline decoration-dotted underline-offset-2" style="color:var(--tx);">' + esc(x.supplierCompany.name) + '</button>' : esc(x.supplierCompany ? x.supplierCompany.name : '')) +
               (x.source === 'BID_LINK' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--pend-soft); color:var(--pend);" title="' + esc(t('viaLinkHint')) + '">' + esc(t('viaLink')) + '</span>' : '') + '</div>' +
               (x.revisedAt ? '<div class="text-[11px]" style="color:var(--tx4);">' + tpl('quoteRevised', { date: fmtDateTime(x.revisedAt) }) + '</div>' : '') + ('supplierRating' in x ? supplierRatingLine(x.supplierRating) : '') +
-            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>' +
+            (x.coverage ? bkQuoteSummaryHtml(x) + '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>'
+              : '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>') +
             (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">' + (x.lpo.declineReason ? tpl('cmpDeclinedReason', { reason: esc(x.lpo.declineReason) }) : t('cmpDeclined')) + '</div>' : '') +
             '</div></div>' +
             '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div></div>' +
+            (x.coverage ? bkQuoteDetailHtml(x) : '') +
             ((x.attachments || []).length ? '<div class="mt-3 flex flex-col gap-1.5">' + x.attachments.map(a => attachmentRowHtml(a, false)).join('') + '</div>' : '')
           + '</div>').join('')
         ) +
@@ -7255,7 +8102,7 @@ function renderModals(){
       'confirmDeliveryFail()', state.ordersBusyId ? t('working') : t('dfSubmit'), !!state.ordersBusyId);
   }
   // on top of everything else (Compare bids stays open underneath the question)
-  html += renderAwardCheck() + renderApprovalModal() + renderSupplierCard();
+  html += renderAwardCheck() + renderBasketAward() + renderApprovalModal() + renderSupplierCard();
   return html;
 }
 
@@ -7479,6 +8326,9 @@ const OVERLAYS = [
   ['lightbox', s => !!s.lightboxImage, () => closeLightbox()],
   ['moreSheet', s => !!s.showMoreSheet, () => toggleMoreSheet()],
   ['postRfq', s => !!s.showPostRfq, () => closePostRfq()],
+  ['basket', s => !!s.showBasket, () => closeBasket()],
+  ['bkAward', s => !!s.bkAward, () => closeBasketAward()],
+  ['bkAnswer', s => !!s.bkAnswer, () => closeBasketAnswer()],
   ['closeBidding', s => !!s.closeBiddingRfqId, () => closeCloseBidding()],
   ['cancelRfq', s => !!s.cancelRfqId, () => closeCancelRfq()],
   ['compare', s => !!s.compareRfqId, () => closeCompare()],
@@ -7527,7 +8377,7 @@ function entryHash(k){
   if (state.view === 'auth') return state.authMode === 'register' ? '#/register?role=' + (state.authRole === 'SUPPLIER' ? 'supplier' : 'buyer') : '#/login';
   if (!isDashboardView()) return '#/';
   // the bids / bid form of one RFQ has its own link
-  if (k === currentDepth() && (topOverlay() === 'compare' || topOverlay() === 'submitQuote')) return '#/rfq/' + encodeURIComponent(state.compareRfqId || state.submitQuoteRfqId);
+  if (k === currentDepth() && (topOverlay() === 'compare' || topOverlay() === 'submitQuote' || topOverlay() === 'bkAnswer')) return '#/rfq/' + encodeURIComponent(state.compareRfqId || state.submitQuoteRfqId || (state.bkAnswer && state.bkAnswer.rfqId));
   if (state.section === 'orderDetail') return k >= 2 ? '#/order/' + encodeURIComponent(state.selectedOrderId || '') : '#/orders';
   return sectionHash(state.section);
 }

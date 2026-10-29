@@ -67,7 +67,7 @@ Open the browser's DevTools → Network: requests go to `http://localhost:4000/a
 ### Limits of the local setup
 
 - **No file storage.** Uploading documents and photos answers "File storage is not configured" unless you set the `S3_*` variables for a bucket of your own. Never use the production bucket.
-- **No e-mail.** Verification and password-reset links are never delivered; the seeded accounts are already verified. A new account registered in the app stays unverified (set `emailVerified` in the local database if you need it).
+- **No e-mail.** With the database on your computer the backend never hands a message to the e-mail service, whatever is in `RESEND_API_KEY`: the recipient and the subject are written in the backend's window instead (`E-mail: OFF` at start-up). Verification and password-reset links are never delivered; the seeded accounts are already verified. A new account registered in the app stays unverified (set `emailVerified` in the local database if you need it).
 - The local database is yours: delete `b2b-backend\.localdb` (after `npm run db:stop`) to start from scratch.
 
 ### Stop
