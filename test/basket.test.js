@@ -106,5 +106,25 @@ check('the item name, brand, analogue name and typed values of the answer are es
 const keys2 = Object.keys(en).filter((k) => /^bka[A-Z]/.test(k));
 check('every answer text exists in English and Arabic (Arabic script, same placeholders)', keys2.length >= 30 && keys2.every((k) => typeof ar[k] === 'string' && /[؀-ۿ]/.test(ar[k]) && JSON.stringify((en[k].match(/\{\w+\}/g) || []).sort()) === JSON.stringify((ar[k].match(/\{\w+\}/g) || []).sort())), keys2.filter((k) => !ar[k]));
 
+// ================= comparing the answers =================
+const a3 = html.indexOf('// BEGIN BASKET COMPARE HELPERS'), b3 = html.indexOf('// END BASKET COMPARE HELPERS');
+check('the compare helpers block is in index.html', a3 > 0 && b3 > a3);
+const cmp = new Function(html.slice(a3, b3) + '; return { bkCoverageLevel, bkCmpRows };')();
+check('coverage level: every item = full, some = partial, none = none (no data = none)', cmp.bkCoverageLevel({ total: 20, covered: 20 }) === 'full' && cmp.bkCoverageLevel({ total: 20, covered: 18 }) === 'partial' && cmp.bkCoverageLevel({ total: 20, covered: 0 }) === 'none' && cmp.bkCoverageLevel({ total: 0, covered: 0 }) === 'none' && cmp.bkCoverageLevel(null) === 'none' && cmp.bkCoverageLevel(undefined) === 'none');
+const quote = { items: [
+  { rfqItemId: 'i3', status: 'SUBSTITUTE', unitPrice: '3.200', substituteName: 'Other oil', substituteBrand: 'B', isBestPrice: false },
+  { rfqItemId: 'i1', status: 'PRICED', unitPrice: '0.500', isBestPrice: true },
+  { rfqItemId: 'i2', status: 'UNAVAILABLE', unitPrice: null },
+] };
+const crow = cmp.bkCmpRows(quote, items);
+check('item by item: in the order of the items, the price, the line total in fils, the best price marked, the analogue named', crow.map((x) => x.id).join() === 'i1,i2,i3' && crow[0].unitPrice === 0.5 && crow[0].lineFils === 25000 && crow[0].best === true && crow[1].status === 'UNAVAILABLE' && crow[1].lineFils === null && crow[2].status === 'SUBSTITUTE' && crow[2].substituteName === 'Other oil' && crow[2].lineFils === 12800 && crow[2].best === false, crow);
+check('an item the supplier gave no answer to has no status; no answers or no items give no rows', cmp.bkCmpRows({ items: [] }, items).every((x) => x.status === null && x.lineFils === null) && cmp.bkCmpRows(null, items).length === 3 && cmp.bkCmpRows(quote, null).length === 0);
+check('Compare bids: a basket is compared in a wider window with coverage ("18 of 20"), analogues, the not-covered count, the total of what it can supply and the minimum order', has("(compareRfq && compareRfq.isBasket ? 'max-w-3xl' : 'max-w-lg')") && has("tpl('bkcCovered', { covered: c.covered, n: c.total })") && has("tpl('bkcPricedTotal', { total: '<b>' + bhdMoney(x.price) + '</b>' })") && has("tpl('bkcMinOrder', { amount: bhdMoney(x.minOrderAmount) })") && has("(x.coverage ? bkQuoteSummaryHtml(x)"));
+check('a single-request bid keeps its price line; only a bid with a coverage object gets the basket view', has("'<div class=\"mono mt-0.5 text-[12px]\" style=\"color:var(--tx3);\">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta'") && has("(x.coverage ? bkQuoteDetailHtml(x) : '')"));
+check('the item-by-item view is collapsed until asked for, needs the request\'s items (loaded when Compare bids opens), lists what is not covered, marks the best price', has("if (!open || !items) return btn;") && has('async function loadCompareItems(rfqId){') && has("if (!listed || listed.isBasket) loadCompareItems(rfqId);") && has("t('bkcBestPrice')") && has("tpl('bkcNotCovered', { items: esc(missing.map((r) => r.name).join(', ')) })"));
+check('everything from the server in the comparison is escaped (names, analogue names, brands, quantities)', has('esc(r.name)') && has("esc(tpl('bkcAnalogueFor', { name: r.substituteName + (r.substituteBrand ? ' (' + r.substituteBrand + ')' : '') }))") && has('esc(r.quantity)'));
+const keys3 = Object.keys(en).filter((k) => /^bkc[A-Z]/.test(k));
+check('every comparison text exists in English and Arabic (Arabic script, same placeholders)', keys3.length >= 14 && keys3.every((k) => typeof ar[k] === 'string' && /[؀-ۿ]/.test(ar[k]) && JSON.stringify((en[k].match(/\{\w+\}/g) || []).sort()) === JSON.stringify((ar[k].match(/\{\w+\}/g) || []).sort())), keys3.filter((k) => !ar[k]));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

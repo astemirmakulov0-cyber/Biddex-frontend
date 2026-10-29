@@ -530,6 +530,9 @@ const I18N = {
     bkaNeedAnswers:"Answer every item first ({left} left), or use “Mark the rest as not in stock”.", bkaNeedOnePrice:"Price at least one item.", bkaPriceBad:"Item {n}: enter a price (up to 3 decimals).",
     bkaSubNameNeeded:"Item {n}: name the analogue.", bkaDaysNeeded:"Enter the delivery time in days (0-365).", bkaMinBad:"The minimum order must be an amount with up to 3 decimals.",
     bkaYourAnswer:"Your answer: {price} for the items you can supply", bkaItemsOf:"{n} items",
+    bkcCovered:"{covered} of {n} items", bkcAnalogue1:"1 analogue", bkcAnaloguesN:"{n} analogues", bkcMissingN:"{n} not covered", bkcAllItems:"All items",
+    bkcPricedTotal:"{total} for the items it can supply", bkcMinOrder:"Minimum order {amount}", bkcDetails:"Item by item", bkcHide:"Hide",
+    bkcNotInStock:"Not in stock", bkcAnalogueFor:"Analogue: {name}", bkcBestPrice:"Best price", bkcNotCovered:"Not covered: {items}", bkcThItem:"Item", bkcThAnswer:"Answer", bkcThLine:"Line total", bkcBestHint:"The lowest price for the item as asked",
     bkCopyLink:"Copy link", bkWhatsApp:"Share via WhatsApp", bkLinkCopied:"Link copied", bkCopyFailed:"Could not copy. Select the link and copy it.", bkShareText:"Biddex request: {title}",
     noLongerMember:"You are no longer a member of that company. Please log in again.",
     accountDeactivated:"This account has been deactivated.",
@@ -1283,6 +1286,9 @@ const I18N = {
     bkaNeedAnswers:"أجب عن كل عنصر أولًا (متبقٍ {left})، أو استخدم «وسم الباقي بأنه غير متوفر».", bkaNeedOnePrice:"سعّر عنصرًا واحدًا على الأقل.", bkaPriceBad:"العنصر {n}: أدخل سعرًا (حتى 3 منازل عشرية).",
     bkaSubNameNeeded:"العنصر {n}: سمِّ البديل.", bkaDaysNeeded:"أدخل مدة التسليم بالأيام (0-365).", bkaMinBad:"يجب أن يكون الحد الأدنى للطلب مبلغًا بحد أقصى 3 منازل عشرية.",
     bkaYourAnswer:"ردّك: {price} للعناصر التي يمكنك توريدها", bkaItemsOf:"{n} عناصر",
+    bkcCovered:"{covered} من {n} عنصرًا", bkcAnalogue1:"بديل واحد", bkcAnaloguesN:"{n} بدائل", bkcMissingN:"{n} غير مغطّى", bkcAllItems:"كل العناصر",
+    bkcPricedTotal:"{total} للعناصر التي يمكنه توريدها", bkcMinOrder:"الحد الأدنى للطلب {amount}", bkcDetails:"عنصرًا بعنصر", bkcHide:"إخفاء",
+    bkcNotInStock:"غير متوفر", bkcAnalogueFor:"بديل: {name}", bkcBestPrice:"أفضل سعر", bkcNotCovered:"غير مغطّى: {items}", bkcThItem:"العنصر", bkcThAnswer:"الرد", bkcThLine:"إجمالي السطر", bkcBestHint:"أقل سعر للعنصر كما طُلب",
     bkCopyLink:"نسخ الرابط", bkWhatsApp:"مشاركة عبر واتساب", bkLinkCopied:"تم نسخ الرابط", bkCopyFailed:"تعذّر النسخ. حدّد الرابط وانسخه.", bkShareText:"طلب تسعير على Biddex: {title}",
     noLongerMember:"لم تعد عضواً في تلك الشركة. يرجى تسجيل الدخول مرة أخرى.",
     accountDeactivated:"تم تعطيل هذا الحساب.",
@@ -1893,7 +1899,7 @@ let state = {
   // admin sandbox (test mode): the test companies, their requests, the switcher of the banner
   sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false,
   // baskets: the form (new, edit, re-post) and its busy flag
-  showBasket: false, basketForm: null, basketBusy: false, bkAnswer: null,
+  showBasket: false, basketForm: null, basketBusy: false, bkAnswer: null, compareRfq: null, cmpOpen: {},
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
@@ -4726,6 +4732,65 @@ function renderBasketAnswer(){
   return wrap(body, foot);
 }
 
+// ---------- Baskets: comparing the answers ----------
+// BEGIN BASKET COMPARE HELPERS (pure functions: test/basket.test.js loads this block on its own)
+// how far one answer covers the basket: 'full' (every item), 'partial', 'none'
+function bkCoverageLevel(c){
+  if (!c || !c.total) return 'none';
+  return c.covered >= c.total ? 'full' : c.covered === 0 ? 'none' : 'partial';
+}
+// one answer, item by item, in the order of the items: what the supplier said, the price and the line total
+function bkCmpRows(quote, items){
+  const byId = {};
+  for (const a of (quote && quote.items) || []) byId[a.rfqItemId] = a;
+  return (items || []).map((it) => {
+    const a = byId[it.id];
+    const price = a && a.unitPrice != null ? Number(a.unitPrice) : null;
+    return { id: it.id, name: it.name, quantity: it.quantity, unit: it.unit, status: a ? a.status : null, unitPrice: price, lineFils: price != null ? Math.round(price * 1000) * it.quantity : null,
+      best: !!(a && a.isBestPrice), substituteName: (a && a.substituteName) || '', substituteBrand: (a && a.substituteBrand) || '' };
+  });
+}
+// END BASKET COMPARE HELPERS
+
+// the request with its items (the list of requests carries only their number): Compare bids and the award window need the names
+async function loadCompareItems(rfqId){
+  try {
+    const rfq = await api('/api/rfqs/' + encodeURIComponent(rfqId));
+    if (state.compareRfqId === rfqId) setState({ compareRfq: rfq });
+  } catch(e) { /* the summary still shows; only the item-by-item view needs it */ }
+}
+function toggleCmpDetails(id){ setState({ cmpOpen: { ...(state.cmpOpen || {}), [id]: !(state.cmpOpen || {})[id] } }); }
+
+// under a bid's name: how much of the basket it covers, what it costs, the minimum order
+function bkQuoteSummaryHtml(x){
+  const c = x.coverage;
+  const level = bkCoverageLevel(c);
+  const style = level === 'full' ? 'background:var(--ok-soft); color:var(--ok);' : level === 'partial' ? 'background:var(--pend-soft); color:var(--pend);' : 'background:var(--bad-soft); color:var(--bad);';
+  const pill = (txt, st) => '<span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="' + st + '">' + txt + '</span>';
+  return '<div class="mt-1 flex flex-wrap items-center gap-1.5">' + pill(tpl('bkcCovered', { covered: c.covered, n: c.total }), style) +
+    (c.substitutes ? pill(c.substitutes === 1 ? t('bkcAnalogue1') : tpl('bkcAnaloguesN', { n: c.substitutes }), 'background:var(--info-soft); color:var(--info);') : '') +
+    (c.missing && c.missing.length ? pill(tpl('bkcMissingN', { n: c.missing.length }), 'background:var(--line); color:var(--tx2);') : '') + '</div>' +
+    '<div class="mono mt-1 text-[12px]" style="color:var(--tx3);">' + tpl('bkcPricedTotal', { total: '<b>' + bhdMoney(x.price) + '</b>' }) +
+      (x.minOrderAmount != null ? ' &middot; ' + tpl('bkcMinOrder', { amount: bhdMoney(x.minOrderAmount) }) : '') + '</div>';
+}
+// the "Item by item" view of one bid (collapsed), with the not-covered list and the best prices marked
+function bkQuoteDetailHtml(x){
+  const open = !!(state.cmpOpen || {})[x.id];
+  const items = (state.compareRfq && state.compareRfq.items) || null;
+  const btn = '<button type="button" onclick="toggleCmpDetails(' + jsAttr(x.id) + ')" aria-expanded="' + open + '" class="mt-2 text-[12px] font-bold" style="color:var(--acc-ink);">' + t(open ? 'bkcHide' : 'bkcDetails') + ' ' + (open ? '▲' : '▼') + '</button>';
+  if (!open || !items) return btn;
+  const rows = bkCmpRows(x, items);
+  const missing = rows.filter((r) => r.status !== 'PRICED' && r.status !== 'SUBSTITUTE');
+  return btn + '<div class="mt-2 overflow-x-auto rounded-lg border" style="border-color:var(--bd);"><table class="dtable" style="background:var(--panel); min-width:420px;"><thead><tr><th>' + t('bkcThItem') + '</th><th>' + t('bkcThAnswer') + '</th><th>' + t('bkcThLine') + '</th></tr></thead><tbody>' +
+    rows.map((r) => {
+      const answer = r.status === 'PRICED' ? '<span class="mono">' + bhdMoney(r.unitPrice) + '</span>' + (r.best ? ' <span class="rounded-full px-1.5 py-0.5 text-[10px] font-bold" title="' + esc(t('bkcBestHint')) + '" style="background:var(--ok-soft); color:var(--ok);">★ ' + t('bkcBestPrice') + '</span>' : '')
+        : r.status === 'SUBSTITUTE' ? '<span class="rounded-full px-1.5 py-0.5 text-[10px] font-bold" style="background:var(--info-soft); color:var(--info);">' + esc(tpl('bkcAnalogueFor', { name: r.substituteName + (r.substituteBrand ? ' (' + r.substituteBrand + ')' : '') })) + '</span> <span class="mono">' + bhdMoney(r.unitPrice) + '</span>'
+        : '<span style="color:var(--tx4);">' + t('bkcNotInStock') + '</span>';
+      return '<tr><td><div class="font-semibold" style="color:var(--tx);">' + esc(r.name) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">' + esc(r.quantity) + ' ' + esc(unitLabel(r.unit)) + '</div></td><td>' + answer + '</td><td class="mono">' + (r.lineFils != null ? bhdMoney(r.lineFils / 1000) : '—') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    (missing.length ? '<div class="mt-1.5 text-[12px]" style="color:var(--tx3); overflow-wrap:anywhere;">' + tpl('bkcNotCovered', { items: esc(missing.map((r) => r.name).join(', ')) }) + '</div>' : '');
+}
+
 // Close bidding early: no more quotes; awarding a submitted quote stays possible
 function openCloseBidding(rfqId){ setState({ closeBiddingRfqId: rfqId, closeBiddingBusy: false }); }
 function closeCloseBidding(){ setState({ closeBiddingRfqId: null }); }
@@ -4774,7 +4839,9 @@ async function openRfqLink(rfqId){
 function closeNotFound(){ setState({ notFound:null }); }
 
 async function openCompare(rfqId){
-  setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true, compareLastPaid: null });
+  setState({ compareRfqId: rfqId, compareQuotes: [], compareLoading: true, compareLastPaid: null, compareRfq: null, cmpOpen: {} });
+  const listed = (state.rfqs || []).find(x => x.id === rfqId);
+  if (!listed || listed.isBasket) loadCompareItems(rfqId);
   try {
     const data = await api('/api/rfqs/' + rfqId + '/quotes');
     setState({ compareQuotes: data, compareLoading:false });
@@ -4791,7 +4858,7 @@ async function loadLastPaid(rfqId){
     if (state.compareRfqId === rfqId) setState({ compareLastPaid: lastPaidOf(d, rfqId) });
   } catch(e) { /* no history yet, or offline: no hint */ }
 }
-function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[], compareBusyId:null, compareLastPaid:null }); }
+function closeCompare(){ setState({ compareRfqId:null, compareQuotes:[], compareBusyId:null, compareLastPaid:null, compareRfq:null, cmpOpen:{} }); }
 async function refreshCompareQuotes(){
   const rfqId = state.compareRfqId;
   if (!rfqId) return;
@@ -7665,7 +7732,7 @@ function renderModals(){
         '<button onclick="' + (busy || state.compareBusyId ? '' : "acceptQuote('" + x.id + "')") + '" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc); opacity:' + (busy?'0.6':'1') + ';">' + t('btnAward') + '</button>' + hint('award');
     };
     html += '<div class="bx-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">' +
-      '<div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
+      '<div class="bx-rise bx-modal bx-scroll w-full ' + (compareRfq && compareRfq.isBasket ? 'max-w-3xl' : 'max-w-lg') + ' rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('cmpTitle') + hint('quote') + '</h3>' +
         '<button onclick="closeCompare()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
         (compareRfq && (compareRfq.imageUrl || compareRfq.brand)
@@ -7677,7 +7744,8 @@ function renderModals(){
           : '') +
         (state.compareLastPaid ? '<div class="mt-3 rounded-lg px-3 py-2 text-[12.5px]" style="background:var(--acc-soft); color:var(--acc-ink);">' + tpl(state.compareLastPaid.unit ? 'cmpLastPaid' : 'cmpLastPaidNoUnit', { price: bhdMoney(state.compareLastPaid.unitPrice), unit: esc(state.compareLastPaid.unit ? unitLabel(state.compareLastPaid.unit) : ''), supplier: esc(state.compareLastPaid.supplier), date: esc(spendDayLabel(state.compareLastPaid.day, spLocale())) }) + '</div>' : '') +
         compareApprovalBanner(compareRfq) +
-        '<div class="mt-4 flex flex-col gap-2.5 bx-scroll max-h-[340px] overflow-y-auto pr-1">' +
+        (compareRfq && compareRfq.isBasket ? '<div class="mt-2 text-[13px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(rfqTitle(compareRfq)) + bkItemsPill(compareRfq) + '</div>' : '') +
+        '<div class="mt-4 flex flex-col gap-2.5 bx-scroll ' + (compareRfq && compareRfq.isBasket ? 'max-h-[62vh]' : 'max-h-[340px]') + ' overflow-y-auto pr-1">' +
         (state.compareLoading ? '<div class="text-[13px] py-6 text-center" style="color:var(--tx4);">' + t('cmpLoading') + '</div>' :
           q.length === 0 ? '<div class="rounded-xl border border-dashed p-6 text-center text-[13px]" style="border-color:var(--bd2); color:var(--tx4);">' + t('cmpNone') + '</div>' :
           q.map(x => '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset);"><div class="flex flex-wrap items-center justify-between gap-3">' +
@@ -7685,10 +7753,12 @@ function renderModals(){
             '<div><div class="text-sm font-semibold" style="color:var(--tx);">' + (x.supplierCompany && 'supplierRating' in x ? '<button type="button" onclick="openSupplierCard(' + jsAttr(x.supplierCompany.id) + ',' + jsAttr(x.supplierCompany.name) + ')" title="' + esc(t('rtDetails')) + '" class="text-start font-semibold underline decoration-dotted underline-offset-2" style="color:var(--tx);">' + esc(x.supplierCompany.name) + '</button>' : esc(x.supplierCompany ? x.supplierCompany.name : '')) +
               (x.source === 'BID_LINK' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--pend-soft); color:var(--pend);" title="' + esc(t('viaLinkHint')) + '">' + esc(t('viaLink')) + '</span>' : '') + '</div>' +
               (x.revisedAt ? '<div class="text-[11px]" style="color:var(--tx4);">' + tpl('quoteRevised', { date: fmtDateTime(x.revisedAt) }) + '</div>' : '') + ('supplierRating' in x ? supplierRatingLine(x.supplierRating) : '') +
-            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>' +
+            (x.coverage ? bkQuoteSummaryHtml(x) + '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>'
+              : '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + quotePriceText(x) + ' &middot; ' + tpl('quoteMeta', { days: x.deliveryTimeDays, terms: x.paymentTermsDays != null ? x.paymentTermsDays : 30 }) + '</div>') +
             (x.lpo && x.lpo.status === 'DECLINED' ? '<div class="mt-0.5 text-[12px]" style="color:var(--bad); overflow-wrap:anywhere;">' + (x.lpo.declineReason ? tpl('cmpDeclinedReason', { reason: esc(x.lpo.declineReason) }) : t('cmpDeclined')) + '</div>' : '') +
             '</div></div>' +
             '<div class="flex flex-wrap items-center justify-end gap-2">' + quoteActions(x) + '</div></div>' +
+            (x.coverage ? bkQuoteDetailHtml(x) : '') +
             ((x.attachments || []).length ? '<div class="mt-3 flex flex-col gap-1.5">' + x.attachments.map(a => attachmentRowHtml(a, false)).join('') + '</div>' : '')
           + '</div>').join('')
         ) +
