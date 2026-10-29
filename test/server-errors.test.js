@@ -59,5 +59,20 @@ const loaders = ['index.html', 'bid.html', 'accept-invite.html', 'verify.html', 
 const versions = loaders.map((f) => (fs.readFileSync(path.join(__dirname, '..', f), 'utf8').match(/server-errors\.js\?v=(\d+)/) || [])[1]);
 check('every page that loads server-errors.js uses the same ?v= (bumped together)', versions.every((v) => v && v === versions[0]), versions.join(','));
 
+// baskets (the texts of src/utils/basket*.js, rfq.controller.js, quote.controller.js, approval.controller.js)
+const basketTexts = [
+  'This request is a basket: answer each item instead of one unit price', 'This request is not a basket: send a unit price', 'This request is not a basket',
+  'This request is a basket: items must be a list with an answer for every item', 'A basket has no quantity, unit or brand of its own: put them on its items', 'Baskets are not available yet',
+  'Some items are not covered by this quote: confirm to order without them', "The order is below the supplier's minimum order: confirm to order anyway",
+  'Nothing to order: this quote covers none of the items you accepted', 'Price at least one item: if you have none of them, do not send an answer', 'The total of the items is too large',
+  'acceptedItemIds must be a list of item ids', 'acceptedItemIds must name analogues offered by this quote', 'This quote is not a basket quote', 'You have no quote on this request yet',
+  'The buyer is deciding on this request: your answer can no longer be changed', 'A product you picked is no longer available', 'The offer changed while this request waited', 'Purchase order not found',
+  'items must be a list of 1 to 50 items', 'item 3: name is required', 'answer 2: quantity must be a whole number between 1 and 100000000', '"Flour" has no answer: give a price, "not in stock" or an analogue',
+  '"Salt" is for the asked brand only: an analogue is not allowed', '"Salt" is marked not in stock, so it takes no price or replacement', '"Salt" is answered twice',
+];
+for (const s of basketTexts) check('basket text translated: ' + s, arabic(tr(s)) && tr(s) !== s && tr(s, 'en') === s);
+check('basket texts keep the item name and the numbers as written', tr('"Flour" has no answer: give a price, "not in stock" or an analogue').includes('Flour') && /50/.test(tr('items must be a list of 1 to 50 items')) && /^العنصر 3:/.test(tr('item 3: name is required')) && /^الإجابة 2:/.test(tr('answer 2: "Flour" is answered twice')));
+check('an item\'s own error is translated inside its number, an unknown one is left as written after it', arabic(tr('item 2: name is required')) && /^العنصر 2: some new text$/.test(tr('item 2: some new text')));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
