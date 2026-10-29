@@ -2225,6 +2225,9 @@ function sandboxLayout(){
   document.title = (b ? 'TEST · ' : '') + base;
 }
 
+// A window left open by the previous company (a half-typed quote, Compare bids...) must not follow the person into the next one
+function closeAllOverlays(){ for (const o of OVERLAYS) { try { if (o[1](state)) o[2](); } catch(e) {} } }
+
 // Work as a test company (from the admin console, or from another test company: the admin's own session stays saved).
 async function sandboxEnter(companyId){
   if (state.sandboxBusy || !companyId) return;
@@ -2246,6 +2249,7 @@ async function sandboxEnter(companyId){
   }
   if (!inSbx) saveAdminSession({ token: admin.token, user: admin.user, company: admin.company, list: sandboxProfiles(admin.list) });
   notifSeen = null;
+  closeAllOverlays();
   state.token = data.token; state.user = data.user; state.company = data.company; saveSession();
   const dest = data.company && data.company.type === 'SUPPLIER' ? 'supplier' : 'buyer';
   setState({ ...signedOutState(), token: data.token, user: data.user, company: data.company, sandboxList: sandboxProfiles(admin.list), sandboxBusy: false, view: dest, section: 'main' });
@@ -2258,6 +2262,7 @@ function sandboxExit(toastKey){
   if (!s) { logout(); return; }
   clearAdminSession();
   notifSeen = null;
+  closeAllOverlays();
   state.token = s.token; state.user = s.user; state.company = s.company; saveSession();
   setState({ ...signedOutState(), token: s.token, user: s.user, company: s.company, view: 'admin', adminTab: 'sandbox', section: 'main' });
   refreshAdmin(); refreshAdminSandbox();
