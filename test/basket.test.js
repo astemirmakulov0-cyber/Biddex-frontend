@@ -172,5 +172,24 @@ check('"Re-post RFQ": GET /lpos/:id/repost fills the same basket form (items, na
 const keys5 = Object.keys(en).filter((k) => /^bko[A-Z]/.test(k));
 check('every order text exists in English and Arabic (Arabic script, same placeholders)', keys5.length >= 14 && keys5.every((k) => typeof ar[k] === 'string' && /[؀-ۿ]/.test(ar[k]) && JSON.stringify((en[k].match(/\{\w+\}/g) || []).sort()) === JSON.stringify((ar[k].match(/\{\w+\}/g) || []).sort())), keys5.filter((k) => !ar[k]));
 
+// ================= spending, CSV, price history, re-order =================
+const an0 = html.indexOf('// BEGIN ANALYTICS HELPERS'), an1 = html.indexOf('// END ANALYTICS HELPERS');
+const csvLib = new Function(html.slice(an0, an1) + '; return { buildSpendingCsv, csvCell };')();
+const tr = (k) => ({ csvDate: 'Date', csvLpo: 'LPO', csvSupplier: 'Supplier', csvItem: 'Item', csvCategory: 'Category', csvQty: 'Qty', csvUnit: 'Unit', csvUnitPrice: 'Unit price', csvTotal: 'Total', csvPaid: 'Paid', csvInvoice: 'Invoice', csvAnalogue: 'analogue' }[k] || k);
+const spendLines = [
+  { orderId: 'o1', lpoId: 'aaaa1111', receivedDay: '2026-10-20', supplier: 'Wholesaler', title: 'Flour', category: 'Food', quantity: 50, unit: 'kg', unitPrice: '0.500', total: '25.000', invoiceStatus: 'ISSUED', paid: null, basket: true },
+  { orderId: 'o1', lpoId: 'aaaa1111', receivedDay: '2026-10-20', supplier: 'Wholesaler', title: 'Tomato sauce', category: 'Food', quantity: 4, unit: 'litre', unitPrice: '3.200', total: '12.800', invoiceStatus: 'ISSUED', paid: null, basket: true, substitute: true, substituteName: 'Other sauce' },
+  { orderId: 'o2', lpoId: 'bbbb2222', receivedDay: '2026-10-21', supplier: 'Single Co', title: 'Rice', category: 'Food', quantity: 10, unit: 'kg', unitPrice: '1.000', total: '10.000', invoiceStatus: 'PAID', paid: '10.000' },
+];
+const csv = csvLib.buildSpendingCsv(spendLines, tr, (s) => s).split('\r\n');
+check('CSV: a basket line is a row with its own price and total, and the Paid cell is EMPTY (the payment belongs to the whole order); a single order still shows what was paid', csv[1].endsWith(',25.000,,ISSUED') && csv[1].includes(',Flour,') && csv[3].endsWith(',10.000,10.000,PAID'), csv.slice(0, 4));
+check('CSV: an analogue line is written under the item it replaced, with the analogue named; nothing is added to the other lines', csv[2].includes('Tomato sauce (analogue: Other sauce)') && !csv[1].includes('analogue') && !csv[3].includes('analogue') && csv[0].split(',').length === 11 && csv[2].split(',').length === 11, csv[2]);
+check('CSV: the analogue\'s name cannot start a formula (the cell is checked after it is built)', csvLib.buildSpendingCsv([{ ...spendLines[1], title: '=cmd', substituteName: '+x' }], tr, (s) => s).includes("'=cmd (analogue: +x)"));
+check('the spending page says why Paid is empty for basket lines, only when there are such lines', has("(d.lines.some((l) => l.basket) ? '<div class=\"bx-noprint mb-4 max-w-[640px] text-[12px]\"") && has("t('spBasketNote')"));
+check('price history: a basket\'s requests are marked and a note explains the prices (as asked; an analogue\'s price is another product\'s)', has("(r.isBasket ? ' <span class=\"rounded-full px-2 py-0.5 text-[10.5px] font-semibold\"") && has("(d.rfqs.some((r) => r.isBasket) ?") && has("t('prBasketNote')"));
+check('"Re-order" is not offered for a basket order (the single-item form cannot hold a basket); the reminders still work per item', has("o.status === 'COMPLETED' && !(o.lpo && o.lpo.rfq && o.lpo.rfq.isBasket) ?"));
+const keys6 = ['spBasketNote', 'csvAnalogue', 'prBasketTag', 'prBasketNote'];
+check('the new spending texts exist in English and Arabic (Arabic script)', keys6.every((k) => typeof en[k] === 'string' && /[؀-ۿ]/.test(ar[k] || '')));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
