@@ -2303,6 +2303,17 @@ async function sandboxSetup(){
     await refreshAdminSandbox();
   } catch(e) { setState({ sandboxBusy: false }); showToast(e.message); }
 }
+// The three test suppliers answer a published test request with different coverage and prices (so there is something to compare)
+async function sandboxDemo(rfqId){
+  if (state.sandboxBusy) return;
+  setState({ sandboxBusy: true });
+  try {
+    const r = await api('/api/admin/sandbox/demo-answers', { method: 'POST', body: JSON.stringify({ rfqId }) });
+    setState({ sandboxBusy: false });
+    showToast(r.created.length ? 'Demo answers added: ' + r.created.length : 'Nothing new: the test suppliers have answered already');
+    refreshAdminSandbox();
+  } catch(e) { setState({ sandboxBusy: false }); showToast(e.message); }
+}
 function renderAdminSandbox(){
   const box = state.sandbox;
   const profiles = sandboxProfiles(box && box.companies);
@@ -2326,7 +2337,9 @@ function renderAdminSandbox(){
         '<div class="flex flex-col gap-2">' + rfqs.map((r) =>
           '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3" style="border-color:var(--bd); background:var(--panel);">' +
             '<div class="min-w-[200px] flex-1"><div class="font-semibold text-[13.5px]" style="color:var(--tx);">' + esc(r.title) + (r.isBasket ? ' <span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">basket · ' + esc(r.itemCount) + ' items</span>' : '') + '</div>' +
-            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(r.status) + ' · ' + esc((r._count && r._count.quotes) || 0) + ' bid(s)</div></div></div>').join('') + '</div>'));
+            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(r.status) + ' · ' + esc((r._count && r._count.quotes) || 0) + ' bid(s)</div></div>' +
+            (r.status === 'PUBLISHED' ? actionBtn('Add demo answers', 'sandboxDemo(' + jsAttr(r.id) + ')', !!state.sandboxBusy) : '') + '</div>').join('') + '</div>' +
+        '<p class="mt-3 max-w-[640px] text-[12px]" style="color:var(--tx3);">"Add demo answers": the three test suppliers answer the request at once, with different coverage and prices (A is cheapest but misses items, B has everything, C offers analogues), so you can try comparing and awarding.</p>'));
 }
 
 // Everything a session leaves in the page, back to the signed-out values (used by logout and when the admin enters or leaves the test mode)

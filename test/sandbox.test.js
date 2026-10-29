@@ -83,6 +83,9 @@ check('withWorld: nothing added for the real data; ?sandbox=1 or &sandbox=1 for 
 check('switching the world drops the lists on screen and loads again; signing out puts it back to the real data', has('function setAdminWorld(test){') && has("setState({ adminTest: !!test, adminCompanies: [], adminDisputes: [], adminRfqs: []") && has("adminTab:'companies', adminTest:false,"));
 check('the switch is on the five tabs that have a test side, with a clear "TEST" line when it is on; the card of a test company has a TEST pill', has("['companies', 'disputes', 'rfqs', 'orders', 'reviews'].includes(state.adminTab)") && has('TEST: only the sandbox companies') && has("(c.isTest ? ' <span") && has('+ adminWorldBar() + body'));
 
+// ---- demo answers
+check('the tab has an "Add demo answers" button on a published test request; it calls the demo endpoint and refreshes the tab', has("(r.status === 'PUBLISHED' ? actionBtn('Add demo answers', 'sandboxDemo(' + jsAttr(r.id) + ')'") && has("api('/api/admin/sandbox/demo-answers', { method: 'POST', body: JSON.stringify({ rfqId }) })") && has('showToast(r.created.length ?') && has("    refreshAdminSandbox();"));
+
 // ---- texts
 const keys = ['sbxBannerTitle', 'sbxBannerText', 'sbxSwitchTo', 'sbxBack', 'sbxSwitchFailed', 'sbxEnded'];
 check('every text exists in English and in Arabic (Arabic script)', keys.every((k) => typeof en[k] === 'string' && en[k] && typeof ar[k] === 'string' && /[؀-ۿ]/.test(ar[k])));
