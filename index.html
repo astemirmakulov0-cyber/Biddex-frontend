@@ -1923,7 +1923,7 @@ let state = {
 
   adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
   // admin sandbox (test mode): the test companies, their requests, the switcher of the banner
-  sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false,
+  sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false, adminDocNotices: null, adminDocNoticesAll: false,
   // baskets: the form (new, edit, re-post) and its busy flag
   showBasket: false, basketForm: null, basketBusy: false, bkAnswer: null, compareRfq: null, cmpOpen: {}, bkAward: null,
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
@@ -2454,7 +2454,7 @@ function renderAdminSandbox(){
 
 // Everything a session leaves in the page, back to the signed-out values (used by logout and when the admin enters or leaves the test mode)
 function signedOutState(){
-  return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminTest:false, adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null  };
+  return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminTest:false, adminDocNotices:null, adminDocNoticesAll:false, adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null  };
 }
 function logout(){
   // in the test mode "sign out" goes back to the admin console (the admin stays signed in)
@@ -2927,7 +2927,7 @@ async function setCompanyVerification(companyId, status){
     await api('/api/admin/companies/' + companyId + '/verify', { method:'PATCH', body: JSON.stringify({ status }) });
     showToast(status === 'VERIFIED' ? 'Company verified.' : 'Company rejected.');
     setState({ adminBusyId:null });
-    refreshAdminCompanies();
+    refreshAdminCompanies(); refreshAdminDocNotices();
   } catch(e) { setState({ adminBusyId:null }); showToast(e.message); }
 }
 // The DELETED tab asks the server for deleted companies only (erased accounts kept for other companies' records);
@@ -2940,7 +2940,7 @@ function setAdminFilter(f){
 
 // ---------- Admin: disputes ----------
 
-function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); }
+function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); refreshAdminDocNotices(); }
 
 async function refreshAdminDisputes(){
   if (!state.token) return;
@@ -3171,6 +3171,43 @@ function renderAdminReviews(){
           '</div><div>' + (rv.commentHidden
             ? '<button onclick="hideReviewComment(\'' + rv.id + '\', false)" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx);">Show comment</button>'
             : '<button onclick="hideReviewComment(\'' + rv.id + '\', true)" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bad); color:var(--bad);">Hide comment</button>') + '</div></div></div>').join('') + '</div>');
+}
+
+// ---------- Admin: documents waiting for review ----------
+// GET /api/admin/document-notices: companies with a verification document the admin has not answered yet (a company waiting for its first
+// decision lists all its documents; a decided one only those uploaded after the decision). The answer is verify / reject in the card.
+// BEGIN ADMIN DOCUMENT NOTICE HELPERS (pure functions: test/basket.test.js loads this block on its own)
+const ADMIN_DOC_LABELS = { TRADE_LICENSE: 'Trade license', CR_CERTIFICATE: 'CR certificate', OTHER: 'Other document' };
+// one row of the list, as plain text parts (the page escapes them): "2 documents · last: CR certificate"
+function adminDocNoticeText(n){
+  const docs = Number(n && n.documents) || 0;
+  return (docs === 1 ? '1 document' : docs + ' documents') + ' · last: ' + (ADMIN_DOC_LABELS[n && n.lastDocType] || 'Document');
+}
+// the rows to show: the newest first as the server sends them, the first few unless "Show all"
+function adminDocNoticeRows(items, showAll, limit){
+  const list = Array.isArray(items) ? items : [];
+  return showAll ? list : list.slice(0, limit || 5);
+}
+// END ADMIN DOCUMENT NOTICE HELPERS
+async function refreshAdminDocNotices(){
+  if (!state.token || state.view !== 'admin') return;
+  try { const data = await api('/api/admin/document-notices'); setIfChanged('adminDocNotices', data); syncOk('adminDocNotices'); }
+  catch(e) { syncFailed('adminDocNotices', e); }
+}
+function adminDocNoticesHtml(){
+  const d = state.adminDocNotices;
+  if (!d || !d.total) return '';
+  const rows = adminDocNoticeRows(d.items, state.adminDocNoticesAll, 5);
+  return '<div class="mb-6 rounded-xl border p-4" style="border-color:var(--pend); background:var(--pend-soft);">' +
+    '<div class="flex flex-wrap items-center gap-2"><div class="text-[14px] font-bold" style="color:var(--tx);">Documents waiting for review</div><span class="mono rounded-full px-2 py-0.5 text-[11px] font-bold" style="background:var(--panel); color:var(--pend);">' + esc(d.total) + '</span></div>' +
+    '<p class="mt-1 max-w-[640px] text-[12px]" style="color:var(--tx3);">A company uploaded a document and has not been decided on since. Open the company, look at the document, then verify or reject the company.</p>' +
+    '<div class="mt-3 flex flex-col gap-2">' + rows.map((n) =>
+      '<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5" style="border-color:var(--bd); background:var(--panel);">' +
+        '<div class="min-w-0"><div class="text-[13px] font-semibold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(n.companyName) + ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">' + esc(n.type) + '</span> <span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">' + esc(n.verificationStatus) + '</span></div>' +
+        '<div class="mono mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + esc(adminDocNoticeText(n)) + (n.lastUploadedAt ? ' · ' + esc(fmtDateTime(n.lastUploadedAt)) : '') + '</div></div>' +
+        '<button onclick="openAdminCompany(' + jsAttr(n.companyId) + ')" class="rounded-lg px-3 py-1.5 text-[12px] font-bold text-white" style="background:var(--acc);">Open</button></div>').join('') + '</div>' +
+    (d.items.length > 5 ? '<button type="button" onclick="setState({ adminDocNoticesAll: ' + (state.adminDocNoticesAll ? 'false' : 'true') + ' })" class="mt-2 text-[12px] font-bold" style="color:var(--acc-ink);">' + (state.adminDocNoticesAll ? 'Show fewer' : 'Show all (' + d.items.length + ')') + '</button>' : '') +
+  '</div>';
 }
 
 // The link in the admin's "new company registered" e-mail: Companies tab, the tab that fits the company's state
@@ -7233,6 +7270,7 @@ function renderAdmin(){
     state.adminTab === 'audit' ? renderAdminAudit() :
     state.adminTab === 'analytics' ? renderAdminAnalyticsPage() :
     state.adminTab === 'sandbox' ? renderAdminSandbox() :
+    (state.adminTest ? '' : adminDocNoticesHtml()) +
     '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
     '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +

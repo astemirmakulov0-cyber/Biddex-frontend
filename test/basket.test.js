@@ -191,5 +191,16 @@ check('"Re-order" is not offered for a basket order (the single-item form cannot
 const keys6 = ['spBasketNote', 'csvAnalogue', 'prBasketTag', 'prBasketNote'];
 check('the new spending texts exist in English and Arabic (Arabic script)', keys6.every((k) => typeof en[k] === 'string' && /[؀-ۿ]/.test(ar[k] || '')));
 
+// ================= the admin console: documents waiting for review =================
+const dn0 = html.indexOf('// BEGIN ADMIN DOCUMENT NOTICE HELPERS'), dn1 = html.indexOf('// END ADMIN DOCUMENT NOTICE HELPERS');
+check('the notice helpers block is in index.html', dn0 > 0 && dn1 > dn0);
+const dn = new Function(html.slice(dn0, dn1) + '; return { adminDocNoticeText, adminDocNoticeRows };')();
+check('a row says how many documents and which kind came last (an unknown kind and missing data do not break it)', dn.adminDocNoticeText({ documents: 1, lastDocType: 'CR_CERTIFICATE' }) === '1 document · last: CR certificate' && dn.adminDocNoticeText({ documents: 3, lastDocType: 'TRADE_LICENSE' }) === '3 documents · last: Trade license' && dn.adminDocNoticeText({ documents: 2, lastDocType: 'WHAT' }) === '2 documents · last: Document' && dn.adminDocNoticeText(null) === '0 documents · last: Document');
+const many = Array.from({ length: 9 }, (_, i) => ({ companyId: 'c' + i }));
+check('the first five rows are shown, all of them on "Show all"; anything that is not a list gives no rows', dn.adminDocNoticeRows(many, false).length === 5 && dn.adminDocNoticeRows(many, true).length === 9 && dn.adminDocNoticeRows(many, false, 3).length === 3 && dn.adminDocNoticeRows(null, true).length === 0 && dn.adminDocNoticeRows(undefined, false).length === 0);
+check('the list comes from GET /admin/document-notices, with the other admin data, and again after a verify or reject; it is dropped at sign-out', has("api('/api/admin/document-notices')") && has('function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); refreshAdminDocNotices(); }') && has('refreshAdminCompanies(); refreshAdminDocNotices();') && has('adminDocNotices:null, adminDocNoticesAll:false, adminRfqs:[],'));
+check('it sits on top of the Companies tab for the real data only (never in the test area), shows nothing when nothing waits, and "Open" goes to that company\'s card', has("(state.adminTest ? '' : adminDocNoticesHtml()) +") && has("if (!d || !d.total) return '';") && has("onclick=\"openAdminCompany(' + jsAttr(n.companyId) + ')\""));
+check('company names and statuses from the server are escaped', has('esc(n.companyName)') && has('esc(n.verificationStatus)') && has('esc(adminDocNoticeText(n))'));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
