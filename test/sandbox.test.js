@@ -73,7 +73,7 @@ check('the admin console has a Sandbox tab, loaded when it is opened and after l
 check('the tab creates the test companies (POST setup) and enters one (sandboxEnter with the id as a text literal)', has("api('/api/admin/sandbox/setup', { method: 'POST' })") && has("'sandboxEnter(' + jsAttr(p.id) + ')'") && has("api('/api/admin/rfqs?sandbox=1&pageSize=50')"));
 const tabSrc = html.slice(html.indexOf('function renderAdminSandbox(){'), html.indexOf('\n}\n', html.indexOf('function renderAdminSandbox(){')));
 check('everything from the server that the tab prints is escaped', /esc\(p\.name\)/.test(tabSrc) && /esc\(r\.title\)/.test(tabSrc) && /esc\(r\.status\)/.test(tabSrc) && /esc\(c\.credits/.test(tabSrc));
-check('the journal labels know the two new actions', has("SANDBOX_CREATED: 'Test company created'") && has("SANDBOX_SWITCHED: 'Worked as a test company'"));
+check('the journal labels know the two new actions', has("SANDBOX_CREATED: 'Test company created'") && has("SANDBOX_SWITCHED: 'Worked as a test company'") && has("SANDBOX_DEMO_ANSWERS: 'Demo answers added'"));
 
 // ---- the admin's lists: one world at a time
 check('the lists of the console ask for the world: companies, disputes, requests, orders and reviews all go through withWorld()', ['/api/admin/companies', '/api/admin/orders?status=DISPUTED', '/api/admin/rfqs?', '/api/admin/orders?', '/api/admin/reviews?withComment=1'].every((u) => has("api(withWorld('" + u)));
