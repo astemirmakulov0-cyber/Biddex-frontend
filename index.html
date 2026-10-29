@@ -533,6 +533,13 @@ const I18N = {
     bkcCovered:"{covered} of {n} items", bkcAnalogue1:"1 analogue", bkcAnaloguesN:"{n} analogues", bkcMissingN:"{n} not covered", bkcAllItems:"All items",
     bkcPricedTotal:"{total} for the items it can supply", bkcMinOrder:"Minimum order {amount}", bkcDetails:"Item by item", bkcHide:"Hide",
     bkcNotInStock:"Not in stock", bkcAnalogueFor:"Analogue: {name}", bkcBestPrice:"Best price", bkcNotCovered:"Not covered: {items}", bkcThItem:"Item", bkcThAnswer:"Answer", bkcThLine:"Line total", bkcBestHint:"The lowest price for the item as asked",
+    bkwTitle:"Award the basket", bkwTo:"Order from {name}", bkwOrderTotal:"Order total", bkwCovered:"{covered} of {n} items are in this order",
+    bkwAnalogues:"Analogues offered", bkwAnaloguesHint:"Tick the ones you accept. An analogue is another product than the one you asked for.", bkwAnalogueLine:"{name} instead of {item} · {price} × {qty} = {line}",
+    bkwMissing:"Not in this order: {items}", bkwNoMissing:"Every item is in this order.", bkwPartialCheck:"I understand: these {n} items are not in this order.",
+    bkwBelowMin:"The order total {total} is below this supplier's minimum order of {min}.", bkwBelowCheck:"Order anyway.",
+    bkwRepost:"Automatically re-post missing items", bkwRepostHint:"When you place the order, a new request with only the missing items goes to suppliers. Suppliers who have none of them are not asked. You can also do it later with “Re-post RFQ” on the order.",
+    bkwAward:"Place the order", bkwChecking:"Checking…", bkwChanged:"The offer changed. Check the order and try again.",
+    bkwAwarded:"Order placed.", bkwAwardedRepost:"Order placed. The missing items were posted again.", bkwAwardedRepostDraft:"Order placed. The missing items are saved as a draft: publish them when you are ready.", bkwAwardedRepostExisting:"Order placed. The missing items were already posted again.",
     bkCopyLink:"Copy link", bkWhatsApp:"Share via WhatsApp", bkLinkCopied:"Link copied", bkCopyFailed:"Could not copy. Select the link and copy it.", bkShareText:"Biddex request: {title}",
     noLongerMember:"You are no longer a member of that company. Please log in again.",
     accountDeactivated:"This account has been deactivated.",
@@ -1289,6 +1296,13 @@ const I18N = {
     bkcCovered:"{covered} من {n} عنصرًا", bkcAnalogue1:"بديل واحد", bkcAnaloguesN:"{n} بدائل", bkcMissingN:"{n} غير مغطّى", bkcAllItems:"كل العناصر",
     bkcPricedTotal:"{total} للعناصر التي يمكنه توريدها", bkcMinOrder:"الحد الأدنى للطلب {amount}", bkcDetails:"عنصرًا بعنصر", bkcHide:"إخفاء",
     bkcNotInStock:"غير متوفر", bkcAnalogueFor:"بديل: {name}", bkcBestPrice:"أفضل سعر", bkcNotCovered:"غير مغطّى: {items}", bkcThItem:"العنصر", bkcThAnswer:"الرد", bkcThLine:"إجمالي السطر", bkcBestHint:"أقل سعر للعنصر كما طُلب",
+    bkwTitle:"ترسية السلة", bkwTo:"الطلب من {name}", bkwOrderTotal:"إجمالي الطلبية", bkwCovered:"{covered} من {n} عنصرًا ضمن هذه الطلبية",
+    bkwAnalogues:"البدائل المعروضة", bkwAnaloguesHint:"حدّد البدائل التي تقبلها. البديل منتج مختلف عن الذي طلبته.", bkwAnalogueLine:"{name} بدلًا من {item} · {price} × {qty} = {line}",
+    bkwMissing:"ليست ضمن هذه الطلبية: {items}", bkwNoMissing:"جميع العناصر ضمن هذه الطلبية.", bkwPartialCheck:"أفهم أن هذه العناصر ({n}) ليست ضمن هذه الطلبية.",
+    bkwBelowMin:"إجمالي الطلبية {total} أقل من الحد الأدنى للطلب لدى هذا المورّد وقدره {min}.", bkwBelowCheck:"المتابعة بالطلب رغم ذلك.",
+    bkwRepost:"إعادة نشر العناصر الناقصة تلقائيًا", bkwRepostHint:"عند إصدار الطلبية يُرسل إلى الموردين طلب جديد يضم العناصر الناقصة فقط. لا يُسأل الموردون الذين ليس لديهم أي منها. يمكنك أيضًا فعل ذلك لاحقًا بزر «إعادة نشر الطلب» في الطلبية.",
+    bkwAward:"إصدار الطلبية", bkwChecking:"جارٍ التحقق…", bkwChanged:"تغيّر العرض. راجع الطلبية وحاول مرة أخرى.",
+    bkwAwarded:"تم إصدار الطلبية.", bkwAwardedRepost:"تم إصدار الطلبية. وأُعيد نشر العناصر الناقصة.", bkwAwardedRepostDraft:"تم إصدار الطلبية. حُفظت العناصر الناقصة كمسودة: انشرها عندما تكون جاهزًا.", bkwAwardedRepostExisting:"تم إصدار الطلبية. وسبق أن أُعيد نشر العناصر الناقصة.",
     bkCopyLink:"نسخ الرابط", bkWhatsApp:"مشاركة عبر واتساب", bkLinkCopied:"تم نسخ الرابط", bkCopyFailed:"تعذّر النسخ. حدّد الرابط وانسخه.", bkShareText:"طلب تسعير على Biddex: {title}",
     noLongerMember:"لم تعد عضواً في تلك الشركة. يرجى تسجيل الدخول مرة أخرى.",
     accountDeactivated:"تم تعطيل هذا الحساب.",
@@ -1899,7 +1913,7 @@ let state = {
   // admin sandbox (test mode): the test companies, their requests, the switcher of the banner
   sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false,
   // baskets: the form (new, edit, re-post) and its busy flag
-  showBasket: false, basketForm: null, basketBusy: false, bkAnswer: null, compareRfq: null, cmpOpen: {},
+  showBasket: false, basketForm: null, basketBusy: false, bkAnswer: null, compareRfq: null, cmpOpen: {}, bkAward: null,
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
@@ -2624,7 +2638,9 @@ async function withdrawApproval(id){
 // Picking a bid. Owners and managers first ask GET /quotes/:id/award-check: when a budget is set, or the pick needs the owner, a window shows
 // what it does (needs approval? what happens to this month's budget?) before anything is sent. With nothing to say it awards at once, as before.
 async function acceptQuote(quoteId){
-  if (state.awardCheck || state.awardBusy) return;
+  if (state.awardCheck || state.awardBusy || state.bkAward) return;
+  const bq = (state.compareQuotes || []).find(x => x.id === quoteId);
+  if (bq && bq.coverage) { openBasketAward(quoteId); return; } // a basket: the plan, the analogues, the confirmations
   let chk = null;
   try { chk = await api('/api/quotes/' + encodeURIComponent(quoteId) + '/award-check'); } catch(e) { /* the server decides anyway */ }
   if (chk && (chk.needsApproval || chk.budget != null)) { setState({ awardCheck: { quoteId, chk } }); return; }
@@ -4789,6 +4805,117 @@ function bkQuoteDetailHtml(x){
       return '<tr><td><div class="font-semibold" style="color:var(--tx);">' + esc(r.name) + '</div><div class="mono text-[11px]" style="color:var(--tx4);">' + esc(r.quantity) + ' ' + esc(unitLabel(r.unit)) + '</div></td><td>' + answer + '</td><td class="mono">' + (r.lineFils != null ? bhdMoney(r.lineFils / 1000) : '—') + '</td></tr>';
     }).join('') + '</tbody></table></div>' +
     (missing.length ? '<div class="mt-1.5 text-[12px]" style="color:var(--tx3); overflow-wrap:anywhere;">' + tpl('bkcNotCovered', { items: esc(missing.map((r) => r.name).join(', ')) }) + '</div>' : '');
+}
+
+// ---------- Baskets: the award window ----------
+// BEGIN BASKET AWARD HELPERS (pure functions: test/basket.test.js loads this block on its own)
+// the analogues one answer offers: [{ id, name, substituteName, substituteBrand, unitPrice, quantity, lineFils }]
+function bkAnalogueRows(quote, items){
+  const byId = {};
+  for (const it of items || []) byId[it.id] = it;
+  const out = [];
+  for (const a of (quote && quote.items) || []) {
+    if (a.status !== 'SUBSTITUTE' || !byId[a.rfqItemId]) continue;
+    const it = byId[a.rfqItemId], price = Number(a.unitPrice);
+    out.push({ id: it.id, name: it.name, unit: it.unit, quantity: it.quantity, substituteName: a.substituteName || '', substituteBrand: a.substituteBrand || '', unitPrice: price, lineFils: Math.round(price * 1000) * it.quantity });
+  }
+  return out;
+}
+// w: { accepted: [item ids], confirmPartial, confirmBelow, repost }; plan: the "basket" part of GET /quotes/:id/award-check.
+// The body ALWAYS says whether to re-post (true / false), never leaves it to a default; a confirmation is sent only where the plan asks for one.
+function bkAwardBody(w, plan){
+  const missing = plan && plan.missing ? plan.missing.length : 0;
+  return { terms: 'Standard terms', acceptedItemIds: (w.accepted || []).slice(), confirmPartial: missing > 0 && !!w.confirmPartial, confirmBelowMin: !!(plan && plan.belowMin) && !!w.confirmBelow, repostMissing: missing > 0 && !!w.repost };
+}
+// the button works only when every warning has its confirmation
+function bkAwardReady(w, plan){
+  if (!plan) return false;
+  if (plan.partial && !w.confirmPartial) return false;
+  if (plan.belowMin && !w.confirmBelow) return false;
+  return true;
+}
+// END BASKET AWARD HELPERS
+
+async function openBasketAward(quoteId){
+  if (state.bkAward) return;
+  setState({ bkAward: { quoteId, accepted: [], chk: null, loading: true, busy: false, confirmPartial: false, confirmBelow: false, repost: true } });
+  await bkAwardCheck();
+}
+// what the order would be for the analogues accepted so far (and what the owner's rules say about that amount)
+async function bkAwardCheck(){
+  const w = state.bkAward;
+  if (!w) return;
+  try {
+    const chk = await api('/api/quotes/' + encodeURIComponent(w.quoteId) + '/award-check' + (w.accepted.length ? '?accept=' + w.accepted.map(encodeURIComponent).join(',') : ''));
+    if (!state.bkAward || state.bkAward.quoteId !== w.quoteId) return;
+    setState({ bkAward: { ...state.bkAward, chk, loading: false } });
+  } catch(e) { setState({ bkAward: null }); showToast(e.message); }
+}
+function closeBasketAward(){ setState({ bkAward: null }); }
+function bkAwardToggle(itemId){
+  const w = state.bkAward;
+  if (!w || w.busy) return;
+  const accepted = w.accepted.includes(itemId) ? w.accepted.filter((x) => x !== itemId) : w.accepted.concat([itemId]);
+  setState({ bkAward: { ...w, accepted, loading: true, confirmPartial: false, confirmBelow: false } }); // the plan changes, so the confirmations start again
+  bkAwardCheck();
+}
+function bkAwardSet(field, value){ setState({ bkAward: { ...state.bkAward, [field]: !!value } }); }
+async function doBasketAward(){
+  const w = state.bkAward;
+  if (!w || !w.chk || w.busy || w.loading) return;
+  const plan = w.chk.basket;
+  if (!bkAwardReady(w, plan)) return;
+  setState({ bkAward: { ...w, busy: true } });
+  try {
+    const r = await api('/api/quotes/' + encodeURIComponent(w.quoteId) + '/award', { method: 'POST', body: JSON.stringify(bkAwardBody(w, plan)) });
+    setState({ bkAward: null });
+    showToast(t(r && r.approval ? 'apSent' : !r || !r.repost ? 'bkwAwarded' : r.repost.existing ? 'bkwAwardedRepostExisting' : r.repost.status === 'DRAFT' ? 'bkwAwardedRepostDraft' : 'bkwAwardedRepost'));
+    closeCompare();
+    refreshRfqs(); refreshLpos();
+  } catch(e) {
+    if (e.status === 409 && e.data && e.data.code) {
+      // the plan is not what the buyer saw (the supplier changed its answer): look again and confirm again
+      setState({ bkAward: { ...state.bkAward, busy: false, loading: true, confirmPartial: false, confirmBelow: false } });
+      showToast(t('bkwChanged'));
+      bkAwardCheck(); refreshCompareQuotes();
+      return;
+    }
+    setState({ bkAward: null });
+    showToast(e.message);
+    refreshRfqs(); refreshCompareQuotes();
+  }
+}
+function renderBasketAward(){
+  const w = state.bkAward;
+  if (!w) return '';
+  const quote = (state.compareQuotes || []).find((x) => x.id === w.quoteId);
+  const items = state.compareRfq && state.compareRfq.items;
+  const wrap = (inner, foot) => '<div class="bx-overlay fixed inset-0 z-[55] flex items-center justify-center bg-black/50 p-4"><div class="bx-rise bx-modal bx-scroll w-full max-w-lg rounded-2xl border p-6 shadow-2xl" style="border-color:var(--bd); background:var(--panel); max-height:92vh; overflow-y:auto;">' +
+    '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t('bkwTitle') + '</h3><button onclick="closeBasketAward()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' + inner + (foot || '') + '</div></div>';
+  if (!quote || !items || !w.chk) return wrap('<div class="py-10 text-center text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>');
+  const c = w.chk, plan = c.basket;
+  if (!plan) return wrap('<div class="py-10 text-center text-[13px]" style="color:var(--bad);">' + t('bkwChanged') + '</div>');
+  const check = (field, on, text) => '<label class="flex items-start gap-2.5 text-[12.5px]" style="color:var(--tx2);"><input type="checkbox" ' + (on ? 'checked ' : '') + 'onchange="bkAwardSet(\'' + field + '\', this.checked)" class="mt-0.5 h-4 w-4 shrink-0" style="accent-color:var(--acc);" /><span>' + text + '</span></label>';
+  const analogues = bkAnalogueRows(quote, items);
+  const why = c.reason === 'BOTH' ? tpl('acWhyBoth', { threshold: c.threshold }) : c.reason === 'BUDGET' ? t('acWhyBudget') : tpl('acWhyThreshold', { threshold: c.threshold });
+  const body = '<div class="mt-1 text-[13px]" style="color:var(--tx3);">' + tpl('bkwTo', { name: '<b style="color:var(--tx);">' + esc(quote.supplierCompany ? quote.supplierCompany.name : '') + '</b>' }) + '</div>' +
+    '<div class="mt-3 rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--inset); opacity:' + (w.loading ? '0.6' : '1') + ';"><div class="flex items-baseline justify-between gap-3"><span class="text-[12px]" style="color:var(--tx4);">' + t('bkwOrderTotal') + '</span><span class="mono bx-display text-[20px]" style="color:var(--tx);">' + bhdMoney(plan.orderTotal) + '</span></div>' +
+      '<div class="mt-1 text-[12.5px]" style="color:var(--tx3);">' + tpl('bkwCovered', { covered: plan.covered, n: plan.itemsTotal }) + (w.loading ? ' · ' + t('bkwChecking') : '') + '</div></div>' +
+    (analogues.length ? '<div class="mt-4"><div class="text-[12.5px] font-bold" style="color:var(--tx);">' + t('bkwAnalogues') + '</div><div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + t('bkwAnaloguesHint') + '</div><div class="mt-2 flex flex-col gap-2">' +
+      analogues.map((a) => '<label class="flex items-start gap-2.5 rounded-lg border p-2.5 text-[12.5px]" style="border-color:var(--bd); color:var(--tx2); cursor:pointer;"><input type="checkbox" ' + (w.accepted.includes(a.id) ? 'checked ' : '') + (w.busy ? 'disabled ' : '') + 'onchange="bkAwardToggle(' + jsAttr(a.id) + ')" class="mt-0.5 h-4 w-4 shrink-0" style="accent-color:var(--acc);" /><span style="overflow-wrap:anywhere;">' +
+        tpl('bkwAnalogueLine', { name: '<b style="color:var(--tx);">' + esc(a.substituteName + (a.substituteBrand ? ' (' + a.substituteBrand + ')' : '')) + '</b>', item: esc(a.name), price: bhdMoney(a.unitPrice), qty: esc(a.quantity), line: '<b class="mono">' + bhdMoney(a.lineFils / 1000) + '</b>' }) + '</span></label>').join('') + '</div></div>' : '') +
+    (plan.missing.length
+      ? '<div class="mt-4 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><div style="overflow-wrap:anywhere;">' + tpl('bkwMissing', { items: '<b>' + esc(plan.missing.map((m) => m.name).join(', ')) + '</b>' }) + '</div>' +
+          '<div class="mt-2" style="color:var(--tx2);">' + check('confirmPartial', w.confirmPartial, tpl('bkwPartialCheck', { n: plan.missing.length })) + '</div></div>'
+      : '<div class="mt-4 text-[12.5px] font-semibold" style="color:var(--ok);">' + t('bkwNoMissing') + '</div>') +
+    (plan.belowMin ? '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);">' + tpl('bkwBelowMin', { total: '<b>' + bhdMoney(plan.orderTotal) + '</b>', min: '<b>' + bhdMoney(plan.minOrderAmount) + '</b>' }) + '<div class="mt-2" style="color:var(--tx2);">' + check('confirmBelow', w.confirmBelow, t('bkwBelowCheck')) + '</div></div>' : '') +
+    (plan.missing.length && basketOn() ? '<div class="mt-4 rounded-lg border p-3" style="border-color:var(--bd); background:var(--inset);">' + check('repost', w.repost, '<b style="color:var(--tx);">' + t('bkwRepost') + '</b>') + '<div class="mt-1.5 text-[11.5px]" style="color:var(--tx4);">' + t('bkwRepostHint') + '</div></div>' : '') +
+    (c.needsApproval ? '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><b>' + t('acNeedsApproval') + '</b><div class="mt-1">' + why + '</div></div>'
+      : (c.ownerDecides && c.reason ? '<div class="mt-3 text-[12px]" style="color:var(--tx3);">' + t('acOwnerNote') + '</div>' : '')) +
+    budgetAfterHtml(c);
+  const ready = bkAwardReady(w, plan) && !w.loading && !w.busy;
+  const foot = '<div class="sticky bottom-0 -mx-6 mt-4 px-6 pb-1 pt-3" style="background:var(--panel);"><button onclick="doBasketAward()" ' + (ready ? '' : 'disabled') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); opacity:' + (ready ? '1' : '0.5') + ';">' + (w.busy ? t('acBusy') : t(c.needsApproval ? 'acSend' : 'bkwAward')) + '</button></div>';
+  return wrap(body, foot);
 }
 
 // Close bidding early: no more quotes; awarding a submitted quote stays possible
@@ -7883,7 +8010,7 @@ function renderModals(){
       'confirmDeliveryFail()', state.ordersBusyId ? t('working') : t('dfSubmit'), !!state.ordersBusyId);
   }
   // on top of everything else (Compare bids stays open underneath the question)
-  html += renderAwardCheck() + renderApprovalModal() + renderSupplierCard();
+  html += renderAwardCheck() + renderBasketAward() + renderApprovalModal() + renderSupplierCard();
   return html;
 }
 
@@ -8108,6 +8235,7 @@ const OVERLAYS = [
   ['moreSheet', s => !!s.showMoreSheet, () => toggleMoreSheet()],
   ['postRfq', s => !!s.showPostRfq, () => closePostRfq()],
   ['basket', s => !!s.showBasket, () => closeBasket()],
+  ['bkAward', s => !!s.bkAward, () => closeBasketAward()],
   ['bkAnswer', s => !!s.bkAnswer, () => closeBasketAnswer()],
   ['closeBidding', s => !!s.closeBiddingRfqId, () => closeCloseBidding()],
   ['cancelRfq', s => !!s.cancelRfqId, () => closeCancelRfq()],
