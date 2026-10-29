@@ -88,6 +88,12 @@ check('the switch is on the five tabs that have a test side, with a clear "TEST"
 // ---- demo answers
 check('the tab has an "Add demo answers" button on a published test request; it calls the demo endpoint and refreshes the tab', has("(r.status === 'PUBLISHED' ? actionBtn('Add demo answers', 'sandboxDemo(' + jsAttr(r.id) + ')'") && has("api('/api/admin/sandbox/demo-answers', { method: 'POST', body: JSON.stringify({ rfqId }) })") && has('showToast(r.created.length ?') && has("    refreshAdminSandbox();"));
 
+// ---- the id of the test buyer and the Railway line for baskets
+check('every test company card shows its id with a Copy button; the tab explains BASKET_ENABLED for the sandbox only, with the exact line for the test buyer', has('<span style="overflow-wrap:anywhere;">id \' + esc(p.id) + \'</span>') && has("const line = 'BASKET_ENABLED=' + buyer.id;") && has('Baskets on production, for the sandbox only') && has("copyToClipboard(' + jsAttr(line) + ')"));
+const boxSrc = html.slice(html.indexOf('function basketSwitchBox(profiles){'), html.indexOf('function renderAdminSandbox(){'));
+const box = (list) => new Function('esc', 'jsAttr', boxSrc + '; return basketSwitchBox(' + JSON.stringify(list) + ');')(esc, (s) => esc("'" + s + "'"));
+check('the line holds the id of the BUYER only; no buyer, no box', box([{ id: 'sup-1', type: 'SUPPLIER', name: 'S' }, { id: 'buy-1', type: 'BUYER', name: 'B' }]).includes('BASKET_ENABLED=buy-1') && !box([{ id: 'sup-1', type: 'SUPPLIER', name: 'S' }, { id: 'buy-1', type: 'BUYER', name: 'B' }]).includes('sup-1') && box([{ id: 's', type: 'SUPPLIER', name: 'S' }]) === '');
+
 // ---- texts
 const keys = ['sbxBannerTitle', 'sbxBannerText', 'sbxBannerShort', 'sbxSwitchTo', 'sbxBack', 'sbxSwitchFailed', 'sbxEnded'];
 check('every text exists in English and in Arabic (Arabic script)', keys.every((k) => typeof en[k] === 'string' && en[k] && typeof ar[k] === 'string' && /[؀-ۿ]/.test(ar[k])));

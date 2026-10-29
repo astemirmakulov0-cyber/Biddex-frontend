@@ -2331,6 +2331,19 @@ async function sandboxDemo(rfqId){
     refreshAdminSandbox();
   } catch(e) { setState({ sandboxBusy: false }); showToast(e.message); }
 }
+// How to switch baskets on for the sandbox only: BASKET_ENABLED takes a list of BUYER company ids (a basket is posted by a buyer)
+function basketSwitchBox(profiles){
+  const buyer = (profiles || []).find((p) => p.type === 'BUYER');
+  if (!buyer) return '';
+  const line = 'BASKET_ENABLED=' + buyer.id;
+  return '<div class="mt-8 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+    '<div class="text-[15px] font-bold" style="color:var(--tx);">Baskets on production, for the sandbox only</div>' +
+    '<p class="mt-1.5 max-w-[640px] text-[12.5px]" style="color:var(--tx3);">In Railway, open the backend service, then Variables, and set exactly this (the id of the test buyer; suppliers need no id, because a basket is posted by a buyer):</p>' +
+    '<div class="mt-2 flex flex-wrap items-center gap-2"><code class="mono rounded-lg border px-3 py-2 text-[12px]" style="border-color:var(--bd2); background:var(--inset); color:var(--tx); overflow-wrap:anywhere;">' + esc(line) + '</code>' +
+      '<button type="button" onclick="copyToClipboard(' + jsAttr(line) + ')" class="rounded-lg border px-3 py-2 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx2);">Copy</button></div>' +
+    '<p class="mt-2 max-w-[640px] text-[12px]" style="color:var(--tx4);">A comma-separated list of buyer company ids (no spaces needed) switches baskets on for those companies only. Later, <span class="mono">BASKET_ENABLED=1</span> switches them on for every buyer. Removing the variable switches creating and re-posting off; baskets that exist keep working.</p>' +
+  '</div>';
+}
 function renderAdminSandbox(){
   const box = state.sandbox;
   const profiles = sandboxProfiles(box && box.companies);
@@ -2346,9 +2359,11 @@ function renderAdminSandbox(){
         const c = full.find((x) => x.id === p.id) || {};
         return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
           '<div class="flex items-center gap-3">' + avatarHtml(p.name, 36) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +
-          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + (p.type === 'SUPPLIER' ? 'SUPPLIER · ' + esc(c.credits || '0.000') + ' credits' : 'BUYER') + '</div></div></div>' +
+          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + (p.type === 'SUPPLIER' ? 'SUPPLIER · ' + esc(c.credits || '0.000') + ' credits' : 'BUYER') + '</div>' +
+          '<div class="mono mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px]" style="color:var(--tx4);"><span style="overflow-wrap:anywhere;">id ' + esc(p.id) + '</span><button type="button" onclick="copyToClipboard(' + jsAttr(p.id) + ')" class="font-semibold" style="color:var(--acc);">Copy</button></div></div></div>' +
           actionBtn('Work as this company', 'sandboxEnter(' + jsAttr(p.id) + ')', !!state.sandboxBusy) + '</div>';
       }).join('') + '</div>' +
+      basketSwitchBox(profiles) +
       '<div class="mt-8 mb-2 text-[15px] font-bold" style="color:var(--tx);">Test requests</div>' +
       (rfqs.length === 0 ? '<div class="text-[13px]" style="color:var(--tx3);">None yet. Work as the test buyer and post one.</div>' :
         '<div class="flex flex-col gap-2">' + rfqs.map((r) =>
