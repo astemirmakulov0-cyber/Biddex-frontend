@@ -60,6 +60,7 @@ check('the form is a window the Back button closes, and it is drawn with the oth
 check('Edit on a basket opens the basket form (not the single-request form)', has('if (r.isBasket) { openEditBasket(rfqId); return; }'));
 check('the lists show the title in the user\'s language and a "Basket · N items" pill', html.split('esc(rfqTitle(r))').length - 1 >= 2 && html.split("bkItemsPill(r)").length - 1 >= 2);
 check('a published basket has "Copy link" and "Share via WhatsApp" (the buttons never open the row underneath)', has("if (!r.isBasket || r.status !== 'PUBLISHED') return '';") && has('event.stopPropagation(); copyBasketLink(') && has('event.stopPropagation(); shareBasketWhatsApp(') && has('bkShareButtons(r) +'));
+check('copying: the clipboard API first, then the old way, and if the browser refuses both the link is shown in a box to copy by hand (never a silent failure)', has('navigator.clipboard.writeText(text).then(() => resolve(true), legacy)') && has("document.execCommand('copy')") && has('window.prompt(t(\'bkCopyFailed\'), link)'));
 check('sharing uses the title and the link only, WhatsApp opens in a new tab without an opener', has("bkShareText(r.title, bkLink(id), I18N.en, I18N.ar)") && has("window.open(bkWhatsAppUrl(text), '_blank', 'noopener')"));
 check('the form never prints a typed value unescaped (esc on every value)', ['esc(it.name)', 'esc(it.quantity)', 'esc(it.brand)', 'esc(f.title)', 'esc(f.budget)', 'esc(f.specifications || \'\')'].every(has));
 
