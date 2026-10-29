@@ -1836,7 +1836,7 @@ let state = {
 
   adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
   // admin sandbox (test mode): the test companies, their requests, the switcher of the banner
-  sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false,
+  sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false,
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
@@ -2264,6 +2264,27 @@ function sandboxExit(toastKey){
   if (toastKey) showToast(t(toastKey));
 }
 
+// The admin's lists show ONE world at a time: the real companies (default) or the test area (state.adminTest). The server filters (?sandbox=1).
+function withWorld(path){ return state.adminTest ? path + (path.includes('?') ? '&' : '?') + 'sandbox=1' : path; }
+function setAdminWorld(test){
+  if (!!state.adminTest === !!test) return;
+  setState({ adminTest: !!test, adminCompanies: [], adminDisputes: [], adminRfqs: [], adminRfqsTotal: 0, adminRfqsPage: 1, adminOrdersAll: [], adminOrdersAllTotal: 0, adminOrdersAllPage: 1, adminReviews: [] });
+  refreshAdmin();
+  const tab = state.adminTab;
+  if (tab === 'rfqs') refreshAdminRfqs(); else if (tab === 'orders') refreshAdminOrdersAll(); else if (tab === 'reviews') refreshAdminReviews();
+}
+// the switch under the tabs (only on the tabs that have a test side), and a line that says which area is on screen
+function adminWorldBar(){
+  if (!['companies', 'disputes', 'rfqs', 'orders', 'reviews'].includes(state.adminTab)) return '';
+  const on = !!state.adminTest;
+  return '<div class="mb-6 flex flex-wrap items-center gap-2">' +
+    '<span class="text-[12px] font-semibold" style="color:var(--tx3);">Showing</span>' +
+    '<button onclick="setAdminWorld(false)" class="chip' + (on ? '' : ' active') + '">Real data</button>' +
+    '<button onclick="setAdminWorld(true)" class="chip' + (on ? ' active' : '') + '">Test area</button>' +
+    (on ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:#FBBF24; color:#431407;">TEST: only the sandbox companies, requests and orders</span>' : '') +
+  '</div>';
+}
+
 // ---------- Admin: sandbox tab ----------
 async function refreshAdminSandbox(){
   if (!state.token || state.view !== 'admin') return;
@@ -2310,7 +2331,7 @@ function renderAdminSandbox(){
 
 // Everything a session leaves in the page, back to the signed-out values (used by logout and when the admin enters or leaves the test mode)
 function signedOutState(){
-  return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null  };
+  return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminTest:false, adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null  };
 }
 function logout(){
   // in the test mode "sign out" goes back to the admin console (the admin stays signed in)
@@ -2771,7 +2792,7 @@ async function submitVerifyDoc(){
 
 async function refreshAdminCompanies(){
   if (!state.token) return;
-  try { const data = await api('/api/admin/companies' + (state.adminFilter === 'DELETED' ? '?deleted=only' : '')); setIfChanged('adminCompanies', data); syncOk('admin'); }
+  try { const data = await api(withWorld('/api/admin/companies' + (state.adminFilter === 'DELETED' ? '?deleted=only' : ''))); setIfChanged('adminCompanies', data); syncOk('admin'); }
   catch(e) { syncFailed('admin', e); }
 }
 
@@ -2799,7 +2820,7 @@ function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); }
 async function refreshAdminDisputes(){
   if (!state.token) return;
   try {
-    const res = await api('/api/admin/orders?status=DISPUTED&pageSize=100');
+    const res = await api(withWorld('/api/admin/orders?status=DISPUTED&pageSize=100'));
     const data = res.items || res; // tolerate the old plain-array shape too
     setIfChanged('adminDisputes', data);
     syncOk('adminDisputes');
@@ -2838,7 +2859,7 @@ async function refreshAdminRfqs(){
   qs.set('pageSize', 20);
   setState({ adminRfqsLoading: true });
   try {
-    const data = await api('/api/admin/rfqs?' + qs.toString());
+    const data = await api(withWorld('/api/admin/rfqs?' + qs.toString()));
     setState({ adminRfqs: data.items, adminRfqsTotal: data.total, adminRfqsLoading: false });
     syncOk('adminRfqs');
   } catch(e) { setState({ adminRfqsLoading: false }); syncFailed('adminRfqs', e); }
@@ -3002,7 +3023,7 @@ function renderRatingsModal(){
 // ---------- Admin: reviews ----------
 async function refreshAdminReviews(){
   if (!state.token || state.view !== 'admin') return;
-  try { setState({ adminReviews: await api('/api/admin/reviews?withComment=1') }); syncOk('adminReviews'); } catch(e) { syncFailed('adminReviews', e); }
+  try { setState({ adminReviews: await api(withWorld('/api/admin/reviews?withComment=1')) }); syncOk('adminReviews'); } catch(e) { syncFailed('adminReviews', e); }
 }
 async function hideReviewComment(id, hidden){
   let reason = '';
@@ -3193,7 +3214,7 @@ async function refreshAdminOrdersAll(){
   qs.set('pageSize', 20);
   setState({ adminOrdersAllLoading: true });
   try {
-    const data = await api('/api/admin/orders?' + qs.toString());
+    const data = await api(withWorld('/api/admin/orders?' + qs.toString()));
     setState({ adminOrdersAll: data.items, adminOrdersAllTotal: data.total, adminOrdersAllLoading: false });
     syncOk('adminOrdersAll');
   } catch(e) { setState({ adminOrdersAllLoading: false }); syncFailed('adminOrdersAll', e); }
@@ -6404,7 +6425,7 @@ function renderAdmin(){
     '<div class="flex flex-col gap-3">' + list.map(c => c.deleted ? deletedCompanyCardHtml(c) :
       '<div data-company="' + esc(c.id) + '" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex min-w-[220px] flex-1 items-center gap-3">' + avatarHtml(c.name, 36) +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) + (c.isTest ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold" style="background:#FBBF24; color:#431407;">TEST</span>' : '') +
           (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' :
            c.suspendedAt ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);" title="' + esc(c.suspensionReason || '') + '">Suspended</span>' : '') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
@@ -6424,7 +6445,7 @@ function renderAdmin(){
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + renderBidLinkModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + adminWorldBar() + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + renderBidLinkModal() + toastHtml();
 }
 
 // A deleted company is shown for reference only: no actions (the server refuses them too). Credits left on it

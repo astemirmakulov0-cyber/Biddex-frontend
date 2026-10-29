@@ -75,6 +75,14 @@ const tabSrc = html.slice(html.indexOf('function renderAdminSandbox(){'), html.i
 check('everything from the server that the tab prints is escaped', /esc\(p\.name\)/.test(tabSrc) && /esc\(r\.title\)/.test(tabSrc) && /esc\(r\.status\)/.test(tabSrc) && /esc\(c\.credits/.test(tabSrc));
 check('the journal labels know the two new actions', has("SANDBOX_CREATED: 'Test company created'") && has("SANDBOX_SWITCHED: 'Worked as a test company'"));
 
+// ---- the admin's lists: one world at a time
+check('the lists of the console ask for the world: companies, disputes, requests, orders and reviews all go through withWorld()', ['/api/admin/companies', '/api/admin/orders?status=DISPUTED', '/api/admin/rfqs?', '/api/admin/orders?', '/api/admin/reviews?withComment=1'].every((u) => has("api(withWorld('" + u)));
+const worldSrc = html.slice(html.indexOf('function withWorld(path){'), html.indexOf('function setAdminWorld'));
+const withWorld = (state, path) => new Function('state', worldSrc + '; return withWorld(' + JSON.stringify(path) + ');')(state);
+check('withWorld: nothing added for the real data; ?sandbox=1 or &sandbox=1 for the test area', withWorld({ adminTest: false }, '/api/admin/rfqs?page=1') === '/api/admin/rfqs?page=1' && withWorld({ adminTest: true }, '/api/admin/companies') === '/api/admin/companies?sandbox=1' && withWorld({ adminTest: true }, '/api/admin/rfqs?page=1') === '/api/admin/rfqs?page=1&sandbox=1');
+check('switching the world drops the lists on screen and loads again; signing out puts it back to the real data', has('function setAdminWorld(test){') && has("setState({ adminTest: !!test, adminCompanies: [], adminDisputes: [], adminRfqs: []") && has("adminTab:'companies', adminTest:false,"));
+check('the switch is on the five tabs that have a test side, with a clear "TEST" line when it is on; the card of a test company has a TEST pill', has("['companies', 'disputes', 'rfqs', 'orders', 'reviews'].includes(state.adminTab)") && has('TEST: only the sandbox companies') && has("(c.isTest ? ' <span") && has('+ adminWorldBar() + body'));
+
 // ---- texts
 const keys = ['sbxBannerTitle', 'sbxBannerText', 'sbxSwitchTo', 'sbxBack', 'sbxSwitchFailed', 'sbxEnded'];
 check('every text exists in English and in Arabic (Arabic script)', keys.every((k) => typeof en[k] === 'string' && en[k] && typeof ar[k] === 'string' && /[؀-ۿ]/.test(ar[k])));
