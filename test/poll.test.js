@@ -44,7 +44,7 @@ check('wiring: the quiet refresh covers company, wallet, lists and the open orde
 const poll = html.slice(html.indexOf('function pollNow(){'), html.indexOf('setInterval(() => {\n  if (!state.token) return;'));
 check('wiring: a poll covers company, wallet and the open order too', poll.includes('refreshCompanyInfo();') && poll.includes('refreshWallet();') && poll.includes('refreshOrderDetailQuiet();'));
 check('wiring: visibilitychange and focus both use onReturnToApp (throttled by returnAction)', has("document.addEventListener('visibilitychange', onReturnToApp);") && has("window.addEventListener('focus', onReturnToApp);"));
-check('wiring: signing out forgets the seen notifications', has('function logout(){\n  notifSeen = null;'));
+check('wiring: signing out forgets the seen notifications', /notifSeen = null;\s+clearSession\(\);/.test(html.slice(html.indexOf('function logout(){'))));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

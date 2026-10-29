@@ -38,7 +38,7 @@ check('the threshold and the "needs approval" box show only while teams are on (
 check('the budget bar is in Spending (from d.budget) and turns amber at 80% and red at 100%', has('const cards = budgetBarHtml(d.budget) +') && has("p >= 100 ? 'var(--bad)' : p >= 80 ? 'var(--pend)' : 'var(--acc)'"));
 check('the bell: a request opens the approval, a budget message opens Spending', has('openNotifApproval(') && has('openNotifSpending(') && has('/^APPROVAL_(REQUESTED|REMINDER)$/'));
 check('#/approval/<id> (the e-mail button) opens the owner\'s window; signed out it waits for sign-in; anybody else lands on Home', has("m[1] === 'approval' && m[2]") && has("r.section === 'approvalLink' && r.approvalId") && has("r.section === 'approvalLink' || r.section === 'reorderLink') openAuth('BUYER', 'login')") && has("(['order', 'rfq', 'approval', 'reorder', 'login', 'register']"));
-check('signing out forgets the windows and the rules', has('setState({ reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null,'));
+check('signing out forgets the windows and the rules', has('return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null,'));
 check('the history has texts for the four approval actions', ['APPROVAL_REQUESTED', 'APPROVAL_APPROVED', 'APPROVAL_REJECTED', 'APPROVAL_CANCELLED'].every((a) => has('act_' + a + ':')));
 
 // ---- texts in both languages

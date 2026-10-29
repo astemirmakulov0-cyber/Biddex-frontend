@@ -205,6 +205,24 @@
 
   /* ---- spending report: only the report prints (Print / Save as PDF) ---- */
   .bx-printonly { display: none; }
+  /* the test mode of the admin: a bar on top of every screen; the sticky header sits under it */
+  .bx-sbx { position: sticky; top: 0; z-index: 50; background: #7C2D12; color: #fff; box-shadow: inset 0 -4px 0 #FBBF24; }
+  .bx-sbx-in { max-width: 1220px; margin: 0 auto; padding: 8px 16px 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; line-height: 1.4; }
+  .bx-sbx strong { background: #FBBF24; color: #431407; padding: 2px 8px; border-radius: 6px; font-size: 12px; letter-spacing: .04em; }
+  html[dir=rtl] .bx-sbx strong { letter-spacing: 0; }
+  .bx-sbx-text { flex: 1 1 260px; min-width: 0; }
+  .bx-sbx select { background: #FFF7ED; color: #431407; border: 0; border-radius: 8px; padding: 6px 10px; min-height: 36px; font-size: 13px; font-weight: 600; max-width: 100%; }
+  .bx-sbx button { background: #fff; color: #7C2D12; border-radius: 10px; padding: 6px 14px; min-height: 36px; font-size: 13px; font-weight: 700; }
+  .bx-sbx-short { display: none; }
+  @media (max-width: 520px) {
+    .bx-sbx-in { padding: 6px 12px 10px; gap: 6px 10px; font-size: 12.5px; }
+    .bx-sbx-text { display: none; }
+    .bx-sbx-short { display: block; flex: 1 1 140px; min-width: 0; }
+    .bx-sbx label { flex: 1 1 150px; }
+    .bx-sbx-lab { display: none; }
+    .bx-sbx select { width: 100%; }
+  }
+  html[data-sbx] header.sticky { top: var(--sbx-h, 0px) !important; }
   @media print {
     :root, :root[data-theme=dark] { --bg:#fff; --panel:#fff; --inset:#fff; --tx:#1B1A17; --tx2:#444; --tx3:#555; --tx4:#666; --line:#d8d3ca; --bd:#d8d3ca; --acc:#0F766E; --acc-soft:#E3F2EF; --acc-ink:#0B5A54; --bad:#B42318; --pend:#8A4A0B; --pend-soft:#FCEFD9; }
     html, body, #app { background: #fff !important; }
@@ -484,6 +502,13 @@ const I18N = {
     roleSupplier:"Supplier",
     registerSuccess:"Registration successful. Please check your email to verify your account.",
     sessionExpired:"Your session has expired. Please log in again.",
+    sbxBannerTitle:"TEST MODE",
+    sbxBannerText:"You are working as {name} ({role}). Everything you do here stays in the test area: no real company sees it and no e-mails are sent.",
+    sbxBannerShort:"Working as {name} ({role}). Nothing here reaches real companies.",
+    sbxSwitchTo:"Switch to",
+    sbxBack:"Back to admin",
+    sbxSwitchFailed:"Could not switch to the test company. Try again.",
+    sbxEnded:"The test session ended. You are back in the admin console.",
     noLongerMember:"You are no longer a member of that company. Please log in again.",
     accountDeactivated:"This account has been deactivated.",
     verifyTitle2:"Submit verification document",
@@ -1208,6 +1233,13 @@ const I18N = {
     roleSupplier:"مورّد",
     registerSuccess:"تم إنشاء الحساب. تحقّق من بريدك الإلكتروني لتفعيل حسابك.",
     sessionExpired:"انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
+    sbxBannerTitle:"وضع الاختبار",
+    sbxBannerText:"أنت تعمل الآن بصفة {name} ({role}). كل ما تفعله هنا يبقى داخل منطقة الاختبار: لا ترى أي شركة حقيقية ذلك ولا تُرسل أي رسائل بريد إلكتروني.",
+    sbxBannerShort:"تعمل بصفة {name} ({role}). لا شيء هنا يصل إلى الشركات الحقيقية.",
+    sbxSwitchTo:"التبديل إلى",
+    sbxBack:"العودة إلى لوحة الإدارة",
+    sbxSwitchFailed:"تعذّر التبديل إلى شركة الاختبار. حاول مرة أخرى.",
+    sbxEnded:"انتهت جلسة الاختبار. عدت إلى لوحة الإدارة.",
     noLongerMember:"لم تعد عضواً في تلك الشركة. يرجى تسجيل الدخول مرة أخرى.",
     accountDeactivated:"تم تعطيل هذا الحساب.",
     verifyTitle2:"إرسال مستند التوثيق",
@@ -1814,6 +1846,8 @@ let state = {
   showVerifyModal: false, verifyForm: { fileUrl:'', docType:'TRADE_LICENSE' }, verifyBusy: false,
 
   adminCompanies: [], adminBusyId: null, adminFilter: 'ALL',
+  // admin sandbox (test mode): the test companies, their requests, the switcher of the banner
+  sandbox: null, sandboxRfqs: [], sandboxList: [], sandboxBusy: false, adminTest: false,
   // admin disputes: list, the one under review (its chat is loaded on open) and the resolution form
   adminTab: 'companies', adminDisputes: [], adminDisputeId: null, adminDisputeChat: [],
   resolveComment: '', resolveBusy: false,
@@ -1958,8 +1992,9 @@ async function api(path, opts={}) {
     // password on the change-password form, must not log the user out.)
     const SESSION_ERRORS = ['Invalid or expired token', 'Account deactivated', 'Missing or invalid Authorization header', 'You are no longer a member of this company'];
     if (res.status === 401 && state.token && SESSION_ERRORS.includes(err.message)) {
+      const wasSandbox = isSandbox();
       logout();
-      showToast(t(err.message === 'Account deactivated' ? 'accountDeactivated' : err.message === 'You are no longer a member of this company' ? 'noLongerMember' : 'sessionExpired'));
+      showToast(t(wasSandbox ? 'sbxEnded' : err.message === 'Account deactivated' ? 'accountDeactivated' : err.message === 'You are no longer a member of this company' ? 'noLongerMember' : 'sessionExpired'));
     }
     throw err;
   }
@@ -1974,6 +2009,7 @@ function loadSession(){
       state.token = s.token; state.user = s.user; state.company = s.company;
       if (state.company) delete state.company.bidFeePercent; // server config, refreshed on start; a stored copy may be stale
       state.view = s.user && s.user.role === 'ADMIN' ? 'admin' : (s.company && s.company.type === 'SUPPLIER' ? 'supplier' : 'buyer');
+      if (s.user && s.user.sandbox === true) { const a = readAdminSession(); state.sandboxList = a ? a.list : []; }
     }
   } catch(e) {}
 }
@@ -2142,10 +2178,197 @@ async function submitForgotPassword(){
   } catch(e) { setState({ forgotBusy: false }); showToast(e.message); }
 }
 
+// ---------- Admin sandbox (test mode) ----------
+// The admin works as one of the test companies (buyer, supplier A/B/C) without signing out: POST /api/admin/sandbox/switch answers like a sign-in with a
+// short-lived sandbox token. The admin's own session is kept in localStorage under ADMIN_SESSION_KEY and put back by "Back to admin"; a banner on every
+// screen says that this is the test mode. Test companies and real ones never see each other (the server keeps the two worlds apart).
+// BEGIN SANDBOX HELPERS (pure functions: test/sandbox.test.js loads this block on its own)
+const ADMIN_SESSION_KEY = 'biddex_admin_session';
+// the test companies in the order the switcher shows them: the buyer first, then the suppliers by name; anything malformed is dropped
+function sandboxProfiles(list){
+  const ok = (Array.isArray(list) ? list : []).filter((c) => c && typeof c.id === 'string' && c.id && typeof c.name === 'string' && (c.type === 'BUYER' || c.type === 'SUPPLIER'));
+  return ok.map((c) => ({ id: c.id, name: c.name, type: c.type })).sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name) : a.type === 'BUYER' ? -1 : 1));
+}
+// the admin's saved session, or null when it is missing, damaged, or not an admin's
+function parseAdminSession(raw){
+  try {
+    const s = JSON.parse(raw);
+    if (s && typeof s.token === 'string' && s.token && s.user && s.user.role === 'ADMIN') return { token: s.token, user: s.user, company: s.company || null, list: sandboxProfiles(s.list) };
+  } catch (e) {}
+  return null;
+}
+// what the banner shows; null outside the test mode (only the server sets user.sandbox)
+function sandboxBannerModel(user, company, profiles){
+  if (!user || user.sandbox !== true || !company) return null;
+  return { name: company.name, type: company.type === 'SUPPLIER' ? 'SUPPLIER' : 'BUYER', options: sandboxProfiles(profiles).map((p) => ({ id: p.id, name: p.name, type: p.type, selected: p.id === company.id })) };
+}
+// END SANDBOX HELPERS
+
+const isSandbox = () => !!(state.user && state.user.sandbox === true);
+function readAdminSession(){ try { return parseAdminSession(localStorage.getItem(ADMIN_SESSION_KEY)); } catch(e) { return null; } }
+function saveAdminSession(s){ try { localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(s)); } catch(e) {} }
+function clearAdminSession(){ try { localStorage.removeItem(ADMIN_SESSION_KEY); } catch(e) {} }
+
+// The bar at the top of every screen of the test mode: where you are, a switch to the other test companies, the way back.
+function sandboxBanner(){
+  const m = sandboxBannerModel(state.user, state.company, state.sandboxList);
+  if (!m) return '';
+  const roleName = (type) => t(type === 'SUPPLIER' ? 'roleSupplier' : 'roleBuyer');
+  const sel = m.options.length > 1
+    ? '<label class="flex items-center gap-2 font-semibold"><span class="bx-sbx-lab">' + t('sbxSwitchTo') + '</span>' +
+        '<select onchange="sandboxEnter(this.value)" aria-label="' + esc(t('sbxSwitchTo')) + '">' +
+        m.options.map((o) => '<option value="' + esc(o.id) + '"' + (o.selected ? ' selected' : '') + '>' + esc(o.name) + ' · ' + roleName(o.type) + '</option>').join('') + '</select></label>'
+    : '';
+  return '<div class="bx-sbx bx-noprint" role="status"><div class="bx-sbx-in">' +
+    '<strong>' + t('sbxBannerTitle') + '</strong>' +
+    '<span class="bx-sbx-text">' + tpl('sbxBannerText', { name: esc(m.name), role: roleName(m.type) }) + '</span>' +
+    '<span class="bx-sbx-short">' + tpl('sbxBannerShort', { name: esc(m.name), role: roleName(m.type) }) + '</span>' +
+    sel +
+    '<button onclick="sandboxExit()">' + t('sbxBack') + '</button>' +
+  '</div></div>';
+}
+// the banner is sticky at the top; the sticky header sits under it (its height is measured after each render)
+function sandboxLayout(){
+  const b = document.querySelector('.bx-sbx');
+  document.documentElement.toggleAttribute('data-sbx', !!b);
+  document.documentElement.style.setProperty('--sbx-h', b ? b.offsetHeight + 'px' : '0px');
+  const base = document.documentElement.getAttribute('data-title') || document.title.replace(/^TEST · /, '');
+  document.documentElement.setAttribute('data-title', base);
+  document.title = (b ? 'TEST · ' : '') + base;
+}
+
+// A window left open by the previous company (a half-typed quote, Compare bids...) must not follow the person into the next one
+function closeAllOverlays(){ for (const o of OVERLAYS) { try { if (o[1](state)) o[2](); } catch(e) {} } }
+
+// Work as a test company (from the admin console, or from another test company: the admin's own session stays saved).
+async function sandboxEnter(companyId){
+  if (state.sandboxBusy || !companyId) return;
+  const inSbx = isSandbox();
+  const admin = inSbx ? readAdminSession() : { token: state.token, user: state.user, company: state.company, list: sandboxProfiles(state.sandbox && state.sandbox.companies) };
+  if (!admin || !admin.token) { showToast(t('sbxSwitchFailed')); return; }
+  setState({ sandboxBusy: true });
+  const keep = state.token;
+  let data;
+  try {
+    state.token = admin.token; // the switch is the admin's call, not the test company's
+    data = await api('/api/admin/sandbox/switch', { method: 'POST', body: JSON.stringify({ companyId }) });
+  } catch (e) {
+    if (state.token === admin.token) state.token = keep;
+    setState({ sandboxBusy: false });
+    showToast(e.message || t('sbxSwitchFailed'));
+    render();
+    return;
+  }
+  if (!inSbx) saveAdminSession({ token: admin.token, user: admin.user, company: admin.company, list: sandboxProfiles(admin.list) });
+  notifSeen = null;
+  closeAllOverlays();
+  state.token = data.token; state.user = data.user; state.company = data.company; saveSession();
+  const dest = data.company && data.company.type === 'SUPPLIER' ? 'supplier' : 'buyer';
+  setState({ ...signedOutState(), token: data.token, user: data.user, company: data.company, sandboxList: sandboxProfiles(admin.list), sandboxBusy: false, view: dest, section: 'main' });
+  refreshAll();
+}
+
+// Back to the admin console: the saved admin session is put back and the test session is dropped.
+function sandboxExit(toastKey){
+  const s = readAdminSession();
+  if (!s) { logout(); return; }
+  clearAdminSession();
+  notifSeen = null;
+  closeAllOverlays();
+  state.token = s.token; state.user = s.user; state.company = s.company; saveSession();
+  setState({ ...signedOutState(), token: s.token, user: s.user, company: s.company, view: 'admin', adminTab: 'sandbox', section: 'main' });
+  refreshAdmin(); refreshAdminSandbox();
+  if (toastKey) showToast(t(toastKey));
+}
+
+// The admin's lists show ONE world at a time: the real companies (default) or the test area (state.adminTest). The server filters (?sandbox=1).
+function withWorld(path){ return state.adminTest ? path + (path.includes('?') ? '&' : '?') + 'sandbox=1' : path; }
+function setAdminWorld(test){
+  if (!!state.adminTest === !!test) return;
+  setState({ adminTest: !!test, adminCompanies: [], adminDisputes: [], adminRfqs: [], adminRfqsTotal: 0, adminRfqsPage: 1, adminOrdersAll: [], adminOrdersAllTotal: 0, adminOrdersAllPage: 1, adminReviews: [] });
+  refreshAdmin();
+  const tab = state.adminTab;
+  if (tab === 'rfqs') refreshAdminRfqs(); else if (tab === 'orders') refreshAdminOrdersAll(); else if (tab === 'reviews') refreshAdminReviews();
+}
+// the switch under the tabs (only on the tabs that have a test side), and a line that says which area is on screen
+function adminWorldBar(){
+  if (!['companies', 'disputes', 'rfqs', 'orders', 'reviews'].includes(state.adminTab)) return '';
+  const on = !!state.adminTest;
+  return '<div class="mb-6 flex flex-wrap items-center gap-2">' +
+    '<span class="text-[12px] font-semibold" style="color:var(--tx3);">Showing</span>' +
+    '<button onclick="setAdminWorld(false)" class="chip' + (on ? '' : ' active') + '">Real data</button>' +
+    '<button onclick="setAdminWorld(true)" class="chip' + (on ? ' active' : '') + '">Test area</button>' +
+    (on ? '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold" style="background:#FBBF24; color:#431407;">TEST: only the sandbox companies, requests and orders</span>' : '') +
+  '</div>';
+}
+
+// ---------- Admin: sandbox tab ----------
+async function refreshAdminSandbox(){
+  if (!state.token || state.view !== 'admin') return;
+  try {
+    const [box, rfqs] = await Promise.all([api('/api/admin/sandbox'), api('/api/admin/rfqs?sandbox=1&pageSize=50')]);
+    setState({ sandbox: box, sandboxRfqs: rfqs.items || [] });
+    syncOk('adminSandbox');
+  } catch(e) { syncFailed('adminSandbox', e); }
+}
+async function sandboxSetup(){
+  if (state.sandboxBusy) return;
+  setState({ sandboxBusy: true });
+  try {
+    await api('/api/admin/sandbox/setup', { method: 'POST' });
+    setState({ sandboxBusy: false });
+    await refreshAdminSandbox();
+  } catch(e) { setState({ sandboxBusy: false }); showToast(e.message); }
+}
+// The three test suppliers answer a published test request with different coverage and prices (so there is something to compare)
+async function sandboxDemo(rfqId){
+  if (state.sandboxBusy) return;
+  setState({ sandboxBusy: true });
+  try {
+    const r = await api('/api/admin/sandbox/demo-answers', { method: 'POST', body: JSON.stringify({ rfqId }) });
+    setState({ sandboxBusy: false });
+    showToast(r.created.length ? 'Demo answers added: ' + r.created.length : 'Nothing new: the test suppliers have answered already');
+    refreshAdminSandbox();
+  } catch(e) { setState({ sandboxBusy: false }); showToast(e.message); }
+}
+function renderAdminSandbox(){
+  const box = state.sandbox;
+  const profiles = sandboxProfiles(box && box.companies);
+  const full = box && box.companies ? box.companies : [];
+  const exists = !!(box && box.exists);
+  const rfqs = state.sandboxRfqs || [];
+  return '<div class="eyebrow mb-1.5">SANDBOX</div>' +
+    '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Test mode</h1>' +
+    '<p class="mt-2 max-w-[640px] text-[13px]" style="color:var(--tx3);">Work as a test buyer or a test supplier without signing out. Everything you create there is seen only by you: no real company gets a request, a bid, a notification or an e-mail, and nothing is counted in the platform figures. Test companies cannot see real requests either. To compare bids you need several suppliers, so there are three.</p>' +
+    (!box ? '<div class="mt-5 text-[13px]" style="color:var(--tx3);">Loading…</div>' :
+     !exists ? '<div class="mt-5">' + actionBtn('Create the test companies', 'sandboxSetup()', !!state.sandboxBusy) + '</div>' :
+     '<div class="mt-5 grid gap-3 sm:grid-cols-2">' + profiles.map((p) => {
+        const c = full.find((x) => x.id === p.id) || {};
+        return '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
+          '<div class="flex items-center gap-3">' + avatarHtml(p.name, 36) + '<div><div class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +
+          '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + (p.type === 'SUPPLIER' ? 'SUPPLIER · ' + esc(c.credits || '0.000') + ' credits' : 'BUYER') + '</div></div></div>' +
+          actionBtn('Work as this company', 'sandboxEnter(' + jsAttr(p.id) + ')', !!state.sandboxBusy) + '</div>';
+      }).join('') + '</div>' +
+      '<div class="mt-8 mb-2 text-[15px] font-bold" style="color:var(--tx);">Test requests</div>' +
+      (rfqs.length === 0 ? '<div class="text-[13px]" style="color:var(--tx3);">None yet. Work as the test buyer and post one.</div>' :
+        '<div class="flex flex-col gap-2">' + rfqs.map((r) =>
+          '<div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3" style="border-color:var(--bd); background:var(--panel);">' +
+            '<div class="min-w-[200px] flex-1"><div class="font-semibold text-[13.5px]" style="color:var(--tx);">' + esc(r.title) + (r.isBasket ? ' <span class="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--line); color:var(--tx2);">basket · ' + esc(r.itemCount) + ' items</span>' : '') + '</div>' +
+            '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(r.status) + ' · ' + esc((r._count && r._count.quotes) || 0) + ' bid(s)</div></div>' +
+            (r.status === 'PUBLISHED' ? actionBtn('Add demo answers', 'sandboxDemo(' + jsAttr(r.id) + ')', !!state.sandboxBusy) : '') + '</div>').join('') + '</div>' +
+        '<p class="mt-3 max-w-[640px] text-[12px]" style="color:var(--tx3);">"Add demo answers": the three test suppliers answer the request at once, with different coverage and prices (A is cheapest but misses items, B has everything, C offers analogues), so you can try comparing and awarding.</p>'));
+}
+
+// Everything a session leaves in the page, back to the signed-out values (used by logout and when the admin enters or leaves the test mode)
+function signedOutState(){
+  return { reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminTest:false, adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null  };
+}
 function logout(){
+  // in the test mode "sign out" goes back to the admin console (the admin stays signed in)
+  if (isSandbox() && readAdminSession()) { sandboxExit(); return; }
   notifSeen = null;
   clearSession();
-  setState({ reorder:null, reorderAll:false, approvalModal:null, awardCheck:null, spendRules:null, spendForm:null, people:null, showInviteModal:false, showLeaveModal:false, nameDraft:null, token:null, user:null, company:null, wallet:null, onboarding:null, rfqs:[], catalog:[], myCatalog:[], stock:[], spendData:null, spendRange:null, spendPreset:'12m', spendTab:'spending', priceItems:null, priceSearch:'', priceKeyIdx:null, priceDetail:null, lpos:[], orders:[], adminCompanies:[], adminDisputes:[], adminDisputeId:null, adminDisputeChat:[], adminTab:'companies', adminRfqs:[], adminRfqsTotal:0, adminRfqsPage:1, adminOrdersAll:[], adminOrdersAllTotal:0, adminOrdersAllPage:1, adminAuditItems:[], adminAuditTotal:0, adminAuditPage:1, adminAuditActions:[], adminAuditCompanies:[], adminAuditFilters:{ action:'', companyId:'', dateFrom:'', dateTo:'' }, adminAnalytics:null, adminOrderId:null, adminOrderDetail:null, adminOrderChat:[], showDeactivateModal:null, deactivateCompanyName:'', deactivateReason:'', notifications:[], notifUnread:0, chatMessages:[], syncErrors:{}, view:'landing', section:'main', orderDetail:null, selectedOrderId:null });
+  setState(signedOutState());
 }
 
 let lastPollAt = Date.now(); // when the data was last refreshed (see the polling block at the end of the script)
@@ -2599,7 +2822,7 @@ async function submitVerifyDoc(){
 
 async function refreshAdminCompanies(){
   if (!state.token) return;
-  try { const data = await api('/api/admin/companies' + (state.adminFilter === 'DELETED' ? '?deleted=only' : '')); setIfChanged('adminCompanies', data); syncOk('admin'); }
+  try { const data = await api(withWorld('/api/admin/companies' + (state.adminFilter === 'DELETED' ? '?deleted=only' : ''))); setIfChanged('adminCompanies', data); syncOk('admin'); }
   catch(e) { syncFailed('admin', e); }
 }
 
@@ -2627,7 +2850,7 @@ function refreshAdmin(){ refreshAdminCompanies(); refreshAdminDisputes(); }
 async function refreshAdminDisputes(){
   if (!state.token) return;
   try {
-    const res = await api('/api/admin/orders?status=DISPUTED&pageSize=100');
+    const res = await api(withWorld('/api/admin/orders?status=DISPUTED&pageSize=100'));
     const data = res.items || res; // tolerate the old plain-array shape too
     setIfChanged('adminDisputes', data);
     syncOk('adminDisputes');
@@ -2648,6 +2871,7 @@ function setAdminTab(tab){
   else if (tab === 'reviews') refreshAdminReviews();
   else if (tab === 'audit') refreshAdminAudit();
   else if (tab === 'analytics') refreshAdminAnalytics();
+  else if (tab === 'sandbox') refreshAdminSandbox();
 }
 
 // ---------- Admin: all RFQs ----------
@@ -2665,7 +2889,7 @@ async function refreshAdminRfqs(){
   qs.set('pageSize', 20);
   setState({ adminRfqsLoading: true });
   try {
-    const data = await api('/api/admin/rfqs?' + qs.toString());
+    const data = await api(withWorld('/api/admin/rfqs?' + qs.toString()));
     setState({ adminRfqs: data.items, adminRfqsTotal: data.total, adminRfqsLoading: false });
     syncOk('adminRfqs');
   } catch(e) { setState({ adminRfqsLoading: false }); syncFailed('adminRfqs', e); }
@@ -2829,7 +3053,7 @@ function renderRatingsModal(){
 // ---------- Admin: reviews ----------
 async function refreshAdminReviews(){
   if (!state.token || state.view !== 'admin') return;
-  try { setState({ adminReviews: await api('/api/admin/reviews?withComment=1') }); syncOk('adminReviews'); } catch(e) { syncFailed('adminReviews', e); }
+  try { setState({ adminReviews: await api(withWorld('/api/admin/reviews?withComment=1')) }); syncOk('adminReviews'); } catch(e) { syncFailed('adminReviews', e); }
 }
 async function hideReviewComment(id, hidden){
   let reason = '';
@@ -3020,7 +3244,7 @@ async function refreshAdminOrdersAll(){
   qs.set('pageSize', 20);
   setState({ adminOrdersAllLoading: true });
   try {
-    const data = await api('/api/admin/orders?' + qs.toString());
+    const data = await api(withWorld('/api/admin/orders?' + qs.toString()));
     setState({ adminOrdersAll: data.items, adminOrdersAllTotal: data.total, adminOrdersAllLoading: false });
     syncOk('adminOrdersAll');
   } catch(e) { setState({ adminOrdersAllLoading: false }); syncFailed('adminOrdersAll', e); }
@@ -3037,6 +3261,7 @@ const AUDIT_ACTION_LABELS = {
   REVIEW_COMMENT_SHOWN: 'Review comment shown', VERIFICATION_DOCUMENT_VIEWED: 'Verification document viewed', BID_LINK_CREATED: 'Bid link created', BID_LINK_REISSUED: 'Bid link reissued',
   BID_LINK_REVOKED: 'Bid link revoked', SUPPLIER_CONTACT_RECORDED: 'Supplier contact recorded', SUPPLIER_CONTACT_WITHDRAWN: 'Supplier consent withdrawn', SUPPLIER_CONTACT_VIEWED: 'Supplier contact viewed',
   ORDER_CHAT_VIEWED: 'Order chat viewed', ORDER_DOCUMENT_DOWNLOADED: 'Order document opened', QUOTE_ATTACHMENT_DOWNLOADED: 'Bid attachment opened',
+  SANDBOX_CREATED: 'Test company created', SANDBOX_SWITCHED: 'Worked as a test company', SANDBOX_DEMO_ANSWERS: 'Demo answers added',
 };
 async function refreshAdminAudit(){
   if (!state.token || state.view !== 'admin') return;
@@ -4458,11 +4683,13 @@ function stageTrackerHtml(currentIndex){
 function render(){
   document.documentElement.setAttribute('data-role', state.view === 'supplier' ? 'supplier' : 'buyer'); // accent by role; admin and signed-out: buyer
   const app = document.getElementById('app');
-  app.innerHTML = state.view === 'landing' ? renderLanding()
+  const sbx = state.view === 'buyer' || state.view === 'supplier' ? sandboxBanner() : '';
+  app.innerHTML = sbx + (state.view === 'landing' ? renderLanding()
     : state.view === 'auth' ? renderAuth()
     : state.view === 'admin' ? renderAdmin()
     : state.view === 'buyer' ? renderDashboard('buyer')
-    : renderDashboard('supplier');
+    : renderDashboard('supplier'));
+  sandboxLayout();
   hintClose();
   bindEvents();
   scheduleHistorySync();
@@ -5870,7 +6097,7 @@ function renderSettings(){
     '<div class="mb-4 text-[12.5px]"><a href="' + legalUrl('privacy') + '" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline;">' + t('privacyLink') + '</a> · <a href="' + legalUrl('terms') + '" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline;">' + t('termsLink') + '</a></div>' +
     '<div class="flex flex-col gap-2.5">' +
       '<button onclick="downloadMyData()" ' + (state.exportBusy?'disabled':'') + ' class="rounded-xl border px-4 py-2.5 text-left text-sm font-bold" style="border-color:var(--bd2); color:var(--tx);">' + (state.exportBusy ? t('pleaseWait') : t('settingsExportData')) + '</button>' +
-      '<button onclick="openEraseModal()" class="rounded-xl border px-4 py-2.5 text-left text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('settingsDeleteAccount') + '</button>' +
+      (isSandbox() ? '' : '<button onclick="openEraseModal()" class="rounded-xl border px-4 py-2.5 text-left text-sm font-bold" style="border-color:var(--bad); color:var(--bad);">' + t('settingsDeleteAccount') + '</button>') +
     '</div>' +
   '</div>';
 }
@@ -6205,6 +6432,7 @@ function renderAdmin(){
     '<button onclick="setAdminTab(\'reviews\')" class="chip' + (state.adminTab === 'reviews' ? ' active' : '') + '">Reviews</button>' +
     '<button onclick="setAdminTab(\'audit\')" class="chip' + (state.adminTab === 'audit' ? ' active' : '') + '">Audit log</button>' +
     '<button onclick="setAdminTab(\'analytics\')" class="chip' + (state.adminTab === 'analytics' ? ' active' : '') + '">Analytics</button>' +
+    '<button onclick="setAdminTab(\'sandbox\')" class="chip' + (state.adminTab === 'sandbox' ? ' active' : '') + '">Sandbox</button>' +
   '</div>';
 
   const body =
@@ -6214,6 +6442,7 @@ function renderAdmin(){
     state.adminTab === 'reviews' ? renderAdminReviews() :
     state.adminTab === 'audit' ? renderAdminAudit() :
     state.adminTab === 'analytics' ? renderAdminAnalyticsPage() :
+    state.adminTab === 'sandbox' ? renderAdminSandbox() :
     '<div class="eyebrow mb-1.5">VERIFICATION QUEUE</div>' +
   '<div class="flex items-center justify-between mb-5">' +
     '<h1 class="text-[22px] font-extrabold" style="color:var(--tx);">Company verification</h1>' +
@@ -6226,7 +6455,7 @@ function renderAdmin(){
     '<div class="flex flex-col gap-3">' + list.map(c => c.deleted ? deletedCompanyCardHtml(c) :
       '<div data-company="' + esc(c.id) + '" class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
         '<div class="flex min-w-[220px] flex-1 items-center gap-3">' + avatarHtml(c.name, 36) +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) +
+        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(c.name) + (c.isTest ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold" style="background:#FBBF24; color:#431407;">TEST</span>' : '') +
           (c.isActive === false ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">Deactivated</span>' :
            c.suspendedAt ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);" title="' + esc(c.suspensionReason || '') + '">Suspended</span>' : '') + '</div>' +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + esc(c.type) + ' &middot; CR: ' + esc(c.registrationNumber || '—') + ' &middot; ' + (c.documents ? c.documents.length : 0) + ' document(s) &middot; ' + esc(c.user ? c.user.email : '') +
@@ -6246,7 +6475,7 @@ function renderAdmin(){
         '</div>' +
       '</div>').join('') + '</div>');
 
-  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + renderBidLinkModal() + toastHtml();
+  return '<div>' + header + '<div class="mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + tabs + adminWorldBar() + body + '</div></div>' + renderResetModal() + renderDeleteModal() + renderDeactivateModal() + renderCreditModal() + renderDocsModal() + renderAdminDisputeModal() + renderAdminOrderModal() + renderBidLinkModal() + toastHtml();
 }
 
 // A deleted company is shown for reference only: no actions (the server refuses them too). Credits left on it
