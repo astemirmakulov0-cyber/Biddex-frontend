@@ -52,6 +52,7 @@ const out = banner({ sandbox: true }, { id: 's1', name: 'Sandbox <b>A</b>', type
 check('the banner says TEST MODE, names the company (escaped) and its kind, has a switch to the others and the way back', /TEST MODE/.test(out) && out.includes('Sandbox &lt;b&gt;A&lt;/b&gt;') && !out.includes('<b>A</b>') && /\(Supplier\)/.test(out) && out.includes('sandboxEnter(this.value)') && out.includes('onclick="sandboxExit()"') && out.includes('Back to admin'), out.slice(0, 300));
 check('...the current company is the selected option, the others are listed with their kind', /<option value="s1" selected>/.test(out) && /<option value="b">Sandbox Buyer · Buyer<\/option>/.test(out));
 check('...nothing for an ordinary user; no switch when there is nobody to switch to', banner({ role: 'BUYER' }, co, prof) === '' && !banner({ sandbox: true }, co, [co]).includes('<select'));
+check('the banner has a short version for phones (the long sentence is hidden under 520 px), with the same company and kind', out.includes('<span class="bx-sbx-short">Working as Sandbox &lt;b&gt;A&lt;/b&gt; (Supplier)') && has('.bx-sbx-text { display: none; }') && has('@media (max-width: 520px)'));
 check('the banner is not printed and is a status region for screen readers', /class="bx-sbx bx-noprint" role="status"/.test(out));
 
 // ---- wiring
@@ -88,7 +89,7 @@ check('the switch is on the five tabs that have a test side, with a clear "TEST"
 check('the tab has an "Add demo answers" button on a published test request; it calls the demo endpoint and refreshes the tab', has("(r.status === 'PUBLISHED' ? actionBtn('Add demo answers', 'sandboxDemo(' + jsAttr(r.id) + ')'") && has("api('/api/admin/sandbox/demo-answers', { method: 'POST', body: JSON.stringify({ rfqId }) })") && has('showToast(r.created.length ?') && has("    refreshAdminSandbox();"));
 
 // ---- texts
-const keys = ['sbxBannerTitle', 'sbxBannerText', 'sbxSwitchTo', 'sbxBack', 'sbxSwitchFailed', 'sbxEnded'];
+const keys = ['sbxBannerTitle', 'sbxBannerText', 'sbxBannerShort', 'sbxSwitchTo', 'sbxBack', 'sbxSwitchFailed', 'sbxEnded'];
 check('every text exists in English and in Arabic (Arabic script)', keys.every((k) => typeof en[k] === 'string' && en[k] && typeof ar[k] === 'string' && /[؀-ۿ]/.test(ar[k])));
 check('the placeholders are the same in both languages', /\{name\}/.test(en.sbxBannerText) && /\{role\}/.test(en.sbxBannerText) && /\{name\}/.test(ar.sbxBannerText) && /\{role\}/.test(ar.sbxBannerText));
 check('the Arabic page keeps the brand-free wording and says "test mode" the same way everywhere', /الاختبار/.test(ar.sbxBannerTitle) && /الاختبار/.test(ar.sbxEnded) && ar.sbxBack.includes('الإدارة'));

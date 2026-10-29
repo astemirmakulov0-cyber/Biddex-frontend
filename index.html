@@ -213,6 +213,15 @@
   .bx-sbx-text { flex: 1 1 260px; min-width: 0; }
   .bx-sbx select { background: #FFF7ED; color: #431407; border: 0; border-radius: 8px; padding: 6px 10px; min-height: 36px; font-size: 13px; font-weight: 600; max-width: 100%; }
   .bx-sbx button { background: #fff; color: #7C2D12; border-radius: 10px; padding: 6px 14px; min-height: 36px; font-size: 13px; font-weight: 700; }
+  .bx-sbx-short { display: none; }
+  @media (max-width: 520px) {
+    .bx-sbx-in { padding: 6px 12px 10px; gap: 6px 10px; font-size: 12.5px; }
+    .bx-sbx-text { display: none; }
+    .bx-sbx-short { display: block; flex: 1 1 140px; min-width: 0; }
+    .bx-sbx label { flex: 1 1 150px; }
+    .bx-sbx-lab { display: none; }
+    .bx-sbx select { width: 100%; }
+  }
   html[data-sbx] header.sticky { top: var(--sbx-h, 0px) !important; }
   @media print {
     :root, :root[data-theme=dark] { --bg:#fff; --panel:#fff; --inset:#fff; --tx:#1B1A17; --tx2:#444; --tx3:#555; --tx4:#666; --line:#d8d3ca; --bd:#d8d3ca; --acc:#0F766E; --acc-soft:#E3F2EF; --acc-ink:#0B5A54; --bad:#B42318; --pend:#8A4A0B; --pend-soft:#FCEFD9; }
@@ -495,6 +504,7 @@ const I18N = {
     sessionExpired:"Your session has expired. Please log in again.",
     sbxBannerTitle:"TEST MODE",
     sbxBannerText:"You are working as {name} ({role}). Everything you do here stays in the test area: no real company sees it and no e-mails are sent.",
+    sbxBannerShort:"Working as {name} ({role}). Nothing here reaches real companies.",
     sbxSwitchTo:"Switch to",
     sbxBack:"Back to admin",
     sbxSwitchFailed:"Could not switch to the test company. Try again.",
@@ -1225,6 +1235,7 @@ const I18N = {
     sessionExpired:"انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
     sbxBannerTitle:"وضع الاختبار",
     sbxBannerText:"أنت تعمل الآن بصفة {name} ({role}). كل ما تفعله هنا يبقى داخل منطقة الاختبار: لا ترى أي شركة حقيقية ذلك ولا تُرسل أي رسائل بريد إلكتروني.",
+    sbxBannerShort:"تعمل بصفة {name} ({role}). لا شيء هنا يصل إلى الشركات الحقيقية.",
     sbxSwitchTo:"التبديل إلى",
     sbxBack:"العودة إلى لوحة الإدارة",
     sbxSwitchFailed:"تعذّر التبديل إلى شركة الاختبار. حاول مرة أخرى.",
@@ -2204,13 +2215,14 @@ function sandboxBanner(){
   if (!m) return '';
   const roleName = (type) => t(type === 'SUPPLIER' ? 'roleSupplier' : 'roleBuyer');
   const sel = m.options.length > 1
-    ? '<label class="flex items-center gap-2 font-semibold">' + t('sbxSwitchTo') +
+    ? '<label class="flex items-center gap-2 font-semibold"><span class="bx-sbx-lab">' + t('sbxSwitchTo') + '</span>' +
         '<select onchange="sandboxEnter(this.value)" aria-label="' + esc(t('sbxSwitchTo')) + '">' +
         m.options.map((o) => '<option value="' + esc(o.id) + '"' + (o.selected ? ' selected' : '') + '>' + esc(o.name) + ' · ' + roleName(o.type) + '</option>').join('') + '</select></label>'
     : '';
   return '<div class="bx-sbx bx-noprint" role="status"><div class="bx-sbx-in">' +
     '<strong>' + t('sbxBannerTitle') + '</strong>' +
     '<span class="bx-sbx-text">' + tpl('sbxBannerText', { name: esc(m.name), role: roleName(m.type) }) + '</span>' +
+    '<span class="bx-sbx-short">' + tpl('sbxBannerShort', { name: esc(m.name), role: roleName(m.type) }) + '</span>' +
     sel +
     '<button onclick="sandboxExit()">' + t('sbxBack') + '</button>' +
   '</div></div>';
