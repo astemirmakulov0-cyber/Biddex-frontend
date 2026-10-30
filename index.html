@@ -519,7 +519,7 @@ const I18N = {
     bkPost:"Post basket", bkRepostSubmit:"Post missing items", bkPosted:"Basket posted to suppliers.", bkDraftSaved:"Basket saved as a draft. A manager or the owner can publish it.", bkUpdated:"Basket updated.", bkReposted:"The missing items were posted again.",
     bkLocked:"This basket can no longer be edited: bids have arrived.", bkRepostNotAvailable:"These items cannot be posted again.",
     bkBadge:"Basket", bkItemsPill:"{n} items", bkItemsPillOne:"1 item",
-    bkAutoTitle:"Basket · {n} items", bkAutoTitleOne:"Basket · 1 item", bkMissingSuffix:"missing items",
+    bkAutoTitle:"Basket · {n} items", bkAutoTitleOne:"Basket · 1 item", bkMissingSuffix:"missing items", bkMissingFrom:"Missing items from {id}", bkMissingOnly:"Missing items",
     bkaTitle:"Answer the basket", bkaIntro:"Answer every item: a price, “not in stock”, or an analogue (a replacement you name). At least one item needs a price.",
     bkaPrice:"Price", bkaNotInStock:"Not in stock", bkaAnalogue:"Analogue", bkaUnitPrice:"Unit price (BHD)", bkaSubName:"Analogue name", bkaSubNamePh:"e.g. Other brand tomato sauce", bkaSubBrand:"Analogue brand (optional)",
     bkaLineTotal:"Line total", bkaRestNotInStock:"Mark the rest as not in stock", bkaClear:"Clear answers",
@@ -1289,7 +1289,7 @@ const I18N = {
     bkPost:"نشر السلة", bkRepostSubmit:"نشر العناصر الناقصة", bkPosted:"تم نشر السلة للموردين.", bkDraftSaved:"تم حفظ السلة كمسودة. يمكن للمدير أو المالك نشرها.", bkUpdated:"تم تحديث السلة.", bkReposted:"أُعيد نشر العناصر الناقصة.",
     bkLocked:"لم يعد بالإمكان تعديل هذه السلة: وصلت عروض.", bkRepostNotAvailable:"لا يمكن إعادة نشر هذه العناصر.",
     bkBadge:"سلة", bkItemsPill:"{n} عناصر", bkItemsPillOne:"عنصر واحد",
-    bkAutoTitle:"سلة · {n} عناصر", bkAutoTitleOne:"سلة · عنصر واحد", bkMissingSuffix:"العناصر الناقصة",
+    bkAutoTitle:"سلة · {n} عناصر", bkAutoTitleOne:"سلة · عنصر واحد", bkMissingSuffix:"العناصر الناقصة", bkMissingFrom:"العناصر الناقصة من \u2066{id}\u2069", bkMissingOnly:"العناصر الناقصة",
     bkaTitle:"الرد على السلة", bkaIntro:"أجب عن كل عنصر: بسعر، أو «غير متوفر»، أو ببديل (تُسمّيه أنت). يجب تسعير عنصر واحد على الأقل.",
     bkaPrice:"السعر", bkaNotInStock:"غير متوفر", bkaAnalogue:"بديل", bkaUnitPrice:"سعر الوحدة (د.ب)", bkaSubName:"اسم البديل", bkaSubNamePh:"مثال: صلصة طماطم من علامة أخرى", bkaSubBrand:"علامة البديل (اختياري)",
     bkaLineTotal:"إجمالي السطر", bkaRestNotInStock:"وسم الباقي بأنه غير متوفر", bkaClear:"مسح الإجابات",
@@ -4342,16 +4342,36 @@ async function submitNewRfq(){
 const BASKET_MAX_ITEMS = 50; // as the server
 const BASKET_TITLE_RE = /^Basket · (\d+) items?$/;
 const BASKET_MISSING_SUFFIX = ' · missing items';
-// The server stores English names ("Basket · 6 items", "<title> · missing items"); the apps show them in the user's language. dict = the texts of one language.
-function bkTitleText(title, dict){
+const BASKET_MISSING_FROM_RE = /^Missing items from (RFQ-[0-9A-F]{4})$/;
+// The server stores English names ("Basket · 6 items", "<title> · missing items", "Missing items from RFQ-90AF"); the apps show them in the user's
+// language. dict = the texts of one language. count = how many items the request really has (when known): an old re-post is still called
+// "Basket · 3 items · missing items" after the first request, so its number is replaced by the real one - or left out when it is not known.
+function bkTitleText(title, dict, count){
   let s = String(title == null ? '' : title);
+  const from = BASKET_MISSING_FROM_RE.exec(s);
+  if (from) return dict.bkMissingFrom.replace('{id}', from[1]);
   let missing = false;
   if (s.endsWith(BASKET_MISSING_SUFFIX)) { missing = true; s = s.slice(0, -BASKET_MISSING_SUFFIX.length); }
   const m = BASKET_TITLE_RE.exec(s);
-  if (m) { const n = Number(m[1]); s = (n === 1 ? dict.bkAutoTitleOne : dict.bkAutoTitle).replace('{n}', String(n)); }
+  if (m) {
+    let n = Number(m[1]);
+    if (missing) { if (count > 0) n = count; else return dict.bkMissingOnly; }
+    s = (n === 1 ? dict.bkAutoTitleOne : dict.bkAutoTitle).replace('{n}', String(n));
+  }
   return s + (missing ? ' · ' + dict.bkMissingSuffix : '');
 }
 const bkIsAutoTitle = (title) => BASKET_TITLE_RE.test(String(title || ''));
+// a name the system gave (not the buyer): such a basket is better described by what is in it
+const bkIsSystemTitle = (title) => { const s = String(title || ''); return BASKET_TITLE_RE.test(s) || BASKET_MISSING_FROM_RE.test(s) || (s.endsWith(BASKET_MISSING_SUFFIX) && BASKET_TITLE_RE.test(s.slice(0, -BASKET_MISSING_SUFFIX.length))); };
+// How an order of a basket is named in a list: { main, sub }. items: the first lines of the order ({ name }), count: how many lines it has.
+// A name the system gave is replaced by the first names ("Flour, Salt +2"); a name the buyer gave stays, the names go under it.
+function bkOrderHeadParts(title, items, count, dict){
+  const names = (items || []).slice(0, 2).map((i) => String(i && i.name || '')).filter(Boolean);
+  const total = count > 0 ? count : (items || []).length;
+  const list = names.length ? names.join(', ') + (total > names.length ? ' +' + (total - names.length) : '') : '';
+  if (list && bkIsSystemTitle(title)) return { main: list, sub: '' };
+  return { main: bkTitleText(title, dict, total), sub: list };
+}
 const bkEmptyItem = () => ({ name: '', quantity: '', unit: 'kg', brand: '', productId: undefined, allowSubstitute: true });
 // the rows of the form -> the "items" of the request, or { error: <text key>, n: <row number> } for the first row that is wrong
 function bkItemsForRequest(rows){
@@ -4385,7 +4405,10 @@ const bkWhatsAppUrl = (text) => 'https://wa.me/?text=' + encodeURIComponent(text
 const basketOn = () => state.view === 'buyer' && !!(state.user && state.user.basketEnabled === true) && can('rfq.draft');
 function i18nDict(lang){ return { ...I18N.en, ...(I18N[lang] || {}) }; }
 // a request's title in the user's language ("Basket · 6 items" is stored in English)
-function rfqTitle(r){ return bkTitleText(r ? r.title : '', i18nDict(state.lang)); }
+function rfqTitle(r){ return bkTitleText(r ? r.title : '', i18nDict(state.lang), r ? (r.itemCount != null ? r.itemCount : r._count && r._count.items) : undefined); }
+// the name of a basket's order in a list, and the line of names under it (the lines are the order's own, not the request's)
+function bkOrderHead(rfq, items, count){ return bkOrderHeadParts(rfq ? rfq.title : '', items, count, i18nDict(state.lang)); }
+const bkOrderSub = (sub) => sub ? '<div class="text-[11.5px]" style="color:var(--tx3); overflow-wrap:anywhere;"><bdi>' + esc(sub) + '</bdi></div>' : '';
 function bkItemsPill(r){
   if (!r || !r.isBasket) return '';
   const n = r.itemCount != null ? r.itemCount : (r._count && r._count.items) || 0;
@@ -6149,6 +6172,14 @@ function renderLpoManagement(isBuyer){
   renderClosedOrders(closedOrders, isBuyer);
 }
 
+// the name of a purchase order in the lists of orders waiting for a decision: a basket's shows the number of items IN the order and the first names
+const lpoHead = (l) => (l.rfq && l.rfq.isBasket && Array.isArray(l.items) ? bkOrderHead(l.rfq, l.items, l.items.length) : null);
+function lpoRowTitle(l){
+  const h = lpoHead(l);
+  return h ? esc(h.main) + bkItemsPill({ isBasket: true, itemCount: l.items.length }) : esc(l.rfq ? rfqTitle(l.rfq) : t('lpoPurchaseOrder'));
+}
+const lpoRowSub = (l) => { const h = lpoHead(l); return h ? bkOrderSub(h.sub) : ''; };
+
 // Buyer's read-only view of awarded LPOs the supplier hasn't accepted yet (they count as live)
 function renderBuyerPendingLpos(){
   const pending = (state.lpos || []).filter(l => l.status === 'ISSUED');
@@ -6156,7 +6187,7 @@ function renderBuyerPendingLpos(){
   return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">' + t('lpoAwaitingSupplier') + '</h2>' +
     '<div class="flex flex-col gap-3 mb-8">' + pending.map(l =>
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);">' +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? rfqTitle(l.rfq) : t('lpoPurchaseOrder')) + '</div>' +
+        '<div style="min-width:0;"><div class="font-semibold" style="color:var(--tx);">' + lpoRowTitle(l) + '</div>' + lpoRowSub(l) +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
         '<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold shrink-0" style="background:var(--warn-soft); color:var(--warn);">' + t('lpoWaitingSupplier') + '</span>' +
       '</div>').join('') + '</div>';
@@ -6176,14 +6207,16 @@ function renderClosedOrders(closed, isBuyer){
 }
 
 function lpoTrackerRow(o, isBuyer){
-  const title = o.lpo && o.lpo.rfq ? rfqTitle(o.lpo.rfq) : t('lpoOrderFallback');
-  const linesPill = o.lpo && o.lpo.rfq && o.lpo.rfq.isBasket ? bkItemsPill({ isBasket: true, itemCount: o.lpo._count ? o.lpo._count.items : 0 }) : '';
+  const isBk = !!(o.lpo && o.lpo.rfq && o.lpo.rfq.isBasket);
+  const head = isBk ? bkOrderHead(o.lpo.rfq, o.lpo.items, o.lpo._count ? o.lpo._count.items : 0) : { main: o.lpo && o.lpo.rfq ? rfqTitle(o.lpo.rfq) : t('lpoOrderFallback'), sub: '' };
+  const title = head.main;
+  const linesPill = isBk ? bkItemsPill({ isBasket: true, itemCount: o.lpo._count ? o.lpo._count.items : 0 }) : '';
   const idLabel = 'LPO-' + esc(String(o.lpo ? o.lpo.id : o.id).slice(-4).toUpperCase());
   const counterpartyCompany = isBuyer ? (o.lpo && o.lpo.supplierCompany) : (o.lpo && o.lpo.buyerCompany);
   return '<div class="rounded-xl border p-4" style="border-color:var(--bd); background:var(--panel);' + (isOrderClosed(o) ? ' opacity:0.85;' : '') + '">' +
     '<div class="flex flex-wrap items-center justify-between gap-3">' +
       '<div class="min-w-[220px]"><div class="font-bold" style="color:var(--tx);">' + esc(title) + linesPill +
-        (o.invoice && o.invoice.status === 'OVERDUE' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">' + overdueDaysLabel(o.invoice.dueDate) + '</span>' : '') + '</div>' +
+        (o.invoice && o.invoice.status === 'OVERDUE' ? ' <span class="ml-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style="background:var(--bad-soft); color:var(--bad);">' + overdueDaysLabel(o.invoice.dueDate) + '</span>' : '') + '</div>' + bkOrderSub(head.sub) +
         '<div class="text-[11.5px] mt-0.5" style="color:var(--tx4);"><span class="bx-id">' + idLabel + '</span>' + (counterpartyCompany ? ' · ' + companyLabel(counterpartyCompany) : '') + '</div></div>' +
       '<div class="flex-1 min-w-[180px]">' + orderProgressHtml(o, 'mt-1.5 text-[11.5px] font-semibold') + '</div>' +
       '<div class="mono font-bold text-[14px]" style="color:var(--tx);">' + fmt(o.lpo ? o.lpo.totalAmount : 0) + '</div>' +
@@ -6199,7 +6232,7 @@ function renderAwaitingLpos(){
   return '<h2 class="text-[14px] font-bold mb-3" style="color:var(--tx);">' + t('lpoAwaitingYou') + '</h2>' +
     '<div class="flex flex-col gap-3 mb-8">' + pending.map(l =>
       '<div class="flex items-center justify-between gap-3 rounded-xl border p-4" style="border-color:var(--bd); background:var(--acc-soft2);">' +
-        '<div><div class="font-semibold" style="color:var(--tx);">' + esc(l.rfq ? rfqTitle(l.rfq) : t('lpoPurchaseOrder')) + '</div>' +
+        '<div style="min-width:0;"><div class="font-semibold" style="color:var(--tx);">' + lpoRowTitle(l) + '</div>' + lpoRowSub(l) +
         '<div class="mono mt-0.5 text-[12px]" style="color:var(--tx3);">' + fmt(l.totalAmount) + '</div></div>' +
         '<div class="flex items-center gap-2 shrink-0">' +
           '<button onclick="' + (state.ordersBusyId === l.id ? '' : "declineLpo('" + l.id + "')") + '" class="rounded-lg border px-3 py-1.5 text-[12px] font-bold" style="border-color:var(--bd2); color:var(--tx3);">' + t('lpoDecline') + '</button>' +
@@ -7136,7 +7169,7 @@ function renderOrderDetail(){
 
   return '<button onclick="closeOrderDetail()" class="mb-4 text-[12px] font-semibold" style="color:var(--tx4);">' + t('odBack') + '</button>' +
   '<div class="eyebrow mb-1.5">' + tpl('odEyebrow', { status: esc(orderStatusLabel(order.status)) }) + '</div>' +
-  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + esc(rfq ? rfqTitle(rfq) : t('lpoOrderFallback')) + '</h1>' + disputeNote +
+  '<h1 class="mb-4 text-[22px] font-extrabold" style="color:var(--tx);">' + (lpo.rfq && lpo.rfq.isBasket && Array.isArray(lpo.items) ? esc(bkOrderHead(lpo.rfq, lpo.items, lpo.items.length).main) + bkItemsPill({ isBasket: true, itemCount: lpo.items.length }) : esc(rfq ? rfqTitle(rfq) : t('lpoOrderFallback'))) + '</h1>' + disputeNote +
   '<div class="rounded-xl border p-4 mb-6" style="border-color:var(--bd); background:var(--panel);">' +
     '<div class="flex flex-wrap items-end justify-between gap-3">' +
       '<div class="flex-1 min-w-[220px]">' + orderProgressHtml(order, 'mt-2 text-[12.5px] font-semibold') + '</div>' +
