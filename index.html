@@ -7176,7 +7176,9 @@ function renderOrderDetail(){
       '<div class="flex flex-wrap gap-2">' + deliveryAction + receiptAction + payAction + disputeAction + '</div>' +
     '</div>' +
   '</div>' +
-  '<div class="grid gap-4 sm:grid-cols-2">' +
+  // a basket's lines are what the order is: right under the header, before the delivery and the invoice
+  bkOrderLinesCard(order, isSupplier) +
+  '<div class="grid gap-4 sm:grid-cols-2 mt-6">' +
     detailCard(t('cardRequest'), (lpo.rfq && lpo.rfq.isBasket && Array.isArray(lpo.items)
       ? [[t('bkoItemsRow'), tpl('bkoItemsOf', { n: lpo.items.length, total: rfq && rfq.items ? rfq.items.length : lpo.items.length })], [t('rowNeededBy'), rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—']]
       : [[t('rowQuantity'), rfq ? (rfq.quantity || '—') + ' ' + unitLabel(rfq.unit || '') : '—'], [t('rowNeededBy'), rfq && rfq.deadline ? fmtDate(rfq.deadline) : '—'], [t('rowDescription'), rfq ? rfq.description : '—']])) +
@@ -7205,7 +7207,6 @@ function renderOrderDetail(){
       [t('rowOutstanding'), fmt(totals.outstanding)]
     ]) +
   '</div>' +
-  bkOrderLinesCard(order, isSupplier) +
   renderPaymentsPanel(invoice, isSupplier) +
   renderReviewPanel(order, isSupplier) +
   historyCard(isSupplier ? null : order.activity) +
