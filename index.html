@@ -4613,7 +4613,7 @@ function renderBasketModal(){
       '<div class="flex items-center justify-between"><h3 class="text-lg font-bold" style="color:var(--tx);">' + t(reposting ? 'bkModalRepost' : editing ? 'bkModalEdit' : 'bkModalNew') + '</h3>' +
       '<button onclick="closeBasket()" class="text-[13px] font-semibold" style="color:var(--tx4);">' + t('close') + '</button></div>' +
       '<div class="mt-4 flex flex-col gap-4">' + body + '</div>' +
-      '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="submitBasket()" ' + (state.basketBusy ? 'disabled' : '') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); opacity:' + (state.basketBusy ? '0.6' : '1') + ';">' + submitLabel + '</button></div>' +
+      '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="submitBasket()" ' + (state.basketBusy ? 'disabled' : '') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); cursor:' + (state.basketBusy ? 'default' : 'pointer') + ';">' + submitLabel + '</button></div>' +
     '</div></div>';
 }
 
@@ -4836,7 +4836,7 @@ function renderBasketAnswer(){
     '<div class="mt-4 flex flex-col gap-3.5">' +
       field('minOrder', t('bkaMinOrder'), '0.000', a.head.minOrder, '<span class="text-[11px]" style="color:var(--tx4);">' + t('bkaMinOrderHint') + '</span>') +
       field('days', t('bidDelivery'), '2', a.head.days) + field('terms', t('bidTerms'), '30', a.head.terms) + field('notes', t('bkaNotes'), '', a.head.notes) + '</div>';
-  const foot = '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="submitBasketAnswer()" ' + (a.busy ? 'disabled' : '') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); opacity:' + (a.busy ? '0.6' : '1') + ';">' + (a.busy ? t('bkaSending') : t(revising ? 'bkaSaveChanges' : 'bkaSubmit')) + '</button></div>';
+  const foot = '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="submitBasketAnswer()" ' + (a.busy ? 'disabled' : '') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); cursor:' + (a.busy ? 'default' : 'pointer') + ';">' + (a.busy ? t('bkaSending') : t(revising ? 'bkaSaveChanges' : 'bkaSubmit')) + '</button></div>';
   return wrap(body, foot);
 }
 
@@ -5049,7 +5049,7 @@ function renderBasketAward(){
     budgetAfterHtml(c);
   const ready = bkAwardReady(w, plan) && !w.loading && !w.busy;
   // the one main button; the small box under it is the "post the rest again" choice (on by default)
-  const foot = '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="doBasketAward()" ' + (ready ? '' : 'disabled') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); opacity:' + (ready ? '1' : '0.5') + ';">' + (w.busy ? t('acBusy') : t(c.needsApproval ? 'acSend' : 'acAward')) + '</button>' +
+  const foot = '<div class="sticky bottom-0 -mx-6 -mb-6 mt-4 px-6 pb-6 pt-3" style="background:var(--panel);"><button onclick="doBasketAward()" ' + (ready ? '' : 'disabled') + ' class="w-full rounded-xl px-4 py-3 text-sm font-bold" style="background:var(--acc); color:var(--on-acc); cursor:' + (ready ? 'pointer' : 'default') + ';">' + (w.busy ? t('acBusy') : t(c.needsApproval ? 'acSend' : 'acAward')) + '</button>' +
     (plan.missing.length && basketOn() ? '<label class="mt-2.5 flex items-start gap-2 text-[11.5px]" style="color:var(--tx4);"><input type="checkbox" ' + (w.repost ? 'checked ' : '') + (w.busy ? 'disabled ' : '') + 'onchange="bkAwardSet(\'repost\', this.checked)" class="mt-0.5 h-3.5 w-3.5 shrink-0" style="accent-color:var(--acc);" /><span>' + t('bkwRepost') + '</span></label>' : '') + '</div>';
   return wrap(body, foot);
 }
