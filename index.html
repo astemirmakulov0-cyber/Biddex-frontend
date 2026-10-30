@@ -753,6 +753,9 @@ const I18N = {
     catModalAdd:"Add catalog item",
     catPhotoOpt:"Product photo (optional)",
     catRemovePhoto:"Remove photo",
+    noPhotoLabel:"No photo",
+    catAddPhotoHint:"Add a photo — buyers choose items with photos more often.",
+    catAddPhotoBtn:"Add photo",
     catChoosePhoto:"Choose photo",
     catNoPhoto:"No photo chosen",
     catReadingPhoto:"Reading photo…",
@@ -1523,6 +1526,9 @@ const I18N = {
     catModalAdd:"إضافة منتج إلى الكتالوج",
     catPhotoOpt:"صورة المنتج (اختيارية)",
     catRemovePhoto:"إزالة الصورة",
+    noPhotoLabel:"بدون صورة",
+    catAddPhotoHint:"أضف صورة — يختار المشترون المنتجات المصوّرة أكثر.",
+    catAddPhotoBtn:"إضافة صورة",
     catChoosePhoto:"اختيار صورة",
     catNoPhoto:"لم يتم اختيار صورة",
     catReadingPhoto:"جارٍ قراءة الصورة…",
@@ -2153,8 +2159,88 @@ function photoThumbHtml(url, size){
 }
 // An RFQ: its photo if it has one, else the icon of its category.
 function rfqThumb(r, size){ return r && r.imageUrl ? photoThumbHtml(r.imageUrl, size) : iconAvatarHtml(r && r.category, size); }
-// A catalog or stock item: its photo if it has one, else its category icon (or a box).
-function productThumb(p, size){ return p && p.imageUrl ? photoThumbHtml(p.imageUrl, size) : iconAvatarHtml(p && p.category, size); }
+// A catalog or stock item: its photo if it has one, else the icon of its kind (oil, sack, jar ... or a box).
+function productThumb(p, size){ return p && p.imageUrl ? photoThumbHtml(p.imageUrl, size) : productIconHtml(p, size); }
+// BEGIN PRODUCT KINDS
+// A catalog item without a photo gets an icon of its KIND (oil, sack, jar ...). The kind is guessed from the words of the name (then
+// brand, category, description) in English and Arabic; the first matching rule wins, so the specific rules come first ("tomato juice" is
+// a drink, "tomato paste" a jar, only a plain "tomato" is produce). Nothing found: a neutral box. A guess, never a claim about the product.
+// Arabic words are written in plain spelling here; normalizeProductText() puts both the words and the item text in one spelling.
+const PRODUCT_KIND_WORDS = [
+  ['cleaning', 'detergent|dish ?wash\\w*|dish soap|washing liquid|soap|bleach|clean\\w*|disinfect\\w*|sanitizer|sanitiser|laundry|degreaser|fabric softener|air freshener|mop|sponge|scourer',
+    'منظف|صابون|سائل جلي|جلي|مطهر|معقم|مبيض|كلور|ديتول|غسيل|مزيل دهون|معطر جو|ممسحة|اسفنج'],
+  ['packaging', 'napkin|serviette|tissue|paper towel|paper cup|plastic cup|foam cup|coffee cup|cup lid|lid|straw|cutlery|disposable|take ?away|takeout|take out|packaging|packing|foil|cling film|cling wrap|parchment|baking paper|garbage bag|trash bag|carrier bag|zip bag|glove|container|plate|spoon|fork|knife',
+    'مناديل|منديل|كوب ورقي|اكواب|كوب|غطاء|شفاط|مصاصة|ادوات المائدة|سفري|تغليف|ورق المنيوم|فويل|ورق زبدة|اكياس|كيس قمامة|قفازات|طبق|اطباق|ملاعق|ملعقة|شوك'],
+  ['frozen', 'frozen|ice cream|gelato|freezer|french fries|fries|ice cubes?',
+    'مجمد|مجمدة|ايس كريم|بوظة|جيلاتو|بطاطس مقلية|بطاطا مقلية|مثلجات|ثلج'],
+  ['drink', 'water|juice|soda|soft drink|drink|cola|pepsi|sprite|fanta|lemonade|nectar|tea|coffee|espresso|energy|beverage|cordial|squash|smoothie|kombucha',
+    'ماء|مياه|عصير|مشروب|مشروبات|كولا|بيبسي|سفن اب|ليمونادة|شاي|قهوة|اسبريسو|طاقة|نكتار|غازية|صودا'],
+  ['oil', 'oil|shortening|margarine',
+    'زيت|زيوت|سمن نباتي|مارجرين|شورتنينج'],
+  ['sauce', 'sauce|ketchup|catsup|mayonnaise|mayo|mustard|paste|tahini|tahina|hummus|jam|marmalade|honey|vinegar|dressing|pickles?|olives?|syrup|spread|chutney|harissa|pesto|sriracha|peanut butter|nut butter|canned|tinned|stock cube|bouillon|marinade|spices?|seasoning|black pepper|white pepper|ground pepper|cumin|paprika|turmeric|cinnamon|cardamom|curry|oregano|chili flakes|sesame',
+    'صلصة|كاتشب|مايونيز|خردل|معجون|طحينة|حمص جاهز|مربى|عسل|خل|مخلل|مخللات|زيتون|دبس|شراب|رب|بيستو|هريسة|زبدة الفول السوداني|معلب|معلبة|مرق|مكعبات|بهارات|توابل|كمون|بابريكا|كركم|قرفة|هيل|كاري|اوريجانو|سمسم|فلفل اسود'],
+  ['dairy', 'milk|cheese|mozzarella|cheddar|feta|halloumi|paneer|cream|yogh?urt|labneh|laban|butter|ghee|creamer|kashkaval',
+    'حليب|لبن|جبن|جبنة|موزاريلا|شيدر|فيتا|حلوم|قشطة|كريمة|زبادي|لبنة|زبدة|سمن|كريمر'],
+  ['meat', 'chicken|beef|lamb|mutton|meat|veal|turkey|sausage|bacon|ham|hamburger|minced|mince|steak|kebab|burger|patty|fish|shrimp|prawn|salmon|tuna|seafood|sardines?|fillet|wings|poultry',
+    'دجاج|فراخ|لحم|لحمة|بقر|عجل|غنم|ضان|خروف|ديك رومي|سجق|نقانق|مرتديلا|مفروم|ستيك|كباب|برغر|سمك|روبيان|جمبري|سلمون|تونة|سردين|فيليه|اجنحة|دواجن'],
+  ['produce', 'tomato(?:es)?|potato(?:es)?|onions?|garlic|lettuce|cucumbers?|carrots?|apples?|bananas?|lemons?|oranges?|fruits?|vegetables?|veggies|parsley|mint|coriander|cilantro|dill|mushrooms?|peppers?|zucchini|courgette|cabbage|spinach|grapes?|mango(?:es)?|avocados?|strawberr\\w*|berries|dates|eggplant|aubergine|broccoli|cauliflower|herbs?|salad|melon|watermelon|pineapple|ginger|celery|beetroot|radish|pomegranate|peach(?:es)?|pears?|figs?|kiwi',
+    'طماطم|بندورة|بطاطس|بطاطا|بصل|ثوم|خس|خيار|جزر|تفاح|موز|ليمون|برتقال|فاكهة|فواكه|خضار|خضروات|بقدونس|نعناع|كزبرة|شبت|فطر|فلفل|كوسا|ملفوف|سبانخ|عنب|مانجو|افوكادو|فراولة|توت|تمر|باذنجان|بروكلي|قرنبيط|اعشاب|سلطة|شمام|بطيخ|اناناس|زنجبيل|كرفس|شمندر|فجل|رمان|خوخ|كمثرى|تين|كيوي'],
+  ['sack', 'flour|rice|sugar|salt|wheat|semolina|lentils?|chickpeas?|beans?|oats?|pasta|spaghetti|macaroni|noodles?|vermicelli|starch|cornflour|yeast|baking powder|powder|grains?|bulgur|couscous|breadcrumbs?|nuts?|almonds?|cashews?|pistachios?|peanuts?|raisins?|cereal|corn|sack',
+    'طحين|دقيق|رز|ارز|سكر|ملح|قمح|سميد|عدس|حمص حب|فاصوليا|شوفان|معكرونة|مكرونة|باستا|سباغيتي|شعيرية|نشا|خميرة|بودرة|مسحوق|حبوب|برغل|كسكس|مكسرات|لوز|كاجو|فستق|فول سوداني|زبيب|كورن|ذرة|كيس'],
+];
+function normalizeProductText(s){
+  return String(s == null ? '' : s).toLowerCase()
+    .replace(/[ً-ٰٟـ]/g, '')
+    .replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
+    .replace(/[-_/.,()]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+const PRODUCT_KIND_RULES = PRODUCT_KIND_WORDS.map(([kind, en, ar]) => ({
+  kind,
+  en: new RegExp('(?<![a-z])(?:' + en + ')(?:s|es)?(?![a-z])'),
+  // Arabic: an optional prefix (al-, wa-al-, bi-al- ...) and a few endings; never inside a longer word
+  ar: new RegExp('(?<![\\u0600-\\u06FF])(?:وال|بال|فال|كال|لل|ال|و|ب|ل)?(?:' + normalizeProductText(ar).replace(/ /g, '\\s') + ')(?:ات|ين|ه|ان)?(?![\\u0600-\\u06FF])'),
+}));
+function kindOfText(text){
+  const s = normalizeProductText(text);
+  if (!s) return '';
+  for (const r of PRODUCT_KIND_RULES) if (r.en.test(s) || r.ar.test(s)) return r.kind;
+  return '';
+}
+// the name first, then brand, category and description (the category of most items is the marketplace one, which matches nothing)
+function productKind(p){
+  if (!p) return 'box';
+  for (const text of [p.name || p.title, p.brand, p.category, p.description]) { const k = kindOfText(text); if (k) return k; }
+  return 'box';
+}
+const PRODUCT_KIND_ICON = {
+  oil: '<path d="M10 2.5h4V5l1.6 2.6V20a1.5 1.5 0 0 1-1.5 1.5H9.9A1.5 1.5 0 0 1 8.4 20V7.6L10 5V2.5z"/><path d="M8.4 12h7.2M8.4 17h7.2"/>',
+  sack: '<path d="M9 3h6M9 3l-.5 3.5M15 3l.5 3.5M8.5 6.5h7"/><path d="M8.5 6.5C5.5 8.5 4 11.5 4 15c0 3.5 2 6 5 6h6c3 0 5-2.5 5-6 0-3.5-1.5-6.5-4.5-8.5"/><path d="M9.5 14.5h5"/>',
+  sauce: '<rect x="5" y="3" width="14" height="4" rx="1"/><path d="M6.5 7v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2V7"/><path d="M6.5 11.5h11M6.5 16h11"/>',
+  drink: '<path d="M7 5.5C7 4.1 9.2 3 12 3s5 1.1 5 2.5v13c0 1.4-2.2 2.5-5 2.5s-5-1.1-5-2.5v-13z"/><path d="M7 5.5C7 6.9 9.2 8 12 8s5-1.1 5-2.5M7 12h10"/>',
+  frozen: '<path d="M12 2.5v19M4 7.2l16 9.6M20 7.2 4 16.8"/><path d="m9.5 4.3 2.5 2.2 2.5-2.2M9.5 19.7l2.5-2.2 2.5 2.2"/>',
+  dairy: '<path d="M8.5 2.5h7L19 7.5V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V7.5l3.5-5z"/><path d="M5 7.5h14M9 12.5h6V17H9z"/>',
+  meat: '<path d="M15.4 15.63a7.875 6 135 1 1 6.23-6.23 4.5 3.43 135 0 0-6.23 6.23z"/><path d="m8.29 12.71-2.6 2.6a2.5 2.5 0 1 0-1.65 4.65A2.5 2.5 0 1 0 8.7 18.3l2.59-2.59"/>',
+  produce: '<path d="M12 8c-2-2.2-6-1.7-7 1.8s1 8.7 4.2 10.7c1 .6 1.9.2 2.8.2s1.8.4 2.8-.2c3.2-2 5.2-7.2 4.2-10.7S14 5.8 12 8z"/><path d="M12 8c0-2.3 1-4.3 3.2-5.5"/>',
+  cleaning: '<path d="M12 3s6 6.3 6 10.8a6 6 0 0 1-12 0C6 9.3 12 3 12 3z"/><path d="M9.5 14.5a2.7 2.7 0 0 0 2.5 2.3"/><path d="M19 2.500v3M17.5 4h3"/>',
+  packaging: '<path d="M5 7h14l-1.4 13a1.5 1.5 0 0 1-1.5 1.300H7.900A1.5 1.5 0 0 1 6.4 20L5 7z"/><path d="M4 7h16M7 4.500h10L18 7"/>',
+};
+// The tile: a dashed border and a muted fill, so an icon is never taken for a product photo (a photo has a solid border).
+function productIconHtml(p, size){
+  const sz = size || 38;
+  const kind = productKind(p);
+  const ic = Math.round(sz * 0.56);
+  return '<div class="avatar2" aria-hidden="true" data-kind="' + kind + '" style="width:' + sz + 'px; height:' + sz + 'px; background:var(--sunken); color:var(--tx2); border:1px dashed var(--tx4);">' +
+    '<svg width="' + ic + '" height="' + ic + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (PRODUCT_KIND_ICON[kind] || ICON_BOX) + '</svg></div>';
+}
+// A wide tile for the buyer's grid: the icon and the words "No photo"
+function productIconBlockHtml(p){
+  const kind = productKind(p);
+  return '<div aria-hidden="true" data-kind="' + kind + '" class="mb-2.5 flex w-full flex-col items-center justify-center gap-1 rounded-lg" style="height:96px; background:var(--sunken); color:var(--tx2); border:1px dashed var(--tx4);">' +
+    '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + (PRODUCT_KIND_ICON[kind] || ICON_BOX) + '</svg>' +
+    '<span class="text-[10px] font-semibold uppercase tracking-[0.06em]" style="color:var(--tx4);">' + t('noPhotoLabel') + '</span></div>';
+}
+// END PRODUCT KINDS
+
 
 function timeLeft(dateStr){
   if (!dateStr) return null;
@@ -4242,7 +4328,7 @@ function renderRfqProductArea(loading){
   const r = state.newRfq;
   if (r.productId) {
     return '<div class="flex items-center gap-2.5 rounded-lg border p-2" style="border-color:var(--bd); background:var(--inset);">' +
-      (r.productImageUrl ? '<img src="' + esc(r.productImageUrl) + '" class="h-10 w-10 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' : '') +
+      (r.productImageUrl ? '<img src="' + esc(r.productImageUrl) + '" class="h-10 w-10 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' : productIconHtml({ name: r.title, brand: r.brand, category: r.category }, 40)) +
       '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
         ((r.brand || r.unit) ? '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([r.brand, unitLabel(r.unit)].filter(Boolean).join(' · ')) + '</div>' : '') + '</div>' +
       '<button type="button" onclick="clearProduct()" class="shrink-0 text-[11px] font-semibold" style="color:var(--acc);">' + t('rfqChange') + '</button>' +
@@ -4255,7 +4341,7 @@ function renderRfqProductArea(loading){
   if (!productSearchResults.length) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('rfqNoMatches') + '</div>';
   return '<div class="bx-scroll flex max-h-52 flex-col gap-1.5 overflow-y-auto">' + productSearchResults.map(it =>
     '<button type="button" onclick="pickProduct(' + jsAttr(it.id) + ')" class="flex items-center gap-2.5 rounded-lg border p-2 text-start" style="border-color:var(--bd); background:var(--panel);">' +
-      (it.imageUrl ? '<img src="' + esc(it.imageUrl) + '" class="h-10 w-10 shrink-0 rounded object-cover" />' : '<div class="h-10 w-10 shrink-0 rounded" style="background:var(--sunken);"></div>') +
+      productThumb(it, 40) +
       '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(it.name) + '</div>' +
       '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([it.brand, unitLabel(it.unit), it.category].filter(Boolean).join(' · ') || ' ') + '</div></div>' +
     '</button>'
@@ -4514,7 +4600,7 @@ function bkSearchHtml(){
   if (!bkSearchResults.length) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('bkCatalogNone') + '</div>';
   return '<div class="bx-scroll flex max-h-48 flex-col gap-1.5 overflow-y-auto">' + bkSearchResults.map((it) =>
     '<button type="button" onclick="bkPickProduct(' + jsAttr(it.id) + ')" class="flex items-center gap-2.5 rounded-lg border p-2 text-start" style="border-color:var(--bd); background:var(--panel);">' +
-      (it.imageUrl ? '<img src="' + esc(it.imageUrl) + '" class="h-9 w-9 shrink-0 rounded object-cover" alt="" />' : '<div class="h-9 w-9 shrink-0 rounded" style="background:var(--sunken);"></div>') +
+      productThumb(it, 36) +
       '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(it.name) + '</div>' +
       '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([it.brand, unitLabel(it.unit), it.category].filter(Boolean).join(' · ') || ' ') + '</div></div></button>').join('') + '</div>';
 }
@@ -6268,7 +6354,7 @@ function renderNetwork(){
   (items.length === 0 ? emptyState(t('netEmptyTitle'), t('netEmptyBody')) :
     '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">' + items.map(p =>
       '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
-        (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : '') +
+        (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productIconBlockHtml(p)) +
         '<div class="flex items-center gap-2 mb-2">' + avatarHtml(p.supplierCompany ? p.supplierCompany.name : '?', 28) +
         '<div class="min-w-0"><div class="text-[11px] font-semibold truncate" style="color:var(--tx3);">' + esc(p.supplierCompany ? p.supplierCompany.name : '') + '</div></div></div>' +
         '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +
@@ -6370,6 +6456,10 @@ function renderSupplierCatalogPage(){
 // Table on sm: and up; a stack of cards below 640px — Edit/Duplicate/Remove need to be reachable
 // without a horizontal scroll the row gives no hint of (see the mobile audit notes).
 function catalogItemsList(items){
+  // a soft nudge under an item without a photo; the button opens the edit form, which has the photo upload and the camera
+  const photoHint = (p) => p.imageUrl || !companyVerified() ? '' :
+    '<div class="mt-1 text-[11px] leading-snug" style="color:var(--tx4);">' + t('catAddPhotoHint') +
+    ' <button onclick="openCatalogEdit(\'' + p.id + '\')" class="font-semibold" style="color:var(--acc);">' + t('catAddPhotoBtn') + '</button></div>';
   const actionsFor = (p) =>
     (companyVerified() ? '<button onclick="openCatalogEdit(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('btnEdit') + '</button>' : '') +
     (companyVerified() ? '<button onclick="duplicateProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx3);">' + t('btnDuplicate') + '</button>' : '') +
@@ -6380,7 +6470,7 @@ function catalogItemsList(items){
     items.map(p => '<tr><td><div class="flex items-center gap-2.5">' +
       (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productThumb(p, 36)) +
       '<div><span class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</span>' +
-      (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div></div></td>' +
+      (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + photoHint(p) + '</div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(unitLabel(p.unit || 'pcs')) + '</td>' +
       '<td class="mono" style="color:var(--tx2);">' + fmt(p.price) + '</td>' +
       '<td class="text-right"><div class="flex flex-wrap justify-end gap-3">' + actionsFor(p) + '</div></td></tr>').join('') +
@@ -6393,7 +6483,7 @@ function catalogItemsList(items){
           (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-12 w-12 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productThumb(p, 48)) +
           '<div class="min-w-0 flex-1"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(p.name) + '</div>' +
           (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div>' +
-        '</div>' +
+        '</div>' + photoHint(p) +
         '<div class="mt-2.5 flex items-center gap-4 text-[12px]">' +
           '<div><span style="color:var(--tx4);">' + t('catColUnit') + '</span> <span style="color:var(--tx3);">' + esc(unitLabel(p.unit || 'pcs')) + '</span></div>' +
           '<div><span style="color:var(--tx4);">' + t('catMobPrice') + '</span> <span class="mono font-semibold" style="color:var(--tx2);">' + fmt(p.price) + '</span></div>' +
