@@ -4342,16 +4342,17 @@ async function submitNewRfq(){
 const BASKET_MAX_ITEMS = 50; // as the server
 const BASKET_TITLE_RE = /^Basket · (\d+) items?$/;
 const BASKET_MISSING_SUFFIX = ' · missing items';
+const BASKET_MISSING_TAIL_RE = /(?: · missing items)+$/; // an older bug repeated the tail: shown once (the data is not touched)
 const BASKET_MISSING_FROM_RE = /^Missing items from (RFQ-[0-9A-F]{4})$/;
 // The server stores English names ("Basket · 6 items", "<title> · missing items", "Missing items from RFQ-90AF"); the apps show them in the user's
 // language. dict = the texts of one language. count = how many items the request really has (when known): an old re-post is still called
 // "Basket · 3 items · missing items" after the first request, so its number is replaced by the real one - or left out when it is not known.
 function bkTitleText(title, dict, count){
   let s = String(title == null ? '' : title);
+  let missing = false;
+  if (BASKET_MISSING_TAIL_RE.test(s)) { missing = true; s = s.replace(BASKET_MISSING_TAIL_RE, ''); if (!s) return dict.bkMissingOnly; }
   const from = BASKET_MISSING_FROM_RE.exec(s);
   if (from) return dict.bkMissingFrom.replace('{id}', from[1]);
-  let missing = false;
-  if (s.endsWith(BASKET_MISSING_SUFFIX)) { missing = true; s = s.slice(0, -BASKET_MISSING_SUFFIX.length); }
   const m = BASKET_TITLE_RE.exec(s);
   if (m) {
     let n = Number(m[1]);
@@ -4362,7 +4363,7 @@ function bkTitleText(title, dict, count){
 }
 const bkIsAutoTitle = (title) => BASKET_TITLE_RE.test(String(title || ''));
 // a name the system gave (not the buyer): such a basket is better described by what is in it
-const bkIsSystemTitle = (title) => { const s = String(title || ''); return BASKET_TITLE_RE.test(s) || BASKET_MISSING_FROM_RE.test(s) || (s.endsWith(BASKET_MISSING_SUFFIX) && BASKET_TITLE_RE.test(s.slice(0, -BASKET_MISSING_SUFFIX.length))); };
+const bkIsSystemTitle = (title) => { const s = String(title || '').replace(BASKET_MISSING_TAIL_RE, ''); return BASKET_TITLE_RE.test(s) || BASKET_MISSING_FROM_RE.test(s); };
 // How an order of a basket is named in a list: { main, sub }. items: the first lines of the order ({ name }), count: how many lines it has.
 // A name the system gave is replaced by the first names ("Flour, Salt +2"); a name the buyer gave stays, the names go under it.
 function bkOrderHeadParts(title, items, count, dict){
