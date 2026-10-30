@@ -5016,9 +5016,11 @@ function bkSummaryHtml(d){
       (sub ? '<div class="text-[11.5px]" style="color:var(--tx3);">' + tpl('bkwInsteadOf', { item: esc(l.name) }) + '</div>' : '') + '</div>' +
       (grey ? '' : '<span class="mono shrink-0 font-semibold" style="color:var(--tx);">' + bhdMoney(l.lineFils / 1000) + '</span>') + '</div>';
   };
+  // a thin line under every row (a list of two rows used to show one line only)
+  const list = (rows, grey) => '<div>' + rows.map((l) => '<div style="border-bottom:1px solid var(--bd);">' + row(l, grey) + '</div>').join('') + '</div>';
   return '<div style="opacity:' + (d.loading ? '0.6' : '1') + ';"><div class="mt-3 text-[15px] leading-snug" style="color:var(--tx2); overflow-wrap:anywhere;">' + text + '</div>' +
-    '<div class="mt-3"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('bkwInOrder') + '</div><div class="divide-y" style="border-color:var(--bd);">' + d.lines.inOrder.map((l) => row(l, false)).join('') + '</div></div>' +
-    (d.lines.left.length ? '<div class="mt-3"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('bkwNotIncluded') + '</div><div class="divide-y" style="border-color:var(--bd);">' + d.lines.left.map((l) => row(l, true)).join('') + '</div></div>' : '') + '</div>';
+    '<div class="mt-3"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('bkwInOrder') + '</div>' + list(d.lines.inOrder, false) + '</div>' +
+    (d.lines.left.length ? '<div class="mt-3"><div class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color:var(--tx4);">' + t('bkwNotIncluded') + '</div>' + list(d.lines.left, true) + '</div>' : '') + '</div>';
 }
 function bkWarnHtml(text){
   return '<div class="mt-3 rounded-lg border px-3 py-2 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend); overflow-wrap:anywhere;">' + text + '</div>';
