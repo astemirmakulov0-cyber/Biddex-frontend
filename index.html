@@ -4324,7 +4324,7 @@ function renderRfqProductArea(loading){
   const r = state.newRfq;
   if (r.productId) {
     return '<div class="flex items-center gap-2.5 rounded-lg border p-2" style="border-color:var(--bd); background:var(--inset);">' +
-      (r.productImageUrl ? '<img src="' + esc(r.productImageUrl) + '" class="h-10 w-10 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' : '') +
+      (r.productImageUrl ? '<img src="' + esc(r.productImageUrl) + '" class="h-10 w-10 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd);" />' : productIconHtml({ name: r.title, brand: r.brand, category: r.category }, 40)) +
       '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(r.title) + '</div>' +
         ((r.brand || r.unit) ? '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([r.brand, unitLabel(r.unit)].filter(Boolean).join(' · ')) + '</div>' : '') + '</div>' +
       '<button type="button" onclick="clearProduct()" class="shrink-0 text-[11px] font-semibold" style="color:var(--acc);">' + t('rfqChange') + '</button>' +
@@ -4337,7 +4337,7 @@ function renderRfqProductArea(loading){
   if (!productSearchResults.length) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('rfqNoMatches') + '</div>';
   return '<div class="bx-scroll flex max-h-52 flex-col gap-1.5 overflow-y-auto">' + productSearchResults.map(it =>
     '<button type="button" onclick="pickProduct(' + jsAttr(it.id) + ')" class="flex items-center gap-2.5 rounded-lg border p-2 text-start" style="border-color:var(--bd); background:var(--panel);">' +
-      (it.imageUrl ? '<img src="' + esc(it.imageUrl) + '" class="h-10 w-10 shrink-0 rounded object-cover" />' : '<div class="h-10 w-10 shrink-0 rounded" style="background:var(--sunken);"></div>') +
+      productThumb(it, 40) +
       '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(it.name) + '</div>' +
       '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([it.brand, unitLabel(it.unit), it.category].filter(Boolean).join(' · ') || ' ') + '</div></div>' +
     '</button>'
@@ -4596,7 +4596,7 @@ function bkSearchHtml(){
   if (!bkSearchResults.length) return '<div class="text-[12px]" style="color:var(--tx4);">' + t('bkCatalogNone') + '</div>';
   return '<div class="bx-scroll flex max-h-48 flex-col gap-1.5 overflow-y-auto">' + bkSearchResults.map((it) =>
     '<button type="button" onclick="bkPickProduct(' + jsAttr(it.id) + ')" class="flex items-center gap-2.5 rounded-lg border p-2 text-start" style="border-color:var(--bd); background:var(--panel);">' +
-      (it.imageUrl ? '<img src="' + esc(it.imageUrl) + '" class="h-9 w-9 shrink-0 rounded object-cover" alt="" />' : '<div class="h-9 w-9 shrink-0 rounded" style="background:var(--sunken);"></div>') +
+      productThumb(it, 36) +
       '<div class="min-w-0 flex-1"><div class="truncate text-[12.5px] font-semibold" style="color:var(--tx);">' + esc(it.name) + '</div>' +
       '<div class="truncate text-[11px]" style="color:var(--tx4);">' + esc([it.brand, unitLabel(it.unit), it.category].filter(Boolean).join(' · ') || ' ') + '</div></div></button>').join('') + '</div>';
 }
@@ -6350,7 +6350,7 @@ function renderNetwork(){
   (items.length === 0 ? emptyState(t('netEmptyTitle'), t('netEmptyBody')) :
     '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">' + items.map(p =>
       '<div class="rounded-xl border p-3.5" style="border-color:var(--bd); background:var(--panel);">' +
-        (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : '') +
+        (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="mb-2.5 h-24 w-full rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productIconBlockHtml(p)) +
         '<div class="flex items-center gap-2 mb-2">' + avatarHtml(p.supplierCompany ? p.supplierCompany.name : '?', 28) +
         '<div class="min-w-0"><div class="text-[11px] font-semibold truncate" style="color:var(--tx3);">' + esc(p.supplierCompany ? p.supplierCompany.name : '') + '</div></div></div>' +
         '<div class="text-[13px] font-semibold" style="color:var(--tx);">' + esc(p.name) + '</div>' +

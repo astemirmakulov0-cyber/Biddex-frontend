@@ -68,5 +68,13 @@ const block = lib.productIconBlockHtml({ name: 'Rice' });
 check('the wide tile says "No photo" and is not clickable', block.includes('[noPhotoLabel]') && block.includes('dashed') && !block.includes('onclick') && !block.includes('<img'));
 check('no emoji in the icons', !/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(html.slice(a, b)));
 
+// where it is used: every place that shows a catalog item's photo falls back to the icon
+const has = (x) => html.includes(x);
+check('the catalog (supplier) and stock lists use productThumb, which falls back to the kind icon', has('function productThumb(p, size){ return p && p.imageUrl ? photoThumbHtml(p.imageUrl, size) : productIconHtml(p, size); }') && (html.match(/productThumb\(p, (36|48)\)/g) || []).length === 2);
+check('the buyer\'s grid, both catalog searches and the picked product show the icon when there is no photo', has('cursor:zoom-in;" />\' : productIconBlockHtml(p))') && (html.match(/productThumb\(it, (40|36)\)/g) || []).length >= 2 && has('productIconHtml({ name: r.title, brand: r.brand, category: r.category }, 40)'));
+check('the old empty grey squares are gone', !has('class="h-10 w-10 shrink-0 rounded" style="background:var(--sunken);"') && !has('class="h-9 w-9 shrink-0 rounded" style="background:var(--sunken);"'));
+check('an icon never opens the photo viewer', !/function productIconHtml[\s\S]*?\n}/.exec(html)[0].includes('openLightbox') && !/function productIconBlockHtml[\s\S]*?\n}/.exec(html)[0].includes('openLightbox'));
+check('"No photo" is in both languages', /noPhotoLabel:"No photo"/.test(html) && /noPhotoLabel:"بدون صورة"/.test(html));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
