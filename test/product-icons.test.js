@@ -76,5 +76,18 @@ check('the old empty grey squares are gone', !has('class="h-10 w-10 shrink-0 rou
 check('an icon never opens the photo viewer', !/function productIconHtml[\s\S]*?\n}/.exec(html)[0].includes('openLightbox') && !/function productIconBlockHtml[\s\S]*?\n}/.exec(html)[0].includes('openLightbox'));
 check('"No photo" is in both languages', /noPhotoLabel:"No photo"/.test(html) && /noPhotoLabel:"بدون صورة"/.test(html));
 
+// the supplier's catalog: a soft hint under an item without a photo (table and cards), not under one with a photo
+const listSrc = /function catalogItemsList\(items\)\{[\s\S]*?\n\}\n/.exec(html)[0];
+let verified = true;
+const esc = (x) => String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const list = new Function('t', 'esc', 'jsAttr', 'fmt', 'unitLabel', 'companyVerified', 'productThumb', listSrc + '; return catalogItemsList;')(
+  (k) => '[' + k + ']', esc, (x) => "'" + x + "'", (x) => String(x), (x) => x, () => verified, (p, n) => '<thumb ' + (p.name) + '>');
+const out = list([{ id: 'a1', name: 'No photo item', price: 1, unit: 'kg' }, { id: 'b2', name: 'Photo item', price: 2, unit: 'kg', imageUrl: 'data:x' }]);
+check('an item without a photo gets the hint and the button to edit it (table and card)', (out.match(/\[catAddPhotoHint\]/g) || []).length === 2 && (out.match(/openCatalogEdit\('a1'\)" class="font-semibold"/g) || []).length === 2 && out.includes('[catAddPhotoBtn]'));
+check('an item with a photo gets no hint', !out.includes("openCatalogEdit('b2')\" class=\"font-semibold\""));
+verified = false;
+check('no hint while the company is not verified (the edit form is closed to it)', !list([{ id: 'a1', name: 'x', price: 1 }]).includes('catAddPhotoHint'));
+check('the hint text is the requested one in English and has an Arabic version', /catAddPhotoHint:"Add a photo — buyers choose items with photos more often\."/.test(html) && /catAddPhotoHint:"[^"]*[؀-ۿ][^"]*"/.test(html) && /catAddPhotoBtn:"Add photo"/.test(html) && /catAddPhotoBtn:"[^"]*[؀-ۿ]/.test(html));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

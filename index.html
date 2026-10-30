@@ -754,6 +754,8 @@ const I18N = {
     catPhotoOpt:"Product photo (optional)",
     catRemovePhoto:"Remove photo",
     noPhotoLabel:"No photo",
+    catAddPhotoHint:"Add a photo — buyers choose items with photos more often.",
+    catAddPhotoBtn:"Add photo",
     catChoosePhoto:"Choose photo",
     catNoPhoto:"No photo chosen",
     catReadingPhoto:"Reading photo…",
@@ -1525,6 +1527,8 @@ const I18N = {
     catPhotoOpt:"صورة المنتج (اختيارية)",
     catRemovePhoto:"إزالة الصورة",
     noPhotoLabel:"بدون صورة",
+    catAddPhotoHint:"أضف صورة — يختار المشترون المنتجات المصوّرة أكثر.",
+    catAddPhotoBtn:"إضافة صورة",
     catChoosePhoto:"اختيار صورة",
     catNoPhoto:"لم يتم اختيار صورة",
     catReadingPhoto:"جارٍ قراءة الصورة…",
@@ -6452,6 +6456,10 @@ function renderSupplierCatalogPage(){
 // Table on sm: and up; a stack of cards below 640px — Edit/Duplicate/Remove need to be reachable
 // without a horizontal scroll the row gives no hint of (see the mobile audit notes).
 function catalogItemsList(items){
+  // a soft nudge under an item without a photo; the button opens the edit form, which has the photo upload and the camera
+  const photoHint = (p) => p.imageUrl || !companyVerified() ? '' :
+    '<div class="mt-1 text-[11px] leading-snug" style="color:var(--tx4);">' + t('catAddPhotoHint') +
+    ' <button onclick="openCatalogEdit(\'' + p.id + '\')" class="font-semibold" style="color:var(--acc);">' + t('catAddPhotoBtn') + '</button></div>';
   const actionsFor = (p) =>
     (companyVerified() ? '<button onclick="openCatalogEdit(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--acc);">' + t('btnEdit') + '</button>' : '') +
     (companyVerified() ? '<button onclick="duplicateProduct(\'' + p.id + '\')" class="text-[12px] font-semibold" style="color:var(--tx3);">' + t('btnDuplicate') + '</button>' : '') +
@@ -6462,7 +6470,7 @@ function catalogItemsList(items){
     items.map(p => '<tr><td><div class="flex items-center gap-2.5">' +
       (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-9 w-9 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productThumb(p, 36)) +
       '<div><span class="font-semibold" style="color:var(--tx);">' + esc(p.name) + '</span>' +
-      (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div></div></td>' +
+      (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + photoHint(p) + '</div></div></td>' +
       '<td style="color:var(--tx3);">' + esc(unitLabel(p.unit || 'pcs')) + '</td>' +
       '<td class="mono" style="color:var(--tx2);">' + fmt(p.price) + '</td>' +
       '<td class="text-right"><div class="flex flex-wrap justify-end gap-3">' + actionsFor(p) + '</div></td></tr>').join('') +
@@ -6475,7 +6483,7 @@ function catalogItemsList(items){
           (p.imageUrl ? '<img src="' + esc(p.imageUrl) + '" onclick="openLightbox(' + jsAttr(p.imageUrl) + ')" class="h-12 w-12 shrink-0 rounded-lg object-cover border" style="border-color:var(--bd); cursor:zoom-in;" />' : productThumb(p, 48)) +
           '<div class="min-w-0 flex-1"><div class="font-semibold truncate" style="color:var(--tx);">' + esc(p.name) + '</div>' +
           (p.brand ? '<div class="text-[11px]" style="color:var(--tx4);">' + esc(p.brand) + '</div>' : '') + '</div>' +
-        '</div>' +
+        '</div>' + photoHint(p) +
         '<div class="mt-2.5 flex items-center gap-4 text-[12px]">' +
           '<div><span style="color:var(--tx4);">' + t('catColUnit') + '</span> <span style="color:var(--tx3);">' + esc(unitLabel(p.unit || 'pcs')) + '</span></div>' +
           '<div><span style="color:var(--tx4);">' + t('catMobPrice') + '</span> <span class="mono font-semibold" style="color:var(--tx2);">' + fmt(p.price) + '</span></div>' +
