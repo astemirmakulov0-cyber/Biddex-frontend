@@ -2703,9 +2703,35 @@ function renderAwardCheck(){
 
 // The owner's window for one request: everything needed to decide. GET /approvals/:id; #/approval/<id> opens it (the e-mail button).
 async function openApproval(id){
-  setState({ approvalModal: { id, data: null, busy: false, rejecting: false, reason: '' } });
-  try { const data = await api('/api/approvals/' + encodeURIComponent(id)); if (state.approvalModal && state.approvalModal.id === id) setState({ approvalModal: { ...state.approvalModal, data } }); }
+  setState({ approvalModal: { id, data: null, busy: false, rejecting: false, reason: '', bk: null, bkFailed: false } });
+  try {
+    const data = await api('/api/approvals/' + encodeURIComponent(id));
+    if (!(state.approvalModal && state.approvalModal.id === id)) return;
+    setState({ approvalModal: { ...state.approvalModal, data } });
+    if (data.rfq && data.rfq.isBasket) loadApprovalBasket(id, data);
+  }
   catch(e) { setState({ approvalModal: null }); showToast(e.message); }
+}
+// a basket's approval shows what the order holds, like the manager's window: the request's items and the bid's answers are read the way Compare bids reads them
+async function loadApprovalBasket(id, data){
+  const here = () => state.approvalModal && state.approvalModal.id === id;
+  try {
+    const [rfq, quotes] = await Promise.all([api('/api/rfqs/' + encodeURIComponent(data.rfqId)), api('/api/rfqs/' + encodeURIComponent(data.rfqId) + '/quotes')]);
+    const quote = (quotes || []).find((x) => x.id === data.quoteId);
+    if (!quote || !rfq || !Array.isArray(rfq.items)) throw new Error('missing');
+    if (here()) setState({ approvalModal: { ...state.approvalModal, bk: { quote, items: rfq.items } } });
+  } catch(e) { if (here()) setState({ approvalModal: { ...state.approvalModal, bkFailed: true } }); }
+}
+// the owner's view of a basket's approval: the same sentence and lists as the manager saw; null until they are loaded (or when they cannot be: the plain rows are shown)
+function approvalBasketHtml(a, m){
+  if (!(a.rfq && a.rfq.isBasket) || !a.basket || !m.bk) return null;
+  const lines = bkPlanLines(m.bk.quote, m.bk.items, a.basket.acceptedItemIds);
+  const left = lines.left.length;
+  const minFils = m.bk.quote.minOrderAmount != null ? Math.round(Number(m.bk.quote.minOrderAmount) * 1000) : 0;
+  return bkSummaryHtml({ supplier: a.supplier ? a.supplier.name : '', covered: lines.inOrder.length, n: m.bk.items.length, totalText: bhdMoney(a.amount), lines, repost: left > 0 && !!a.basket.repostMissing }) +
+    (minFils && lines.totalFils < minFils ? bkWarnHtml(tpl('bkwBelowMin', { total: '<b>' + bhdMoney(a.amount) + '</b>', min: '<b>' + bhdMoney(minFils / 1000) + '</b>' })) : '') +
+    (lines.totalFils !== Math.round(Number(a.amount) * 1000) ? bkWarnHtml(t('bkwChanged')) : '') +
+    (left > 0 && a.basket.repostMissing && a.status === 'PENDING' ? '<div class="mt-2 text-[11.5px]" style="color:var(--tx4);">' + t('bkwApRepost') + '</div>' : '');
 }
 function closeApproval(){ setState({ approvalModal: null }); }
 function startReject(){ if (state.approvalModal) setState({ approvalModal: { ...state.approvalModal, rejecting: true } }); }
@@ -2734,16 +2760,17 @@ function renderApprovalModal(){
   if (!a) return wrap('<div class="mt-4 text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>');
   const row = (k, v) => '<div class="flex items-start justify-between gap-3 py-1.5 text-[13px]"><span style="color:var(--tx4);">' + k + '</span><span class="text-end font-semibold" style="color:var(--tx); overflow-wrap:anywhere;">' + v + '</span></div>';
   const open = a.status === 'PENDING';
+  const basketBody = approvalBasketHtml(a, m);
   let html = '<div class="mt-3 text-[13px]" style="color:var(--tx3);">' + (a.requestedBy ? tpl('apAsks', { name: '<b style="color:var(--tx);">' + esc(a.requestedBy.name) + '</b>' }) : '') + '</div>' +
-    '<div class="mt-1 text-[15px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(a.rfq ? a.rfq.title : '') + '</div>' +
-    '<div class="mt-3 divide-y" style="border-color:var(--bd);">' +
+    '<div class="mt-1 text-[15px] font-bold" style="color:var(--tx); overflow-wrap:anywhere;">' + esc(a.rfq ? (a.rfq.isBasket ? bkTitleText(a.rfq.title, i18nDict(state.lang)) : a.rfq.title) : '') + '</div>' +
+    (basketBody || (a.rfq && a.rfq.isBasket && !m.bkFailed ? '<div class="mt-3 text-[13px]" style="color:var(--tx4);">' + t('cmpLoading') + '</div>' : '<div class="mt-3 divide-y" style="border-color:var(--bd);">' +
       row(t('apAmount'), '<span class="mono bx-display text-[18px]">' + bhdMoney(a.amount) + '</span>') +
       row(t('apSupplier'), esc(a.supplier ? a.supplier.name : '')) +
       (a.unitPrice ? row(t('apUnitPrice'), bhdMoney(a.unitPrice)) : '') +
       (a.rfq && a.rfq.quantity ? row(t('apQuantity'), esc(a.rfq.quantity) + ' ' + esc(unitLabel ? unitLabel(a.rfq.unit) : a.rfq.unit || '')) : '') +
       (a.deliveryTimeDays != null ? row(t('apDelivery'), tpl('apDays', { n: a.deliveryTimeDays })) : '') +
       (a.rfq && a.rfq.neededBy ? row(t('apNeededBy'), fmtDate(a.rfq.neededBy)) : '') +
-    '</div>' +
+    '</div>')) +
     '<div class="mt-3 rounded-lg border px-3 py-2.5 text-[12.5px]" style="border-color:var(--pend); background:var(--pend-soft); color:var(--pend);"><b>' + t('apWhy') + '</b><div class="mt-1">' + approvalReasonText(a) + '</div>' +
       (a.budget != null && a.committedBefore != null ? '<div class="mt-1">' + tpl('apBudgetLine', { before: a.committedBefore, after: a.committedAfter, budget: a.budget }) + '</div>' : '') +
       (a.overBudgetBy ? '<div class="mt-1 font-bold">' + tpl('apOverBy', { over: a.overBudgetBy }) + '</div>' : '') + '</div>';
