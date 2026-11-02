@@ -403,6 +403,32 @@ const I18N = {
     rfqBudgetRequired:"Please enter a budget (it is required).",
     budgetNotSpecified:"Budget not specified",
     close:"Close",
+    navAnalytics:'Analytics', snaEyebrow:'Analytics', snaTitle:'Your analytics', snaSubtitle:'How you are doing, what buyers ask for in your category, and who your regular customers are.',
+    snaTabPerformance:'Your performance', snaTabDemand:'Demand', snaTabCustomers:'Your customers', snaP30:'30 days', snaP3m:'3 months', snaP12m:'12 months',
+    snaLoading:'Loading…', snaLoadFailed:'Could not load your analytics.', snaRetry:'Try again',
+    snaRfqs:'RFQs received', snaRfqsSub:'In your category, published after you were verified', snaQuotes:'Quotes sent', snaQuotesSub:'In this period',
+    snaResponseRate:'Response rate', snaResponseRateSub:'You quoted {n} of {m} RFQs', snaWins:'Orders won', snaWinsSub:'Purchase orders you received',
+    snaWinRate:'Win rate', snaWinRateSub:'Of the quotes you sent', snaAvgResponse:'Average response time', snaResponseBasis:'Based on {n} quotes', snaNoValue:'Not enough data yet',
+    snaWonValue:'Value of won orders', snaDeliveredValue:'Value of delivered orders', snaDeliveredSub:'{n} orders received by the buyer',
+    snaMinutes:'{n} min', snaHoursMin:'{h} h {m} min', snaDaysHours:'{d} d {h} h',
+    snaRatingTitle:'Rating trend', snaRatingNote:'From the reviews buyers left you.', snaStars:'Stars', snaOnTime:'On time', snaAsOrdered:'As ordered', snaReviewsN:'{n} reviews', snaNoReviews:'No reviews in this period.',
+    snaNotEnoughTitle:'Not enough data yet', snaNotEnoughBody:'Market insights appear once enough requests from enough different buyers came in during the period. Try a longer period.',
+    snaTopItems:'Most requested items', snaTrending:'Trending items', snaGaps:'Gaps in your catalog', snaGapsNote:'Often requested, but not in your catalog (matched by name and unit).', snaGapsEmpty:'No gaps: everything often requested is in your catalog.',
+    snaRequestsN:'{n} requests', snaWasN:'was {n} before', snaNewItem:'new', snaNoItems:'Nothing to show yet.', snaBusiest:'Busiest times for new requests', snaBusiestDays:'By day of the week', snaBusiestHours:'By hour (Bahrain time)',
+    snaCustTotal:'Customers', snaCustRepeat:'Repeat customers', snaCustInterval:'Typical time between orders', snaCustDays:'{n} days', snaCustOrders:'{n} orders', snaCustLast:'Last order {date}', snaCustEvery:'about every {n} days', snaCustTop:'Top items', snaCustNote:'Only buyers who have ordered from you.', snaCustEmpty:'No orders in this period yet.', snaCustMore:'Showing the first 50.',
+    hint_sna_received:"The requests (RFQs) published in your category after your company was verified. A basket of items counts as one request.",
+    hint_sna_responseRate:"Of those requests, the share you sent a quote for. The higher it is, the more chances you give yourself.",
+    hint_sna_winRate:"Of the quotes you sent in this period, the share that turned into an order for you. Orders you declined do not count as won.",
+    hint_sna_responseTime:"The average time between a request becoming visible to suppliers and your quote. Only requests with a recorded publish time are used, so older ones are left out.",
+    hint_sna_wins:"Purchase orders (LPOs) you received in this period and did not decline or lose.",
+    hint_sna_delivered:"The value of orders whose receipt the buyer confirmed in this period.",
+    hint_sna_rating:"Averages from the reviews buyers wrote for you, month by month. They are only shown to you here.",
+    hint_sna_repeat:"Customers who ordered from you at least twice in this period.",
+    hint_sna_interval:"The typical number of days between two orders of the same customer (the middle value).",
+    hint_sna_gaps:"Items buyers ask for often that you do not list. Adding them to your catalog makes you easier to find.",
+    hint_sna_trending:"Items requested more often than in the period before this one.",
+    hint_sna_busiest:"When new requests appear (days and hours), so you can be ready to quote quickly.",
+    hint_sna_enough:"To protect buyers, market insights need at least 5 requests from at least 3 different buyers in the period.",
     hintLabel:"What does this mean?",
     hint_rfq:"RFQ (Request for Quotation) is your request to suppliers: what you need, how much, and by when. Suppliers reply with their prices.",
     hint_quote:"A quote (also called a bid) is a supplier's price offer for an RFQ, with delivery time and payment terms. The buyer compares the offers and picks one.",
@@ -1176,6 +1202,32 @@ const I18N = {
     rfqBudgetRequired:"يرجى إدخال الميزانية (إلزامية).",
     budgetNotSpecified:"الميزانية غير محددة",
     close:"إغلاق",
+    navAnalytics:'التحليلات', snaEyebrow:'التحليلات', snaTitle:'تحليلاتك', snaSubtitle:'كيف يسير عملك، وماذا يطلب المشترون في فئتك، ومن هم عملاؤك الدائمون.',
+    snaTabPerformance:'أداؤك', snaTabDemand:'الطلب', snaTabCustomers:'عملاؤك', snaP30:'30 يوماً', snaP3m:'3 أشهر', snaP12m:'12 شهراً',
+    snaLoading:'جارٍ التحميل…', snaLoadFailed:'تعذّر تحميل تحليلاتك.', snaRetry:'حاول مرة أخرى',
+    snaRfqs:'طلبات التسعير الواردة', snaRfqsSub:'في فئتك، المنشورة بعد توثيق شركتك', snaQuotes:'العروض المرسلة', snaQuotesSub:'في هذه الفترة',
+    snaResponseRate:'معدل الاستجابة', snaResponseRateSub:'قدّمت عرضاً على {n} من {m} طلب', snaWins:'الطلبات المكسوبة', snaWinsSub:'أوامر الشراء التي وصلتك',
+    snaWinRate:'معدل الفوز', snaWinRateSub:'من العروض التي أرسلتها', snaAvgResponse:'متوسط زمن الاستجابة', snaResponseBasis:'بناءً على {n} عرض', snaNoValue:'لا توجد بيانات كافية بعد',
+    snaWonValue:'قيمة الطلبات المكسوبة', snaDeliveredValue:'قيمة الطلبات المُسلَّمة', snaDeliveredSub:'{n} طلب أكّد المشتري استلامه',
+    snaMinutes:'{n} د', snaHoursMin:'{h} س {m} د', snaDaysHours:'{d} ي {h} س',
+    snaRatingTitle:'اتجاه التقييم', snaRatingNote:'من تقييمات المشترين لك.', snaStars:'النجوم', snaOnTime:'في الموعد', snaAsOrdered:'مطابق للطلب', snaReviewsN:'{n} تقييم', snaNoReviews:'لا توجد تقييمات في هذه الفترة.',
+    snaNotEnoughTitle:'لا توجد بيانات كافية بعد', snaNotEnoughBody:'تظهر رؤى السوق عندما تصل طلبات كافية من مشترين مختلفين بعدد كافٍ خلال الفترة. جرّب فترة أطول.',
+    snaTopItems:'الأصناف الأكثر طلباً', snaTrending:'الأصناف الصاعدة', snaGaps:'فجوات في كتالوجك', snaGapsNote:'أصناف مطلوبة كثيراً وغير موجودة في كتالوجك (المطابقة بالاسم والوحدة).', snaGapsEmpty:'لا توجد فجوات: كل ما يُطلب كثيراً موجود في كتالوجك.',
+    snaRequestsN:'{n} طلب', snaWasN:'كان {n} سابقاً', snaNewItem:'جديد', snaNoItems:'لا يوجد ما يُعرض بعد.', snaBusiest:'أوقات الذروة للطلبات الجديدة', snaBusiestDays:'حسب أيام الأسبوع', snaBusiestHours:'حسب الساعة (بتوقيت البحرين)',
+    snaCustTotal:'العملاء', snaCustRepeat:'العملاء المتكررون', snaCustInterval:'المدة المعتادة بين الطلبات', snaCustDays:'{n} يوم', snaCustOrders:'{n} طلب', snaCustLast:'آخر طلب {date}', snaCustEvery:'تقريباً كل {n} يوم', snaCustTop:'أبرز الأصناف', snaCustNote:'فقط المشترون الذين طلبوا منك.', snaCustEmpty:'لا توجد طلبات في هذه الفترة بعد.', snaCustMore:'يُعرض أول 50.',
+    hint_sna_received:"طلبات التسعير المنشورة في فئتك بعد توثيق شركتك. السلة من عدة أصناف تُحسب طلباً واحداً.",
+    hint_sna_responseRate:"من هذه الطلبات، نسبة ما قدّمت عليه عرضاً. كلما ارتفعت زادت فرصك.",
+    hint_sna_winRate:"من العروض التي أرسلتها في هذه الفترة، نسبة ما تحوّل إلى طلب لك. أوامر الشراء التي رفضتها لا تُحسب مكسوبة.",
+    hint_sna_responseTime:"متوسط الزمن بين ظهور الطلب للموردين وإرسال عرضك. تُستخدم فقط الطلبات المسجّل وقت نشرها، لذلك تُستبعد الأقدم.",
+    hint_sna_wins:"أوامر الشراء التي وصلتك في هذه الفترة ولم ترفضها ولم تُلغَ.",
+    hint_sna_delivered:"قيمة الطلبات التي أكّد المشتري استلامها في هذه الفترة.",
+    hint_sna_rating:"متوسطات من تقييمات المشترين لك، شهراً بشهر. تظهر لك أنت فقط هنا.",
+    hint_sna_repeat:"العملاء الذين طلبوا منك مرتين على الأقل في هذه الفترة.",
+    hint_sna_interval:"عدد الأيام المعتاد بين طلبين لنفس العميل (القيمة الوسطى).",
+    hint_sna_gaps:"أصناف يطلبها المشترون كثيراً ولا تعرضها. إضافتها إلى كتالوجك تسهّل الوصول إليك.",
+    hint_sna_trending:"أصناف يزداد طلبها مقارنة بالفترة السابقة.",
+    hint_sna_busiest:"متى تظهر الطلبات الجديدة (الأيام والساعات) لتكون مستعداً للرد بسرعة.",
+    hint_sna_enough:"لحماية المشترين، تتطلب رؤى السوق 5 طلبات على الأقل من 3 مشترين مختلفين على الأقل في الفترة.",
     hintLabel:"ما معنى هذا؟",
     hint_rfq:"طلب التسعير (RFQ) هو طلبك إلى الموردين: ما تحتاجه وبأي كمية ومتى. يرد الموردون بأسعارهم.",
     hint_quote:"العرض (أو المزايدة) هو سعر يقدّمه المورد على طلب التسعير مع مدة التوصيل وشروط الدفع. يقارن المشتري العروض ويختار أحدها.",
@@ -1902,6 +1954,7 @@ let state = {
   rfqs: [], catalog: [], myCatalog: [], stock: [],
   spendTab: 'spending', spendPreset: '12m', spendRange: null, spendData: null, spendLoading: false, spendError: false,
   priceItems: null, priceSearch: '', priceLoading: false, priceKeyIdx: null, priceDetail: null,
+  snaTab: 'performance', snaPeriod: '3m', snaData: { performance: null, demand: null, customers: null }, snaLoading: false, snaError: false, // supplier analytics (#/analytics)
   loading: false,
 
   showStockAdd: false, editStockId: null, stockForm: { name:'', brand:'', unit:'kg', quantity:'', threshold:'' },
@@ -3629,6 +3682,7 @@ function setSection(sec){
   state.showMoreSheet = false;
   if (sec === 'main') refreshOnboarding(); // the home card may have ticked while the user was elsewhere
   if (sec === 'spending' && state.view === 'buyer') spendInit();
+  if (sec === 'supAnalytics' && state.view === 'supplier') { state.snaData = { performance: null, demand: null, customers: null }; snaLoad(); }
   if (sec === 'profile') {
     refreshPeople();
     refreshSpendRules();
@@ -5889,6 +5943,7 @@ function renderDashboard(role){
     : state.section === 'lpos' ? renderLpoManagement(isBuyer)
     : state.section === 'stock' ? (isBuyer ? renderStockPage() : renderSupplierHub())
     : state.section === 'spending' ? (isBuyer ? renderSpendingPage() : renderSupplierHub())
+    : state.section === 'supAnalytics' ? (isBuyer ? renderBuyerHub() : renderSupplierAnalytics())
     : (isBuyer ? renderBuyerHub() : renderSupplierHub());
 
   return '<div>' + header + '<div class="bx-page mx-auto max-w-[1220px] px-5 py-8">' + syncBanner() + suspensionBanner() + (state.section === 'main' ? verificationBanner() : '') + body + '</div></div>' +
@@ -5941,7 +5996,7 @@ function moreSheet(role, walletLabel){
   return '<div class="bx-more bx-overlay fixed inset-0 z-50 flex items-end bg-black/50" onclick="if(event.target===this)toggleMoreSheet()">' +
     '<div class="bx-sheet bx-rise w-full rounded-t-2xl border-t p-3" style="border-color:var(--bd); background:var(--panel); padding-bottom:calc(0.75rem + env(safe-area-inset-bottom, 0px));">' +
       '<div class="flex items-center justify-between gap-3 px-3 pb-2 pt-1"><div class="min-w-0 truncate text-[14px] font-bold" style="color:var(--tx);">' + esc(state.company ? state.company.name : '') + '</div>' + verificationBadge() + '</div>' +
-      (isBuyer ? row("setSection('catalog')", t('navNetwork')) + (can('analytics.view') ? row("setSection('spending')", t('navSpending')) : '') : row('toggleMoreSheet();openWalletModal()', t('walletTitle') || '', '<span class="mono text-[13px]" style="color:var(--acc);">' + walletLabel + '</span>')) +
+      (isBuyer ? row("setSection('catalog')", t('navNetwork')) + (can('analytics.view') ? row("setSection('spending')", t('navSpending')) : '') : row('toggleMoreSheet();openWalletModal()', t('walletTitle') || '', '<span class="mono text-[13px]" style="color:var(--acc);">' + walletLabel + '</span>') + row("setSection('supAnalytics')", t('navAnalytics'))) +
       row("setSection('profile')", t('navSettings')) +
       row('toggleLang();toggleMoreSheet()', state.lang === 'ar' ? 'English' : 'العربية') +
       row('toggleTheme();toggleMoreSheet()', t(isDarkNow() ? 'themeLight' : 'themeDark')) +
@@ -5957,7 +6012,7 @@ function navBar(role){
   const isBuyer = role === 'buyer';
   const tabs = isBuyer
     ? [ ['main',t('navBuyerHub')], ['rfqs',t('navRfqs')], ['lpos',t('navLpo')], ['stock',t('navStock')], ['catalog',t('navNetwork')], ...(can('analytics.view') ? [['spending',t('navSpending')]] : []), ['profile',t('navSettings')] ]
-    : [ ['main',t('navSupplierHub')], ['rfqs',t('navOpportunities')], ['catalog',t('navCatalog')], ['lpos',t('navOrdersLpos')], ['profile',t('navSettings')] ];
+    : [ ['main',t('navSupplierHub')], ['rfqs',t('navOpportunities')], ['catalog',t('navCatalog')], ['lpos',t('navOrdersLpos')], ['supAnalytics',t('navAnalytics')], ['profile',t('navSettings')] ];
   const activeKey = state.section === 'orderDetail' ? 'lpos' : state.section;
   return '<div class="bx-noprint hidden md:block border-b" style="border-color:var(--bd); background:var(--panel);">' +
     '<div id="nav-scroller" class="bx-edge-fade mx-auto flex max-w-[1220px] gap-1 px-5 overflow-x-auto">' +
@@ -6503,6 +6558,102 @@ function fmtQty(n){
   return Number.isInteger(num) ? String(num) : num.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
 }
 function isLowStock(item){ return Number(item.threshold) > 0 && Number(item.quantity) <= Number(item.threshold); }
+
+// ---------- Supplier: analytics (#/analytics) ----------
+// Numbers come from GET /api/supplier-analytics/performance|demand|customers (own data only; the server hides the market
+// below 5 requests from 3 buyers, and names buyers only where they ordered from this supplier).
+let snaReq = 0;
+async function snaLoad(){
+  const mine = ++snaReq, tab = state.snaTab, period = state.snaPeriod;
+  setState({ snaLoading: true, snaError: false });
+  try {
+    const d = await api('/api/supplier-analytics/' + tab + '?period=' + period);
+    if (mine === snaReq) setState({ snaData: { ...state.snaData, [tab]: d }, snaLoading: false });
+  } catch(e) { if (mine === snaReq) { setState({ snaLoading: false, snaError: true }); showToast(e.message); } }
+}
+function setSnaPeriod(p){ setState({ snaPeriod: p, snaData: { performance: null, demand: null, customers: null } }); snaLoad(); }
+function setSnaTab(tab){ setState({ snaTab: tab }); if (!state.snaData[tab]) snaLoad(); }
+function snaDuration(min){
+  if (min == null) return '–';
+  if (min < 60) return tpl('snaMinutes', { n: min });
+  if (min < 1440) return tpl('snaHoursMin', { h: Math.floor(min / 60), m: min % 60 });
+  return tpl('snaDaysHours', { d: Math.floor(min / 1440), h: Math.floor((min % 1440) / 60) });
+}
+const snaPct = (v) => v == null ? '–' : fmtNum(v, 0) + '%';
+// bars for [{ label, n }], scaled to the biggest: one row per item, or (cols) a compact column chart for the 24 hours
+function snaBars(items, cols){
+  const max = Math.max(1, ...items.map((x) => x.n));
+  if (cols) return '<div class="flex items-end gap-[3px]" style="height:84px;" dir="ltr">' + items.map((x) => '<div class="flex flex-1 flex-col items-center justify-end" style="height:100%;" title="' + esc(x.label + ': ' + x.n) + '"><div class="w-full rounded-t" style="background:var(--acc); opacity:' + (x.n ? 1 : 0.18) + '; height:' + Math.max(x.n ? 4 : 2, Math.round(x.n * 70 / max)) + 'px;"></div></div>').join('') + '</div>' +
+    '<div class="mt-1 flex gap-[3px] text-[10px]" style="color:var(--tx4);" dir="ltr">' + items.map((x, i) => '<div class="flex-1 text-center">' + (i % 3 === 0 ? x.label : '') + '</div>').join('') + '</div>';
+  return items.map((x) => '<div class="flex items-center gap-2 py-1 text-[12.5px]"><div class="w-12 shrink-0" style="color:var(--tx3);">' + esc(x.label) + '</div><div class="h-3 flex-1 rounded" style="background:var(--inset);"><div class="h-3 rounded" style="background:var(--acc); width:' + Math.round(x.n * 100 / max) + '%;"></div></div><div class="mono w-8 shrink-0 text-end" style="color:var(--tx2);">' + x.n + '</div></div>').join('');
+}
+function snaCard(label, hintKey, value, sub){
+  return '<div class="rounded-xl border p-4" style="border-color:var(--line); background:var(--panel);"><div class="eyebrow flex items-center" style="color:var(--tx4);">' + label + (hintKey ? hint(hintKey) : '') + '</div>' +
+    '<div class="mono bx-display mt-1.5 text-[21px] font-bold" style="color:var(--tx);">' + value + '</div>' + (sub ? '<div class="mt-0.5 text-[11.5px]" style="color:var(--tx4);">' + sub + '</div>' : '') + '</div>';
+}
+function snaSection(title, hintKey, inner, note){
+  return '<div class="mb-5 rounded-2xl border p-4" style="border-color:var(--line); background:var(--panel);"><div class="mb-1 flex items-center text-[14px] font-extrabold" style="color:var(--tx);">' + title + (hintKey ? hint(hintKey) : '') + '</div>' +
+    (note ? '<div class="mb-2 text-[12px]" style="color:var(--tx4);">' + note + '</div>' : '') + inner + '</div>';
+}
+function renderSupplierAnalytics(){
+  const d = state.snaData[state.snaTab];
+  const pill = (active, onclick, label) => '<button type="button" onclick="' + onclick + '" class="rounded-full border px-4 py-2 text-[13px] font-bold" style="' + (active ? 'background:var(--acc-soft); color:var(--acc-ink); border-color:var(--acc);' : 'border-color:var(--line); color:var(--tx2);') + '"' + (active ? ' aria-current="page"' : '') + '>' + label + '</button>';
+  const chip = (p, label) => '<button type="button" onclick="setSnaPeriod(\'' + p + '\')" class="rounded-full border px-3 py-1.5 text-[12px] font-semibold" style="' + (state.snaPeriod === p ? 'background:var(--acc-soft); color:var(--acc-ink); border-color:var(--acc);' : 'border-color:var(--line); color:var(--tx2);') + '">' + label + '</button>';
+  const head = '<div class="bx-noprint"><div class="eyebrow mb-1.5">' + t('snaEyebrow') + '</div><h1 class="text-[22px] font-extrabold" style="color:var(--tx);">' + t('snaTitle') + '</h1>' +
+    '<p class="mt-1 mb-4 max-w-[620px] text-[13.5px]" style="color:var(--tx3);">' + t('snaSubtitle') + '</p>' +
+    '<div class="mb-4 flex flex-wrap gap-2">' + pill(state.snaTab === 'performance', "setSnaTab('performance')", t('snaTabPerformance')) + pill(state.snaTab === 'demand', "setSnaTab('demand')", t('snaTabDemand')) + pill(state.snaTab === 'customers', "setSnaTab('customers')", t('snaTabCustomers')) + '</div>' +
+    '<div class="mb-5 flex flex-wrap gap-2">' + chip('30d', t('snaP30')) + chip('3m', t('snaP3m')) + chip('12m', t('snaP12m')) + '</div></div>';
+  if (!d) {
+    if (state.snaLoading) return head + '<div class="py-10 text-center text-[13px]" style="color:var(--tx4);">' + t('snaLoading') + '</div>';
+    return head + '<div class="py-8 text-center"><div class="mb-3 text-[13px]" style="color:var(--bad);">' + t('snaLoadFailed') + '</div><button type="button" onclick="snaLoad()" class="rounded-lg border px-4 py-2 text-[13px] font-bold" style="border-color:var(--line); color:var(--tx);">' + t('snaRetry') + '</button></div>';
+  }
+  return head + (state.snaTab === 'demand' ? renderSnaDemand(d) : state.snaTab === 'customers' ? renderSnaCustomers(d) : renderSnaPerformance(d));
+}
+function renderSnaPerformance(d){
+  const rr = d.responseRate;
+  const cards = '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">' +
+    snaCard(t('snaRfqs'), 'sna_received', d.rfqsReceived, t('snaRfqsSub')) +
+    snaCard(t('snaQuotes'), '', d.quotesSent, t('snaQuotesSub')) +
+    snaCard(t('snaResponseRate'), 'sna_responseRate', snaPct(rr), d.rfqsReceived ? tpl('snaResponseRateSub', { n: Math.round(rr * d.rfqsReceived / 100), m: d.rfqsReceived }) : t('snaNoValue')) +
+    snaCard(t('snaAvgResponse'), 'sna_responseTime', snaDuration(d.avgResponseMinutes), d.avgResponseMinutes == null ? t('snaNoValue') : tpl('snaResponseBasis', { n: d.responseTimeBasedOn })) +
+    snaCard(t('snaWins'), 'sna_wins', d.ordersWon, t('snaWinsSub')) +
+    snaCard(t('snaWinRate'), 'sna_winRate', snaPct(d.winRate), d.quotesSent ? t('snaWinRateSub') : t('snaNoValue')) +
+    snaCard(t('snaWonValue'), '', spendMoney(d.wonValue)) +
+    snaCard(t('snaDeliveredValue'), 'sna_delivered', spendMoney(d.deliveredValue), tpl('snaDeliveredSub', { n: d.deliveredOrders })) + '</div>';
+  const rt = d.rating;
+  const rows = rt.byMonth.filter((m) => m.reviews).map((m) => '<div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t py-2 text-[12.5px]" style="border-color:var(--line);"><div class="w-24 font-semibold" style="color:var(--tx2);">' + esc(spendMonthLabel(m.month, spLocale())) + '</div>' +
+    '<div style="color:var(--tx3);">' + t('snaStars') + ' <b class="mono" style="color:var(--tx);">' + fmtNum(m.avgStars, 1) + '</b></div><div style="color:var(--tx3);">' + t('snaOnTime') + ' <b class="mono" style="color:var(--tx);">' + snaPct(m.onTimePercent) + '</b></div>' +
+    '<div style="color:var(--tx3);">' + t('snaAsOrdered') + ' <b class="mono" style="color:var(--tx);">' + snaPct(m.matchesOrderPercent) + '</b></div><div style="color:var(--tx4);">' + tpl('snaReviewsN', { n: m.reviews }) + '</div></div>').join('');
+  return cards + snaSection(t('snaRatingTitle'), 'sna_rating', rt.reviews ? rows : '<div class="py-2 text-[13px]" style="color:var(--tx4);">' + t('snaNoReviews') + '</div>', t('snaRatingNote'));
+}
+function snaItemRows(list, extra){
+  if (!list.length) return '<div class="py-2 text-[13px]" style="color:var(--tx4);">' + t('snaNoItems') + '</div>';
+  return list.map((x) => '<div class="flex items-center justify-between gap-3 border-t py-2 text-[13px]" style="border-color:var(--line);"><div class="min-w-0 truncate" style="color:var(--tx);">' + esc(x.title) + (x.unit ? ' <span style="color:var(--tx4);">· ' + esc(x.unit) + '</span>' : '') + '</div>' +
+    '<div class="shrink-0 text-end" style="color:var(--tx3);">' + (extra ? extra(x) : tpl('snaRequestsN', { n: x.requests })) + '</div></div>').join('');
+}
+function snaWeekdayNames(){ // index 0 = Sunday
+  return [0, 1, 2, 3, 4, 5, 6].map((i) => new Date(Date.UTC(2024, 0, 7 + i)).toLocaleDateString(spLocale(), { weekday: 'short', timeZone: 'UTC' }));
+}
+function renderSnaDemand(d){
+  if (!d.enough) return emptyState(t('snaNotEnoughTitle'), t('snaNotEnoughBody') + ' <span class="inline-flex align-middle">' + hint('sna_enough') + '</span>');
+  const wd = snaWeekdayNames();
+  const trendExtra = (x) => tpl('snaRequestsN', { n: x.requests }) + ' · ' + (x.previous ? '<span style="color:var(--ok);">+' + x.changePercent + '%</span> (' + tpl('snaWasN', { n: x.previous }) + ')' : '<span style="color:var(--ok);">' + t('snaNewItem') + '</span>');
+  return snaSection(t('snaTopItems'), '', snaItemRows(d.topItems)) +
+    snaSection(t('snaTrending'), 'sna_trending', snaItemRows(d.trending, trendExtra)) +
+    snaSection(t('snaGaps'), 'sna_gaps', d.catalogGaps.length ? snaItemRows(d.catalogGaps) : '<div class="py-2 text-[13px]" style="color:var(--tx4);">' + t('snaGapsEmpty') + '</div>', t('snaGapsNote')) +
+    snaSection(t('snaBusiest'), 'sna_busiest', '<div class="mb-1 text-[12px] font-semibold" style="color:var(--tx3);">' + t('snaBusiestDays') + '</div>' + snaBars(d.busiest.weekdays.map((n, i) => ({ label: wd[i], n }))) +
+      '<div class="mb-1 mt-3 text-[12px] font-semibold" style="color:var(--tx3);">' + t('snaBusiestHours') + '</div>' + snaBars(d.busiest.hours.map((n, i) => ({ label: String(i), n })), true));
+}
+function bahrainDayOf(iso){ return new Date(new Date(iso).getTime() + SPEND_BAHRAIN_OFFSET_MS).toISOString().slice(0, 10); }
+function renderSnaCustomers(d){
+  const cards = '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">' + snaCard(t('snaCustTotal'), '', d.totalCustomers) + snaCard(t('snaCustRepeat'), 'sna_repeat', d.repeatCustomers) +
+    snaCard(t('snaCustInterval'), 'sna_interval', d.typicalIntervalDays == null ? '–' : tpl('snaCustDays', { n: fmtNum(d.typicalIntervalDays, 1) })) + '</div>';
+  if (!d.customers.length) return cards + emptyState(t('snaCustEmpty'), t('snaCustNote'));
+  const list = d.customers.map((c) => '<div class="rounded-xl border p-4" style="border-color:var(--line); background:var(--panel);"><div class="flex flex-wrap items-baseline justify-between gap-2"><div class="text-[14px] font-bold" style="color:var(--tx);">' + esc(c.name) + '</div><div class="mono text-[13px] font-bold" style="color:var(--acc);">' + spendMoney(c.value) + '</div></div>' +
+    '<div class="mt-1 text-[12px]" style="color:var(--tx3);">' + tpl('snaCustOrders', { n: c.orders }) + ' · ' + tpl('snaCustLast', { date: spendDayLabel(bahrainDayOf(c.lastOrderAt), spLocale()) }) + (c.typicalIntervalDays != null ? ' · ' + tpl('snaCustEvery', { n: fmtNum(c.typicalIntervalDays, 1) }) : '') + '</div>' +
+    (c.topItems.length ? '<div class="mt-2 text-[12px]" style="color:var(--tx4);">' + t('snaCustTop') + ': ' + c.topItems.map((x) => esc(x.title) + ' ×' + x.orders).join(' · ') + '</div>' : '') + '</div>').join('');
+  return cards + '<div class="mb-2 text-[12px]" style="color:var(--tx4);">' + t('snaCustNote') + (d.truncated ? ' ' + t('snaCustMore') : '') + '</div><div class="grid grid-cols-1 gap-3 md:grid-cols-2">' + list + '</div>';
+}
 
 // ---------- Buyer: spending and price history (#/spending) ----------
 // Numbers come from GET /api/analytics/spending and /api/analytics/items[/detail] (buyer only, own data only).
@@ -8554,7 +8705,7 @@ const OVERLAYS = [
   ['erase', s => !!s.showEraseModal, () => closeEraseModal()],
   ['forgot', s => !!s.showForgotModal, () => closeForgotModal()]
 ];
-const ROUTE_NAMES = { '': 'main', rfqs: 'rfqs', opportunities: 'rfqs', orders: 'lpos', stock: 'stock', spending: 'spending', suppliers: 'catalog', catalog: 'catalog', settings: 'profile' };
+const ROUTE_NAMES = { '': 'main', rfqs: 'rfqs', opportunities: 'rfqs', orders: 'lpos', stock: 'stock', spending: 'spending', analytics: 'supAnalytics', suppliers: 'catalog', catalog: 'catalog', settings: 'profile' };
 let histDepth = 0, histBusy = false, histPopExpected = false, histDirty = false, histAdopt = false, histTimer = null, pendingRoute = null;
 
 function isDashboardView(){ return state.view === 'buyer' || state.view === 'supplier'; }
@@ -8568,7 +8719,7 @@ function topOverlay(){ const o = OVERLAYS.find(x => x[1](state)); return o ? o[0
 function currentDepth(){ return screenDepth() + (topOverlay() ? 1 : 0); }
 function sectionHash(sec){
   const supplier = state.view === 'supplier';
-  return ({ main: '#/', rfqs: supplier ? '#/opportunities' : '#/rfqs', lpos: '#/orders', stock: '#/stock', spending: '#/spending', catalog: supplier ? '#/catalog' : '#/suppliers', profile: '#/settings' })[sec] || '#/';
+  return ({ main: '#/', rfqs: supplier ? '#/opportunities' : '#/rfqs', lpos: '#/orders', stock: '#/stock', spending: '#/spending', supAnalytics: '#/analytics', catalog: supplier ? '#/catalog' : '#/suppliers', profile: '#/settings' })[sec] || '#/';
 }
 // URL of the history entry at depth k while the app is showing the current screen
 function entryHash(k){
@@ -8604,6 +8755,7 @@ function applyRoute(r){
   if (r.section === 'orderDetail' && r.orderId) { openOrderDetail(r.orderId, true); return; }
   if ((r.section === 'stock' || r.section === 'spending') && supplier) r = { section: 'main' };
   if (r.section === 'spending' && !can('analytics.view')) r = { section: 'main' };
+  if (r.section === 'supAnalytics' && !supplier) r = { section: 'main' };
   setSection(r.section);
 }
 // A route from the address bar / a link. Sign-in and registration links only mean something signed out (signed in:
